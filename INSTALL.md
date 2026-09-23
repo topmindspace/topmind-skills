@@ -62,7 +62,7 @@ Daily entry after install: **`topmind`**
    发布后，全球开发者即可通过以下方式发现与安装：
    - **CLI 直接索引**：`npx skills add topmindspace/topmind-skills -g -y`
    - **查看目录**：`npx skills add topmindspace/topmind-skills -l`
-   - **网页版浏览**：访问 `https://skills.sh/topmindspace/topmind-skills-skills`
+   - **网页版浏览**：访问 `https://skills.sh/topmindspace/topmind-skills`
 
 ---
 

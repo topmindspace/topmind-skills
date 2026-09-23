@@ -5,12 +5,21 @@
 [简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
 
 ```bash
-# 社区 CLI
+# 1) 社区 CLI（快速试用；可能不含 shared/）
 npx skills add topmindspace/topmind-skills -g -y
 
-# Pack-aware 安装器（含 shared/）
+# 2) Pack-aware 安装器（推荐生产 · 含 shared/ · 可写回执）
+# 在 topmind-skills 仓内：
 npm run install -- add topmindspace/topmind-skills -g
 npm run update -- --dest $HOME/.claude/skills
+
+# 或不 clone，直接用 npx 跑 GitHub 上的安装器：
+npx --yes github:topmindspace/topmind-skills install -g
+
+# 3) 从 GitHub Release 装（离线/固定版本）
+node bin/install-skills.mjs add release:latest -g
+# 或下载 topmind-skills-<ver>.zip 后：
+# node bin/install-skills.mjs add ./unpacked --dest $HOME/.claude/skills
 ```
 
 **版本与清单真源：** [`topmind-pack.json`](./topmind-pack.json)（`npm run versions`）。  

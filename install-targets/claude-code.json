@@ -54,9 +54,9 @@
     "Claude Code is case-insensitive on macOS / Windows by default — the canonical lowercase `skills.md` covers both `skills.md` and `SKILLS.md` lookups."
   ],
   "install": {
-    "script": "scripts/install-skills.mjs",
+    "script": "bin/install-skills.mjs",
     "docs": "skills/INSTALL.md",
-    "from_git": "node scripts/install-skills.mjs --from-git --host claude-code",
-    "from_release": "node scripts/install-skills.mjs --from-release latest --host claude-code"
+    "from_git": "node bin/install-skills.mjs --from-git --host claude-code",
+    "from_release": "node bin/install-skills.mjs --from-release latest --host claude-code"
   }
 }

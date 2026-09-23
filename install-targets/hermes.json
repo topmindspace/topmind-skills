@@ -52,9 +52,9 @@
     "v4.3 progressive disclosure: name+description discovery; SKILL.md on activation; shared/ and references/ on demand. Single daily entry topmind."
   ],
   "install": {
-    "script": "scripts/install-skills.mjs",
+    "script": "bin/install-skills.mjs",
     "docs": "skills/INSTALL.md",
-    "from_git": "node scripts/install-skills.mjs --from-git --host hermes",
-    "from_release": "node scripts/install-skills.mjs --from-release latest --host hermes"
+    "from_git": "node bin/install-skills.mjs --from-git --host hermes",
+    "from_release": "node bin/install-skills.mjs --from-release latest --host hermes"
   }
 }
