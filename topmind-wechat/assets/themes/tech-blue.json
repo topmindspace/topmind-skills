@@ -1,0 +1,16 @@
+{
+  "name": "科技蓝",
+  "accent": "#185FA5",
+  "text": "#333333",
+  "text_strong": "#12233A",
+  "text_muted": "#6B7C93",
+  "text_light": "#96A3B4",
+  "surface": "#F2F6FB",
+  "border": "#DCE6F2",
+  "code_bg": "#1B2733",
+  "code_text": "#DCE6F2",
+  "font_size": "16px",
+  "line_height": "1.75",
+  "font_stack": "-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif",
+  "mono_stack": "Menlo,Monaco,Consolas,'Courier New',monospace"
+}

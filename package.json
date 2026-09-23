@@ -1,0 +1,40 @@
+{
+  "name": "topmind-skills",
+  "version": "4.12.2",
+  "private": true,
+  "description": "topmind Agent Skills pack \u2014 portable markdown skills for capture, organize, write, memory, maintain, loop.",
+  "type": "module",
+  "license": "MIT",
+  "author": "TopMindSpace",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topmindspace/topmind-skills.git"
+  },
+  "homepage": "https://github.com/topmindspace/topmind-skills#readme",
+  "bugs": {
+    "url": "https://github.com/topmindspace/topmind-skills/issues"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "bin": {
+    "topmind-skills": "bin/install-skills.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs",
+    "pack": "node scripts/build-pack.mjs",
+    "versions": "node -e \"console.log('skills', require('./topmind-pack.json').version)\"",
+    "install": "node bin/install-skills.mjs add",
+    "update": "node bin/install-skills.mjs update",
+    "list": "node bin/install-skills.mjs list"
+  },
+  "keywords": [
+    "agent-skills",
+    "skill-pack",
+    "topmind",
+    "personal-knowledge",
+    "claude-code",
+    "codex",
+    "opencode"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "极简黑白灰",
+  "accent": "#A6524A",
+  "text": "#333333",
+  "text_strong": "#1A1A1A",
+  "text_muted": "#888888",
+  "text_light": "#999999",
+  "surface": "#F7F7F7",
+  "border": "#E8E8E8",
+  "code_bg": "#2C2C2C",
+  "code_text": "#E8E8E8",
+  "font_size": "16px",
+  "line_height": "1.75",
+  "font_stack": "-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif",
+  "mono_stack": "Menlo,Monaco,Consolas,'Courier New',monospace"
+}

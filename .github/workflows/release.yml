@@ -1,0 +1,127 @@
+# Release topmind-skills pack on tag v*.
+# Version truth source: topmind-pack.json (must match tag).
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag for draft release (e.g. v4.9.0)"
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: skills-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER=$(node -p "require('./topmind-pack.json').version")
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == v* ]]; then
+            EXPECT="v$VER"
+            if [[ "$TAG" != "$EXPECT" && "$TAG" != skills-v* ]]; then
+              echo "ERROR: tag $TAG does not match pack version $VER"
+              exit 1
+            fi
+          fi
+
+      - name: Test
+        run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
+
+      - name: Pack
+        run: node scripts/build-pack.mjs
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="${{ steps.ver.outputs.version }}"
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == workflow_dispatch* || -z "$TAG" ]]; then
+            TAG="${{ inputs.release_tag }}"
+          fi
+          # workflow_dispatch: always draft
+          DRAFT=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DRAFT="--draft"
+          fi
+          NOTES="topmind-skills v${VER}
+
+          ## Install
+          \`\`\`bash
+          npx skills add topmindspace/topmind-skills -g -y
+          # pack-aware (includes shared/)
+          npx --yes github:topmindspace/topmind-skills install -g
+          \`\`\`
+
+          ## Upgrade
+          \`\`\`bash
+          npx skills update -g -y
+          \`\`\`
+          "
+          gh release create "$TAG" $DRAFT \
+            --title "topmind-skills v${VER}" \
+            --notes "$NOTES" \
+            dist/topmind-skills-*.tar.gz \
+            dist/topmind-skills-*.zip \
+            dist/topmind-skills-*-manifest.json \
+            dist/*.SHA256SUMS \
+            || gh release upload "$TAG" dist/topmind-skills-*.tar.gz dist/topmind-skills-*.zip dist/topmind-skills-*-manifest.json dist/*.SHA256SUMS --clobber
+
+      - name: Write latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.ver.outputs.version }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const ver = process.env.VER;
+            const tag = process.env.TAG;
+            const latest = {
+              surface: "skills",
+              version: ver,
+              tag,
+              published_at: new Date().toISOString(),
+              assets: [
+                `topmind-skills-${ver}.zip`,
+                `topmind-skills-${ver}.tar.gz`,
+                `topmind-skills-${ver}-manifest.json`,
+                `topmind-skills-${ver}.SHA256SUMS`,
+              ],
+              install: {
+                npx_skills: "npx skills add topmindspace/topmind-skills -g -y",
+                pack_aware: "npx --yes github:topmindspace/topmind-skills install -g",
+              },
+            };
+            fs.writeFileSync("latest.json", JSON.stringify(latest, null, 2) + "\n");
+          '
+          gh release upload "$TAG" latest.json --clobber

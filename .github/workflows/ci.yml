@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout skills
+        uses: actions/checkout@v5
+
+      - name: Checkout topmind engine (for contract cross-check)
+        uses: actions/checkout@v5
+        with:
+          repository: topmindspace/topmind
+          ref: main
+          path: .topmind-src
+        continue-on-error: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Tests
+        env:
+          TOPMIND_SRC: ${{ github.workspace }}/.topmind-src
+        run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
+
+      - name: Pack smoke
+        run: node scripts/build-pack.mjs
+
+      - name: Assert artifact names
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls dist/topmind-skills-*.tar.gz dist/topmind-skills-*.zip
+          ls dist/*.SHA256SUMS
+
+      - name: Pack-aware install smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          node bin/install-skills.mjs add . --dest "$RUNNER_TEMP/skills-dest" --dry-run
+          node bin/install-skills.mjs add . --dest "$RUNNER_TEMP/skills-dest"
+          test -f "$RUNNER_TEMP/skills-dest/topmind/SKILL.md"
+          test -d "$RUNNER_TEMP/skills-dest/shared"
+
+      - name: Upload pack artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v5
+        with:
+          name: pack-smoke
+          path: |
+            dist/topmind-skills-*.tar.gz
+            dist/topmind-skills-*.zip
+            dist/topmind-skills-*-manifest.json
+            dist/*.SHA256SUMS
+          if-no-files-found: error
+          retention-days: 3
