@@ -1,8 +1,10 @@
 ---
 name: topmind-wechat
-version: 4.12.2
+version: 4.13.0
 description: >-
   公众号文章全生命周期子技能（write 族）：交付包、审校改写、质量三关、状态同步、微信内联排版与发布清单。
+  支持 forward（底稿→公众号）、reverse（选题原创→回推）、站外拉取（在线精选站→reverse+pending）三条路径；
+  内置五套主题、代码高亮、宽表卡片化、前言导读、尾部签名、外链脚注、--embed-images。
   Use when 写公众号、公众号排版、微信排版、定稿、发公众号、公众号交付包、wechat format、mp format。
   Do NOT use for 只改错别字（直接编辑）、小红书/知乎（平台约束不同）、纯网页发布、长文通用润色（走 topmind-write）。
 action_category: write
@@ -22,7 +24,7 @@ entrypoint: false
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-22
+updated: 2026-09-23
 degradation: ../shared/capability-degradation.md
 compatibility: topmind workspace. Writes via UTR workspace-write / Desktop WorkspaceService. Scripts need Python 3 stdlib only.
 ---
@@ -71,7 +73,7 @@ python3 scripts/sync-status.py --set 定稿 <包> --apply
 | 底稿/回推 | `--topstream` → `TOPSTREAM_ROOT` → 可选；不存在则跳过 notes 校验 |
 | 终稿交付 | 可 `save-output` 拷贝到 role:delivery（`88-交付/`），包仍留在创作类专题 |
 
-## 两条路径
+## 三条路径
 
 ### forward（底稿 → 公众号）
 
@@ -89,7 +91,24 @@ python3 scripts/sync-status.py --set 定稿 <包> --apply
 
 `new-article.py --direction reverse`（`target_file: pending`）
 
-**回推纪律**：notes 保持纯 Markdown。`::: 容器` / 徽章 / `==高亮==` 只进公众号稿。
+### 站外拉取（转载整合 / 在线精选站）
+
+源不在本工作区、也不在 topstream `notes/` 时，**仍落 `reverse` + `target_file: pending`**。  
+**不要用 `forward`**：它要求 `source_file` 以 `notes/` 开头且文件真实存在，站外源必然过不了 `sync-mapping.py`。
+
+```bash
+python3 scripts/new-article.py --slug <中文短名> --title "<标题>" --direction reverse
+```
+
+取源坑（Next.js 站点）：正文在 RSC 载荷里，优先 `GET /api/notes/<id>`；图片在 `/api/uploads/<hash>`，记 hash→本地名映射；同图双 hash 用 `md5` 去重。差异与口径写进包内 `README.md`。
+
+**回推纪律**：notes 保持纯 Markdown。`::: 容器` / 徽章 / `==高亮==` 只进公众号稿。回推**务必带 `--assets`**（否则 GitHub 上 `images/` 死链）：
+
+```bash
+python3 scripts/push-to-topstream.py <包> --target notes/xxx.md --assets          # dry-run
+python3 scripts/push-to-topstream.py <包> --target notes/xxx.md --assets --apply \
+  --asset-names "00-封面.jpg=01-cover.jpg,…"
+```
 
 ## 交付包与状态
 
@@ -176,10 +195,16 @@ python3 scripts/md2wechat.py \
 
 | 文件 | 风格 | 适用 |
 |------|------|------|
-| `assets/themes/minimal-ink.json`（默认） | 黑白灰 + 砖红 | 深度研析 |
+| `assets/themes/minimal-ink.json`（默认） | 黑白灰 + 砖红 | 深度研析 / 观点 / 随笔 |
 | `assets/themes/tech-blue.json` | 科技蓝 | AI/技术 |
 | `assets/themes/newsprint.json` | 报纸衬线 | 人文评论 |
 | `assets/themes/graphite.json` | 石墨克制 | 严肃报告 |
+| `assets/themes/amber-review.json` | 琥珀评测 | 产品评测 |
+
+`md2wechat.py --list-themes` 看全部；`--theme genre:评测` 可按题材自动选。  
+渲染规格见 [`references/element-spec.md`](references/element-spec.md) · 主题映射见 [`references/theme-map.md`](references/theme-map.md)。
+
+**平台红线速查**（详见 [`references/wechat-constraints.md`](references/wechat-constraints.md)）：禁 `div`/`pre`/`h1`/`figure`/`thead`/flex/float/gradient/shadow；表格 `table-layout` 不写 fixed；列数 ≥4 转卡片。
 
 ## 与 Desktop「公众号创作」
 

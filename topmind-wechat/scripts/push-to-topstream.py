@@ -21,38 +21,13 @@ Usage:
 import argparse
 import os
 import re
+import shutil
 import sys
 
-def _default_base():
-    """交付包根：CLI --base → env TOPMIND_WECHAT_BASE → env TOPMIND_WORKSPACE 发现 → 惯例路径。"""
-    env = os.environ.get("TOPMIND_WECHAT_BASE") or os.environ.get("TOPMIND_WECHAT_PACKAGE_ROOT")
-    if env:
-        return os.path.abspath(os.path.expanduser(env))
-    ws = os.environ.get("TOPMIND_WORKSPACE")
-    if ws:
-        for rel in (
-            ("40-创作", "2026-公众号"),
-            ("20-专题", "2026-公众号"),
-            ("88-交付", "2026-公众号"),
-        ):
-            p = os.path.join(ws, *rel)
-            if os.path.isdir(p):
-                return p
-        return os.path.join(ws, "40-创作", "2026-公众号")
-    # 惯例：父工作区（可被 CLI 覆盖）
-    return os.path.join(
-        os.path.expanduser("~"), "TopWorkSpace", "topmind-workspace",
-        "40-创作", "2026-公众号")
-
-
-def _default_topstream():
-    env = os.environ.get("TOPSTREAM_ROOT") or os.environ.get("TOPMIND_TOPSTREAM")
-    if env:
-        return os.path.abspath(os.path.expanduser(env))
-    return os.path.join(os.path.expanduser("~"), "TopWorkSpace", "topstream")
-
-DEFAULT_BASE = _default_base()
-DEFAULT_TOPSTREAM = _default_topstream()
+DEFAULT_BASE = os.path.join(
+    os.path.expanduser("~"), "TopWorkSpace", "topmind-workspace",
+    "40-创作", "2026-公众号")
+DEFAULT_TOPSTREAM = os.path.join(os.path.expanduser("~"), "TopWorkSpace", "topstream")
 
 CONTAINER_RE = re.compile(r"^:::\s*\w*\s*$")
 HIGHLIGHT_RE = re.compile(r"==([^=]+)==")
@@ -97,6 +72,37 @@ def downgrade(body):
     return "\n".join(out).strip("\n") + "\n", stats
 
 
+IMG_REF_RE = re.compile(r"(!\[[^\]]*\]\()(images/[^)\s]+)(\))")
+
+
+def push_assets(body_md, pkg_path, topstream, note_target, name_map, dry=False):
+    """把正文引用的本地图片搬进 topstream 并改写为仓库约定路径。
+
+    `notes/xxx.md` 里写 `images/xx.png` 在 GitHub 上是死链——仓库没有 `notes/images/`。
+    仓库既有约定：图放 `assets/images/<note-slug>/`，正文用 `../assets/images/<slug>/xx.png`。
+    返回 (新正文, 搬移明细, 未找到的源图)。
+    """
+    slug = os.path.splitext(os.path.basename(note_target))[0]
+    dst_dir = os.path.join(topstream, "assets", "images", slug)
+    moved, missing = [], []
+
+    def repl(m):
+        src = m.group(2)
+        base = os.path.basename(src)
+        src_path = os.path.join(pkg_path, src)
+        if not os.path.exists(src_path):
+            missing.append(src)
+            return m.group(0)
+        new_name = name_map.get(base, base)
+        if not dry:                      # dry-run 只看映射，不落盘
+            os.makedirs(dst_dir, exist_ok=True)
+            shutil.copy2(src_path, os.path.join(dst_dir, new_name))
+        moved.append((base, new_name))
+        return m.group(1) + "../assets/images/%s/%s" % (slug, new_name) + m.group(3)
+
+    return IMG_REF_RE.sub(repl, body_md), moved, missing
+
+
 def make_readme_entry(title, target, tags):
     tag_str = " ".join("`%s`" % t for t in tags)
     return (
@@ -114,6 +120,11 @@ def main():
     ap.add_argument("--target", help="回推目标 notes/xxx.md（缺省读 frontmatter target_file）")
     ap.add_argument("--apply", action="store_true", help="实际写盘（默认只预览）")
     ap.add_argument("--force", action="store_true", help="目标已存在时覆盖")
+    ap.add_argument("--assets", action="store_true",
+                    help="把正文图片搬进 <topstream>/assets/images/<note-slug>/ 并改写引用（GitHub 必需）")
+    ap.add_argument("--asset-slug", default="", help="覆盖资源子目录名（默认取 note 文件名）")
+    ap.add_argument("--asset-names", default="",
+                    help='文件名重命名映射，如 "00-封面.jpg=01-cover.jpg,01-分工.png=02-division-of-labor.png"')
     args = ap.parse_args()
 
     pkg_path = args.pkg if os.path.isabs(args.pkg) else os.path.join(args.base, args.pkg)
@@ -143,6 +154,21 @@ def main():
 
     body_md, stats = downgrade(body)
 
+    name_map = {}
+    for pair in args.asset_names.split(","):
+        if "=" in pair:
+            k, v = pair.split("=", 1)
+            name_map[k.strip()] = v.strip()
+
+    if args.assets:
+        if args.asset_slug:
+            target = os.path.join(os.path.dirname(target), args.asset_slug + ".md")
+        body_md, moved, missing = push_assets(
+            body_md, pkg_path, args.topstream, target, name_map,
+            dry=not args.apply)
+    else:
+        moved, missing = [], []
+
     # 确保有 H1 标题开头
     if not body_md.lstrip().startswith("# "):
         body_md = "# %s\n\n%s" % (title, body_md)
@@ -158,6 +184,21 @@ def main():
     if status != "定稿":
         print("  ⚠ status=%s，回推前应先定稿（sync-status.py --set 定稿）" % status)
     print("")
+    if moved or missing:
+        print("  图片搬运 : %d 张 → assets/images/%s/"
+              % (len(moved), os.path.splitext(os.path.basename(target))[0]))
+        for zh, en in moved:
+            if zh != en:
+                print("             %s → %s" % (zh, en))
+        non_ascii = [en for _, en in moved if not en.isascii()]
+        if non_ascii:
+            print("             ⚠ 文件名含非 ASCII 字符：%s" % "、".join(non_ascii))
+            print("               仓库约定用 ASCII（--asset-names 传映射，如 \"00-封面.jpg=01-cover.jpg\"）")
+        if missing:
+            print("             ✗ 源图缺失（引用仍是 images/，会 404）：%s" % "、".join(missing))
+    elif "images/" in body_md:
+        print("  ⚠ 正文引用了本地图但未加 --assets：GitHub 上 images/ 是死链，请补 --assets")
+    print("")
     print("—— README 索引条目（复制到 topstream/README.md 的「研析心得」段）——")
     print(make_readme_entry(title, target, tags))
 
@@ -171,6 +212,7 @@ def main():
         print("")
         print("✓ 已写入 %s（%d 字节）" % (out_path, len(body_md.encode("utf-8"))))
         print("  下一步：把上面的 README 条目插进 topstream/README.md；")
+        print("  （图片已按上面明细落 assets/，正文引用已改写为 ../assets/...）")
         print("  然后回本包改 frontmatter：target_file 从 pending 改为 %s" % target)
         print("  （可用：sync-status.py 之外手动改 target_file 字段，或用编辑器）")
     else:

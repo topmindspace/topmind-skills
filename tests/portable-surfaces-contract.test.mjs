@@ -20,14 +20,30 @@ async function readJson(relativePath) {
 
 function assertSurfaceContract(source, label, { desktopOptional = true, utrOptional = true } = {}) {
   assert.match(source, /topmind-workspace\/categories-and-topics/u, `${label} should name the v3.4 portable content truth`);
-  assert.match(source, /only [`"]?topmind[`"]?|only daily|Expose only `topmind`|same daily entry \(`topmind`\)/iu, `${label} should expose a single daily entry`);
-  assert.match(source, /not .*content truth|must not .*content truth|must not become topmind content truth|not .*topic state/iu, `${label} should reject host state as truth`);
+  assert.match(
+    source,
+    /only [`"]?topmind[`"]?|only daily|Expose only `topmind`|same daily entry \(`topmind`\)|日常入口只暴露 `?topmind`?/iu,
+    `${label} should expose a single daily entry`,
+  );
+  assert.match(
+    source,
+    /not .*content truth|must not .*content truth|must not become topmind content truth|not .*topic state|不得成为 topmind 内容真源|不得成为内容真源/iu,
+    `${label} should reject host state as truth`,
+  );
 
   if (desktopOptional) {
-    assert.match(source, /Desktop is not required|requires_desktop["\s:]*false|optional.*Desktop|Desktop, and MCP integrations must expose/u, `${label} should keep Desktop optional`);
+    assert.match(
+      source,
+      /Desktop is not required|requires_desktop["\s:]*false|optional.*Desktop|Desktop, and MCP integrations must expose|Desktop 可选|不要求 Desktop|Desktop 非必需/iu,
+      `${label} should keep Desktop optional`,
+    );
   }
   if (utrOptional) {
-    assert.match(source, /UTR is optional|requires_utr["\s:]*false|UTR.*optional|Use UTR.*when available|CLI\/MCP when available/iu, `${label} should keep UTR optional`);
+    assert.match(
+      source,
+      /UTR is optional|requires_utr["\s:]*false|UTR.*optional|Use UTR.*when available|CLI\/MCP when available|UTR 可选|UTR 非必需/iu,
+      `${label} should keep UTR optional`,
+    );
   }
 
   assert.doesNotMatch(source, /\/Users\/|\/home\/|~\//u, `${label} should avoid host-specific absolute paths`);

@@ -18,9 +18,9 @@
  *   list             Show what a source would install (no write)
  *
  * Source forms for `add`:
- *   topmindspace/topmind                         GitHub owner/repo (default branch)
- *   topmindspace/topmind@main                    owner/repo@ref
- *   https://github.com/topmindspace/topmind.git  git URL
+ *   topmindspace/topmind-skills                  GitHub owner/repo (default branch)
+ *   topmindspace/topmind-skills@main             owner/repo@ref
+ *   https://github.com/topmindspace/topmind-skills.git  git URL
  *   ./skills                                     local pack root or monorepo skills/
  *   release:latest | release:v4.3.0              GitHub Release zip (topmind-skills-*)
  *

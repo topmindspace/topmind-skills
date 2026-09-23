@@ -2,7 +2,7 @@
 
 可移植 AI 技能包：在 Claude Code / Codex / OpenCode / Hermes 等 Host 上使用同一套内容约定。
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
+[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
 
 ```bash
 # 社区 CLI

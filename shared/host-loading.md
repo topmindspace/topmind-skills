@@ -66,14 +66,14 @@ topmind-skills-<ver>/          ← Release zip 顶层
 
 | 工具 | 是否带 shared/ | 适用 |
 |------|----------------|------|
-| `npx skills add topmindspace/topmind -g` | **否**（仅 SKILL 目录） | 快速试用；装后需补 shared |
+| `npx skills add topmindspace/topmind-skills -g` | **否**（仅 SKILL 目录） | 快速试用；装后需补 shared |
 | `node scripts/install-skills.mjs add …` | **是**（pack-aware） | **推荐生产** |
 
 补 shared：
 
 ```bash
 # pack-aware 重装
-node scripts/install-skills.mjs add topmindspace/topmind -g
+node scripts/install-skills.mjs add topmindspace/topmind-skills -g
 
 # 或手动
 cp -R skills/shared ~/.agents/skills/shared

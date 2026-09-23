@@ -20,8 +20,17 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 IMG_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
 LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)\)")
 CONTAINER_RE = re.compile(r"^:::+\s*(\w+)?")
-
 CJK = re.compile(r"[\u4e00-\u9fff]")
+
+# 与 md2wechat.py 的 CONTAINER_KINDS 保持一致，外加 toc/sign 两个结构容器。
+# 拼错容器名会被静默降级成 note，这里显式报出来。
+KNOWN_CONTAINERS = {
+    "note", "info", "memo", "tip", "success", "ok",
+    "warn", "warning", "danger", "error",
+    "pull", "quote", "golden", "dialogue", "chat", "talk",
+    "stat", "data", "metric",
+    "toc", "目录", "导读", "sign", "signature", "签名",
+}
 HAN = r"\u4e00-\u9fff\u3400-\u4dbf"
 PANGU_A = re.compile(r"([%s])([A-Za-z0-9])" % HAN)
 PANGU_B = re.compile(r"([A-Za-z0-9])([%s])" % HAN)
@@ -142,19 +151,32 @@ def lint(path, max_para, max_item, asset_root=None):
     h1_count = 0
     cjk_missing = 0
     headings = []
+    # 视觉两层级分开统计：锚点层（**加粗**，全文 ≤5 处）与标记层
+    # （++下划线++ / <u> / ~~荧光笔~~ / ==高亮==，每段 1–3 处）。
+    # 合成一个数会掩盖「加粗掉到 0、下划线没补上」这种塌层。
+    body_paras = 0      # 正文段落数（真正的段落，不含标题/列表/引用/表格/代码）
+    marker_paras = 0    # 其中带标记层的段落数
+    anchor_count = 0    # 锚点层加粗处数
+    marker_count = 0    # 标记层处数
 
     # 「全部链接速查」这类章节是纯链接清单，条目长是天然的，不参与长度检查
     LINK_DUMP_RE = re.compile(r"(全部链接|链接速查|参考链接|参考资料|延伸阅读)")
+    # 标记层：真正承担「每段落点」的那一层
+    MARKER_RE = re.compile(r"\+\+[^+]+\+\+|~~[^~]+~~|==[^=]+==|<u>.*?</u>")
     in_link_dump = False
+    in_container = False
 
     def flush_para(end_line):
-        nonlocal para_buf, para_start
+        nonlocal para_buf, para_start, body_paras, marker_paras
         if not para_buf:
             return
         if in_link_dump:
             para_buf = []
             return
         text = " ".join(para_buf).strip()
+        body_paras += 1
+        if MARKER_RE.search(text):
+            marker_paras += 1
         length = visual_len(text)
         if length > max_para * 1.8:
             errors.append("L%d 段落过长（%d 字，约 %d 行手机屏）：%s…"
@@ -175,7 +197,29 @@ def lint(path, max_para, max_item, asset_root=None):
         if in_fence:
             continue
 
-        if CONTAINER_RE.match(stripped):
+        cm = CONTAINER_RE.match(stripped)
+        if cm:
+            flush_para(idx)
+            kind = (cm.group(1) or "").strip().lower()
+            if kind:
+                if kind not in KNOWN_CONTAINERS:
+                    warns.append("L%d 未知容器 `::: %s`（会被当成 note 渲染）："
+                                 "可用 %s"
+                                 % (idx + 1 + fm_off, kind,
+                                    "、".join(sorted(c for c in KNOWN_CONTAINERS if c.isascii()))))
+                in_container = True
+            else:
+                in_container = False
+            continue
+
+        # 容器体内的数据行（如 ::: stat 的三行）是组件内容，不是正文段落。
+        # 不排除的话 /段 的分母会虚高，覆盖率判据跟着失真。
+        if in_container:
+            total_chars += visual_len(stripped)
+            continue
+
+        # 分隔线同样不是正文段落：一份 8 条 --- 的稿子会平白多出 8 个分母
+        if re.match(r"^(-{3,}|\*{3,}|_{3,})\s*$", stripped):
             flush_para(idx)
             continue
 
@@ -202,8 +246,17 @@ def lint(path, max_para, max_item, asset_root=None):
         consecutive = 0
 
         total_chars += visual_len(stripped)
-        strong_chars += sum(len(re.findall(r"[*\u4e00-\u9fff]", s))
-                            for s in re.findall(r"\*\*([^*]+)\*\*", stripped))
+        # 强调总量 = 加粗 + 下划线 + 荧光笔 + 高亮 + <u>。
+        # 只数 **加粗** 会漏掉「标记层」——历史上正是它让加粗掉到 0 也没人发现。
+        bold = re.findall(r"\*\*([^*]+)\*\*", stripped)
+        marked = (re.findall(r"\+\+([^+]+)\+\+", stripped)
+                  + re.findall(r"~~([^~]+)~~", stripped)
+                  + re.findall(r"==([^=]+)==", stripped)
+                  + re.findall(r"<u>(.*?)</u>", stripped))
+        anchor_count += len(bold)
+        marker_count += len(marked)
+        strong_chars += sum(len(re.findall(r"[*\u4e00-\u9fffA-Za-z0-9]", s))
+                            for s in bold + marked)
 
         if PANGU_A.search(stripped) or PANGU_B.search(stripped):
             cjk_missing += 1
@@ -247,9 +300,22 @@ def lint(path, max_para, max_item, asset_root=None):
         warns.append("中英文/数字之间缺空格（盘古之白）约 %d 处，用 --fix 自动修复"
                      % cjk_missing)
 
+    # 覆盖率是主动动作，占比是被动结果：35 段里标 5 段、每段标 20 字也能凑出
+    # 10% 的占比，但整段划线等于没标。所以主判据用覆盖率。
+    cov = marker_paras / max(1, body_paras)
+    if body_paras >= 5 and cov < 0.6:
+        warns.append("标记覆盖率 %.0f%%（正文 %d 段，仅 %d 段有标记，建议 ≥60%%）："
+                     "写每段时自问「这段只让读者记住 6 个字，是哪 6 个」，"
+                     "用 ++关键词++ 标出来" % (cov * 100, body_paras, marker_paras))
+
+    # 锚点层是另一层：加粗是全文最强锚点，滥用等于没有重点
+    if anchor_count > 5:
+        warns.append("锚点层加粗 %d 处（建议 ≤5）：加粗留给产品名/核心金句/CTA，"
+                     "关键词标记请改用 ++下划线++，不要用加粗补" % anchor_count)
+
     density = strong_chars / max(1, total_chars)
     if density > 0.2:
-        warns.append("加粗占比 %.0f%%（建议 < 20%%），重点过多会被稀释" % (density * 100))
+        warns.append("强调占比 %.0f%%（建议 < 20%%），重点过多会被稀释" % (density * 100))
 
     punch = 0
     for para in re.split(r"\n\s*\n", raw):
@@ -301,7 +367,8 @@ def lint(path, max_para, max_item, asset_root=None):
     if re.search(r"\$\$.+?\$\$|\\\((?:.+?)\\\)|\\\[(?:.+?)\\\]|\\[a-zA-Z]{2,}\{", text_all):
         warns.append("疑似 LaTeX 公式，公众号不支持，需转成图片")
 
-    return errors, warns, info, total_chars, strong_chars, headings
+    return (errors, warns, info, total_chars, strong_chars, headings,
+            body_paras, marker_paras, anchor_count)
 
 
 def main():
@@ -327,7 +394,8 @@ def main():
             print("中英文间距无需修复")
         print("")
 
-    errors, warns, info, total, strong, headings = lint(
+    (errors, warns, info, total, strong, headings,
+     body_paras, marker_paras, anchor_count) = lint(
         args.input, args.max_para, args.max_item, args.asset_root or None)
 
     first_para = ""
@@ -340,8 +408,10 @@ def main():
             break
 
     print("体检：%s" % os.path.basename(args.input))
-    print("  字数 %d · 加粗占比 %.0f%% · 预计阅读 %d 分钟"
-          % (total, strong / max(1, total) * 100, max(1, round(total / 400))))
+    print("  字数 %d · 标记覆盖 %.0f%%（%d/%d 段） · 锚点加粗 %d 处 · 预计阅读 %d 分钟"
+          % (total, marker_paras / max(1, body_paras) * 100,
+             marker_paras, body_paras, anchor_count,
+             max(1, round(total / 400))))
     print("")
     if errors:
         print("错误 %d：" % len(errors))

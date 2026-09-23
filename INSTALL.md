@@ -1,6 +1,6 @@
 # Install & update topmind Skills
 
-[English](./README.md) · [简体中文](./README.zh-CN.md) · [Product](https://github.com/topmindspace/topmind)
+[简体中文](./README.md) · [English](./README.en.md) · [产品](https://github.com/topmindspace/topmind)
 
 **Model (same idea as open Agent Skills / `npx skills`):**
 

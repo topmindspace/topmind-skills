@@ -43,8 +43,14 @@ import sys
 # ---------------------------------------------------------------- theme
 
 DEFAULT_THEME = {
+    "id": "minimal-ink",
     "name": "极简黑白灰",
+    "genre": ["观点", "深度分析", "随笔"],
     "accent": "#A6524A",
+    # accent 的浅化与淡化变体：下划线与浅底高亮都必须与主色同源，
+    # 否则主题一换就会露出上一套主题的色（历史 bug：tech-blue 继承砖红 mark_bg）。
+    "accent_light": "#E3BAB3",
+    "accent_soft": "#FAF0EE",
     "text": "#333333",
     "text_strong": "#1A1A1A",
     "text_muted": "#888888",
@@ -58,14 +64,20 @@ DEFAULT_THEME = {
     "c_warn": "#C08A3E",
     "c_danger": "#B5544C",
     "mark_bg": "#FAF0EE",
+    "radius": "4px",
     "font_size": "16px",
     "line_height": "1.75",
     "para_gap": "22px",
     # 公众号只认 left / center / right，justify 会被判为非标准值
     "align": "left",
-    "h2_style": "bar",
+    "h2_style": "number",
+    "toc": True,
+    "toc_max": 5,
+    "toc_min_h2": 4,
+    "toc_min_chars": 2000,
+    "table_max_cols": 3,
+    "code_scheme": "mono",
     "img_border": "#F0F0F0",
-    "img_radius": "4px",
     "font_stack": (
         "-apple-system,BlinkMacSystemFont,'Helvetica Neue',"
         "'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif"
@@ -174,19 +186,44 @@ LANG_ALIASES = {
 }
 
 
-def highlight(code, lang):
+def build_code_scheme(theme):
+    """按主题生成代码高亮色板。
+
+    默认 mono：只用「主色 + 明暗层级」，不引入第二套色彩语言。
+    历史问题：代码块固定用 Material Palenight 的 16 色（天蓝/蓝/绿/橙/紫），
+    与砖红主题毫无关系，一篇文章里出现两套色板，读者会觉得是另一个号。
+    """
+    if theme.get("code_scheme") == "palenight":
+        return dict(HIGHLIGHT)
+    base = theme.get("code_text", "#E8E8E8")
+    bg = theme.get("code_bg", "#2C2C2C")
+    acc = mix_hex(theme.get("accent", "#A6524A"), "#FFFFFF", 0.34)
+    dim = mix_hex(base, bg, 0.46)
+    mid = mix_hex(base, bg, 0.20)
+    return {
+        "comment": dim, "meta": dim,
+        "string": mid, "number": mid,
+        "keyword": acc, "tag": acc, "del": acc,
+        "builtin": base, "func": base, "variable": base,
+        "op": mid, "key": mid, "punct": mid, "flag": mid,
+        "attr": mid, "add": mid,
+    }
+
+
+def highlight(code, lang, scheme=None):
     """Inline-span syntax highlighting (no <style>, no class)."""
     key = LANG_ALIASES.get(lang, lang)
     rules = LANG_RULES.get(key)
     if not rules:
         return html.escape(code, quote=False)
+    palette = scheme or CTX.get("hl_scheme") or HIGHLIGHT
     pattern = re.compile("|".join("(?P<%s>%s)" % (name, pat) for name, pat in rules), re.S)
     out = []
     pos = 0
     for m in pattern.finditer(code):
         if m.start() > pos:
             out.append(html.escape(code[pos:m.start()], quote=False))
-        color = HIGHLIGHT.get(m.lastgroup)
+        color = palette.get(m.lastgroup)
         text = html.escape(m.group(), quote=False)
         out.append('<span style="color:%s;">%s</span>' % (color, text) if color else text)
         pos = m.end()
@@ -194,12 +231,92 @@ def highlight(code, lang):
     return "".join(out)
 
 
-def load_theme(path):
-    theme = dict(DEFAULT_THEME)
-    if path:
-        with open(path, encoding="utf-8") as fh:
-            theme.update(json.load(fh))
+THEME_DIR = os.path.normpath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "assets", "themes"))
+
+
+def list_themes():
+    """列出 assets/themes/ 下所有可用主题（按题材分主题的清单来源）。"""
+    out = []
+    if not os.path.isdir(THEME_DIR):
+        return out
+    for fn in sorted(os.listdir(THEME_DIR)):
+        if not fn.endswith(".json"):
+            continue
+        path = os.path.join(THEME_DIR, fn)
+        try:
+            with open(path, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except Exception:
+            continue
+        out.append({
+            "file": path, "stem": fn[:-5],
+            "id": d.get("id", fn[:-5]), "name": d.get("name", fn[:-5]),
+            "genre": d.get("genre", []), "accent": d.get("accent", ""),
+            "h2_style": d.get("h2_style", ""),
+        })
+    return out
+
+
+def resolve_theme(spec):
+    """把 --theme 的值解析成主题文件路径。
+
+    支持三种写法，降低「按题材换主题」的使用门槛：
+      1. 空串            -> 用 DEFAULT_THEME（不读文件）
+      2. 主题名 / 标识   -> 在 assets/themes/ 里按 id、文件名、中文名匹配
+      3. 文件路径        -> 直接读
+    另有 "genre:题材" 语法按题材自动选主题（方案 B 的入口）。
+    """
+    if not spec:
+        return None
+    if os.path.exists(spec):
+        return spec
+    themes = list_themes()
+    if spec.startswith("genre:"):
+        want = spec.split(":", 1)[1].strip()
+        for t in themes:
+            if want in t["genre"]:
+                return t["file"]
+        raise SystemExit("没有主题声明题材「%s」。各主题题材见 references/theme-map.md" % want)
+    low = spec.strip().lower()
+    for t in themes:
+        if low in (t["id"].lower(), t["stem"].lower(), t["name"].lower()):
+            return t["file"]
+    raise SystemExit("未知主题：%s\n可用主题：%s" % (
+        spec, "、".join("%s(%s)" % (t["name"], t["id"]) for t in themes) or "（无）"))
+
+
+def load_theme(spec):
+    base = dict(DEFAULT_THEME)
+    path = resolve_theme(spec)
+    if not path:
+        return base
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    accent = data.get("accent", base["accent"])
+    # 主色派生字段必须按「本主题」的主色重算，不能继承默认主题的值：
+    # 默认主题的 accent_light / mark_bg 是砖红系，继承过来会让蓝色或灰色主题里
+    # 冒出砖红下划线和砖红高亮底——这正是 tech-blue 等主题当年从没被启用的原因。
+    data.setdefault("accent_light", mix_hex(accent, "#FFFFFF", 0.62))
+    data.setdefault("accent_soft", mix_hex(accent, "#FFFFFF", 0.92))
+    data.setdefault("mark_bg", data["accent_soft"])
+    theme = dict(base)
+    theme.update(data)
+    theme.setdefault("id", os.path.basename(path)[:-5])
     return theme
+
+
+def mix_hex(a, b, ratio):
+    """把 a 往 b 混 ratio 比例（0=全 a，1=全 b）。主题色派生用，避免手填出错。"""
+    a = a.lstrip("#")
+    b = b.lstrip("#")
+    if len(a) != 6 or len(b) != 6:
+        return "#" + a
+    out = []
+    for i in (0, 2, 4):
+        va, vb = int(a[i:i + 2], 16), int(b[i:i + 2], 16)
+        out.append("%02X" % int(round(va + (vb - va) * ratio)))
+    return "#" + "".join(out)
 
 
 # ---------------------------------------------------------------- inline
@@ -214,6 +331,7 @@ CTX = {
 
 CODE_TOKEN = "\x00C%d\x00"
 HAN = r"\u4e00-\u9fff\u3400-\u4dbf"
+HAN_RE = re.compile("[%s]" % HAN)
 PANGU_A = re.compile(r"([%s])([A-Za-z0-9])" % HAN)
 PANGU_B = re.compile(r"([A-Za-z0-9])([%s])" % HAN)
 
@@ -281,21 +399,40 @@ def render_inline(raw):
     text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link_repl, text)
 
     # badges: [!文本]
+    # 不用 display:inline-block：公众号对非常规 display 值支持不稳定，
+    # 徽章是纯行内元素，padding 足够撑开视觉。
     text = re.sub(
         r"\[!([^\]]+)\]",
-        r'<span style="display:inline-block;font-size:11px;line-height:1.5;'
-        r'color:' + theme["accent"] + r';background:' + theme["mark_bg"] + r';'
-        r'padding:1px 6px;border-radius:3px;margin:0 2px;'
-        r'vertical-align:2px;font-weight:500;">\1</span>',
+        r'<span style="font-size:11px;line-height:1.6;'
+        r'color:' + theme["accent"] + r';background:' + theme["accent_soft"] + r';'
+        r'padding:1px 6px;border-radius:2px;margin:0 2px;'
+        r'font-weight:600;">\1</span>',
         text,
     )
 
-    # ==highlight== before bold so inner markup still works
+    # ==高亮== before bold so inner markup still works
     text = re.sub(
         r"==([^=]+)==",
         r'<strong style="font-weight:600;color:' + theme["text_strong"] + r';'
-        r'background:' + theme["mark_bg"] + r';padding:1px 3px;'
+        r'background:' + theme["accent_soft"] + r';padding:1px 3px;'
         r'border-radius:2px;">\1</strong>',
+        text,
+    )
+
+    # ++下划线++ / <u>下划线</u>：标记层（正文关键词标记），出现频率最高、
+    # 权重介于加粗与高亮之间。esc() 已把 <u> 转义，故这里匹配实体。
+    underline = ('<span style="border-bottom:2px solid %s;font-weight:600;'
+                 'color:%s;">\\1</span>'
+                 % (theme["accent_light"], theme["text_strong"]))
+    text = re.sub(r"\+\+([^+]+)\+\+", underline, text)
+    text = re.sub(r"&lt;u&gt;(.+?)&lt;/u&gt;", underline, text)
+
+    # ~~荧光笔~~：半高亮。用纯色浅底，不用 linear-gradient
+    # （渐变在公众号会被静默丢弃，退化成无底）。
+    text = re.sub(
+        r"~~([^~]+)~~",
+        r'<span style="background:%s;font-weight:600;color:%s;">\1</span>'
+        % (theme["accent_soft"], theme["text_strong"]),
         text,
     )
 
@@ -324,6 +461,24 @@ CONTAINER_RE = re.compile(r"^:::+\s*(\w+)?\s*(.*)$")
 
 CN_NUM = "一二三四五六七八九十"
 
+# 标题里手写的中文/阿拉伯序号。序号应由排版层生成（可换样式、可加引用），
+# 写进标题文本后就变成了不可编程的字符串。这里统一剥离后重新编号。
+# 注意：\d{1,2}[、.．](?!\d) 带负向断言，避免把「3.4× 成本」这类
+# 以数字开头的标题误剥成「4× 成本」。
+HAND_NUM_RE = re.compile(
+    r"^(?:第\s*[" + CN_NUM + r"]{1,3}\s*[、.．]?\s*"
+    r"|[" + CN_NUM + r"]{1,3}\s*[、.．]\s*"
+    r"|\d{1,2}\s*[、.．](?!\d)\s*"
+    r"|0\d\s+)"
+)
+
+# 末章若是收束类（总结/结语/小结…），编号改用 ∞ 而不是顺延的数字——
+# 数字编号暗示「还有下一节」，收束章用数字会和读者预期打架。
+# 只在 h2_style 含 number 时生效（其它样式本来就不输出编号）。
+SUMMARY_H2_RE = re.compile(
+    r"^(?:总结|结语|小结|尾声|后记|写在最后|写在后面|收尾|结尾|余论|结语与展望)"
+)
+
 
 def split_row(line):
     return [c.strip() for c in line.strip().strip("|").split("|")]
@@ -346,80 +501,105 @@ def para_style(theme):
 
 
 def render_heading(level, text, theme, index=None):
-    t = render_inline(text)
     accent = theme["accent"]
     if level == 1:
         # 正文大标题不用 <h1>：微信对 h1 有「标题」语义映射，粘贴后字号/样式易被
         # 后台覆盖。改用 <p> + 内联样式，等价且稳（20px/700/居中）。
         return ('<p style="font-size:20px;font-weight:700;color:%s;'
                 'text-align:center;margin:0 0 18px;line-height:1.5;'
-                'letter-spacing:0.5px;">%s</p>' % (theme["text_strong"], t))
+                'letter-spacing:0.5px;">%s</p>'
+                % (theme["text_strong"], render_inline(HAND_NUM_RE.sub("", text).strip() or text)))
 
     if level == 2:
-        style = theme.get("h2_style", "bar")
-        # don't double-number headings already written as 一、/ 01
-        numbered = bool(re.match(r"^(第?[" + CN_NUM + r"]+[、.．]|\d+[、.．]|\d+\s)", text))
-        if style == "number" and index and not numbered:
-            t = ('<span style="color:%s;font-weight:700;margin-right:8px;">'
-                 '%02d</span>%s' % (accent, index, t))
-            return ('<h2 style="font-size:18px;font-weight:700;color:%s;'
-                    'margin:34px 0 16px;line-height:1.5;letter-spacing:0.5px;">%s</h2>'
-                    % (theme["text_strong"], t))
+        style = theme.get("h2_style", "number")
+        # 先剥离手写序号，再按主题样式决定是否由排版层补编号
+        plain = HAND_NUM_RE.sub("", text).strip() or text.strip()
+        t = render_inline(plain)
+        num = ""
+        if "number" in style and index:
+            # index 既可以是序号（int，渲染成 01/02），也可以是 ∞ 这类标记（str）
+            label = ("%02d" % index) if isinstance(index, int) else str(index)
+            num = ('<span style="color:%s;font-weight:700;margin-right:8px;'
+                   'font-family:%s;">%s</span>'
+                   % (accent, theme["mono_stack"], label))
+
         if style == "center":
             return ('<h2 style="font-size:18px;font-weight:700;color:%s;'
                     'text-align:center;margin:36px 0 18px;padding:12px 0;'
                     'line-height:1.5;border-top:1px solid %s;'
-                    'border-bottom:1px solid %s;letter-spacing:1px;">%s</h2>'
-                    % (theme["text_strong"], theme["border"], theme["border"], t))
+                    'border-bottom:1px solid %s;letter-spacing:1px;">%s%s</h2>'
+                    % (theme["text_strong"], theme["border"], theme["border"],
+                       num, t))
         if style == "underline":
             return ('<h2 style="font-size:18px;font-weight:700;color:%s;'
                     'margin:34px 0 16px;line-height:1.5;display:inline-block;'
-                    'border-bottom:2px solid %s;padding-bottom:4px;">%s</h2>'
-                    % (theme["text_strong"], accent, t))
+                    'border-bottom:2px solid %s;padding-bottom:4px;">%s%s</h2>'
+                    % (theme["text_strong"], accent, num, t))
+        if style == "plain":
+            return ('<h2 style="font-size:18px;font-weight:700;color:%s;'
+                    'margin:34px 0 16px;line-height:1.5;'
+                    'letter-spacing:0.5px;">%s%s</h2>'
+                    % (theme["text_strong"], num, t))
+        # number / bar：都走左竖条；number 额外带 01/02 编号
         return ('<h2 style="font-size:18px;font-weight:700;color:%s;'
                 'margin:34px 0 16px;padding-left:11px;line-height:1.5;'
-                'border-left:4px solid %s;">%s</h2>'
-                % (theme["text_strong"], accent, t))
+                'border-left:4px solid %s;">%s%s</h2>'
+                % (theme["text_strong"], accent, num, t))
 
     if level == 3:
+        t = render_inline(HAND_NUM_RE.sub("", text).strip() or text)
         return ('<h3 style="font-size:16px;font-weight:600;color:%s;'
                 'margin:26px 0 12px;line-height:1.5;">%s</h3>'
                 % (theme["text_strong"], t))
+    t = render_inline(text)
     return ('<h4 style="font-size:15px;font-weight:600;color:%s;'
             'margin:22px 0 10px;line-height:1.5;">%s</h4>' % (theme["text"], t))
 
 
 def render_code(code, lang, theme):
     body = highlight(code.rstrip("\n"), (lang or "").lower())
-    label = ('<div style="font-size:11px;color:#8A8A8A;padding:0 0 8px;'
-             'letter-spacing:1px;font-family:%s;">%s</div>'
-             % (theme["mono_stack"], esc(lang.upper())) if lang else "")
+    # 语言标签用 <section> 不用 <div>：公众号新版编辑器底层是 ProseMirror，
+    # 白名单里没有 div，div 包裹的块连同背景/内边距会被整段吞掉。
+    label = ('<section style="font-size:11px;color:%s;padding:0 0 8px;'
+             'letter-spacing:1px;font-weight:600;font-family:%s;">%s</section>'
+             % (theme["accent"], theme["mono_stack"], esc(lang.upper()))
+             if lang else "")
     # 不用 <pre>：公众号端 pre 不自动换行，窄屏会横向溢出。
-    # 改用 section + pre-wrap + break-all，长行自动折行。
-    return ('<section style="margin:0 0 %s;background:%s;border-radius:4px;'
+    # 改用 section + pre-wrap + break-all，长行自动折行；缩进与换行由代码自身
+    # 提供，HTML 源码里不在该 section 内插入任何格式化换行。
+    return ('<section style="margin:0 0 %s;background:%s;border-radius:%s;'
             'padding:16px;">%s<section style="margin:0;'
             'white-space:pre-wrap;word-break:break-all;color:%s;font-size:13.5px;'
             'line-height:1.65;font-family:%s;">%s</section></section>'
-            % (theme["para_gap"], theme["code_bg"], label,
+            % (theme["para_gap"], theme["code_bg"], theme["radius"], label,
                theme["code_text"], theme["mono_stack"], body))
 
 
 def render_quote(lines, theme):
-    inner = []
+    texts = []
     buf = []
     for line in lines:
         if not line.strip():
             if buf:
-                inner.append(render_paragraph(" ".join(buf), theme, tight=True))
+                texts.append(render_inline(" ".join(buf)))
                 buf = []
             continue
         buf.append(line.strip())
     if buf:
-        inner.append(render_paragraph(" ".join(buf), theme, tight=True))
-    return ('<blockquote style="margin:0 0 %s;padding:14px 16px;'
-            'background:%s;border-left:3px solid %s;border-radius:2px;'
-            'color:#666666;font-size:15px;line-height:1.7;">%s</blockquote>'
-            % (theme["para_gap"], theme["surface"], theme["accent"], "".join(inner)))
+        texts.append(render_inline(" ".join(buf)))
+    parts = []
+    for k, x in enumerate(texts):
+        gap = "0" if k == len(texts) - 1 else "10px"
+        parts.append('<p style="margin:0 0 %s;line-height:1.75;text-align:%s;'
+                     'word-break:break-word;">%s</p>'
+                     % (gap, theme["align"] or "left", x))
+    # 用 <section> 而非 <blockquote>：公众号对 blockquote 有原生「引用」样式，
+    # 可能覆盖我们设置的颜色与边框。section + border-left 样式完全自控。
+    return ('<section style="margin:0 0 %s;padding:14px 16px;'
+            'background:%s;border-left:3px solid %s;border-radius:%s;'
+            'color:%s;font-size:15px;">%s</section>'
+            % (theme["para_gap"], theme["surface"], theme["accent"],
+               theme["radius"], theme["text"], "".join(parts)))
 
 
 def render_paragraph(text, theme, tight=False, align=None):
@@ -495,28 +675,69 @@ def build_list(lines, theme, start=0):
 
 
 def render_table(rows, theme):
-    head, body = rows[0], rows[1:]
-    th = "".join(
-        '<th style="background:%s;border:1px solid %s;padding:10px 12px;'
+    """表格分流渲染。
+
+    列数 <= table_max_cols：保留 <table>，但不加 table-layout:fixed，
+    让列宽按内容自适应（fixed 会把各列均分，5 列在 677px 正文宽里每列仅 135px，
+    中文被压成竖条）。
+    列数更多：转卡片化，每行一张卡（首列作标题，其余「列名 + 值」成对），
+    彻底摆脱横向溢出。公众号端列数 > 4 必然溢出，这是唯一稳的解法。
+
+    另外：<thead>/<tbody>/<colgroup> 在公众号里不被支持，一律不输出。
+    """
+    cols = max(len(r) for r in rows)
+    if cols > int(theme.get("table_max_cols", 3)):
+        return render_table_cards(rows[0], rows[1:], theme)
+
+    head = rows[0]
+    hcells = "".join(
+        '<th style="background:%s;border:1px solid %s;padding:9px 10px;'
         'text-align:left;font-weight:600;color:%s;font-size:14px;'
-        'word-break:break-word;">%s</th>' % (theme["surface"], theme["border"],
-                                            theme["text_strong"], render_inline(c))
+        'line-height:1.55;word-break:break-word;">%s</th>'
+        % (theme["surface"], theme["border"], theme["text_strong"],
+           render_inline(c))
         for c in head
     )
-    trs = "".join(
+    body_rows = "".join(
         "<tr>%s</tr>" % "".join(
-            '<td style="border:1px solid %s;padding:10px 12px;color:%s;'
-            'font-size:14px;line-height:1.6;">%s</td>'
+            '<td style="border:1px solid %s;padding:9px 10px;color:%s;'
+            'font-size:14px;line-height:1.6;word-break:break-word;">%s</td>'
             % (theme["border"], theme["text"], render_inline(c))
             for c in row
         )
-        for row in body
+        for row in rows[1:]
     )
     return ('<section style="margin:0 0 %s;">'
-            '<table style="border-collapse:collapse;width:100%%;font-size:14px;'
-            'table-layout:fixed;">'
-            '<thead><tr>%s</tr></thead><tbody>%s</tbody></table></section>'
-            % (theme["para_gap"], th, trs))
+            '<table style="border-collapse:collapse;width:100%%;font-size:14px;">'
+            '<tr>%s</tr>%s</table></section>'
+            % (theme["para_gap"], hcells, body_rows))
+
+
+def render_table_cards(head, body, theme):
+    cards = []
+    for row in body:
+        if not row:
+            continue
+        title = render_inline(row[0]) if row else ""
+        metas = []
+        for k in range(1, len(row)):
+            name = head[k] if k < len(head) else ""
+            metas.append(
+                '<p style="margin:0 0 6px;line-height:1.6;">'
+                '<span style="font-size:12.5px;color:%s;">%s</span>'
+                '<span style="font-size:14px;font-weight:600;color:%s;'
+                'margin-left:8px;">%s</span></p>'
+                % (theme["text_light"], render_inline(name),
+                   theme["text_strong"], render_inline(row[k])))
+        cards.append(
+            '<section style="margin:0 0 12px;padding:13px 15px;background:%s;'
+            'border-left:3px solid %s;border-radius:%s;">'
+            '<p style="margin:0 0 9px;font-size:15px;font-weight:600;color:%s;'
+            'line-height:1.5;word-break:break-word;">%s</p>%s</section>'
+            % (theme["surface"], theme["accent"], theme["radius"],
+               theme["text_strong"], title, "".join(metas)))
+    return ('<section style="margin:0 0 %s;">%s</section>'
+            % (theme["para_gap"], "".join(cards)))
 
 
 def render_hr(theme):
@@ -526,7 +747,7 @@ def render_hr(theme):
             'background:%s;"></span></p>' % theme["accent"])
 
 
-def render_figure(src, caption, theme):
+def render_figure(src, caption, theme, alt=""):
     cap = ""
     if caption:
         cap = ('<p style="font-size:13px;color:%s;text-align:center;'
@@ -534,14 +755,17 @@ def render_figure(src, caption, theme):
                % (theme["text_light"], theme["para_gap"], render_inline(caption)))
     border = ("border:1px solid %s;" % theme["img_border"]
               if theme.get("img_border") else "")
-    # 不用 <figure>：微信对 figure 的兼容不可靠（粘贴时可能剥离包裹导致图注错位）。
-    # 改用 <section> 包「居中图片 <p> + 独立图注 <p>」，微信 100% 兼容，且避免 <p> 嵌套。
+    altattr = ' alt="%s"' % esc(alt) if alt else ""
+    # 图片一律 max-width:100%，绝不用 width:100%：正文容器约 677px，
+    # width:100% 会把 400px 的小截图强行拉满变糊，竖图更糟。
+    # max-width 让大图缩到容器宽、小图保持原尺寸并居中。
+    # 不用 <figure>：微信粘贴时可能剥离包裹导致图注错位，改 section + p。
     return ('<section style="margin:0 0 %s;">'
             '<p style="margin:0;text-align:center;">'
-            '<img src="%s" style="width:100%%;display:block;%s'
-            'border-radius:%s;margin:0 auto;"></p>%s</section>'
-            % ("9px" if caption else theme["para_gap"], src, border,
-               theme["img_radius"], cap))
+            '<img src="%s"%s style="max-width:100%%;height:auto;display:block;'
+            '%sborder-radius:%s;margin:0 auto;"></p>%s</section>'
+            % ("9px" if caption else theme["para_gap"], src, altattr, border,
+               theme["radius"], cap))
 
 
 # ---------------------------------------------------------------- containers
@@ -566,11 +790,12 @@ def render_container(kind, label, inner_lines, theme):
     text = "\n".join(inner_lines)
 
     if kind == "pull":
-        body = render_paragraph(text.strip(), theme, align="center")
+        # 金句块用 <section> 不用 <div>（div 会被公众号整段吞掉）
         return ('<section style="margin:28px 0;padding:18px 10px;'
                 'border-top:1px solid %s;border-bottom:1px solid %s;">'
-                '<div style="font-size:17px;line-height:1.85;color:%s;'
-                'font-weight:600;letter-spacing:0.5px;">%s</div></section>'
+                '<p style="margin:0;font-size:17px;line-height:1.85;color:%s;'
+                'text-align:center;font-weight:600;letter-spacing:0.5px;'
+                'word-break:break-word;">%s</p></section>'
                 % (theme["border"], theme["border"], theme["text_strong"],
                    render_inline(text.strip())))
 
@@ -585,15 +810,16 @@ def render_container(kind, label, inner_lines, theme):
                 rows.append(
                     '<p style="margin:0 0 6px;font-size:13px;color:%s;">%s</p>'
                     '<p style="margin:0 0 14px;padding:11px 14px;background:%s;'
-                    'border-radius:8px;font-size:15px;line-height:1.72;'
+                    'border-radius:%s;font-size:15px;line-height:1.72;'
                     'color:%s;">%s</p>'
                     % (theme["text_light"], render_inline(name),
-                       theme["surface"], theme["text"], render_inline(say)))
+                       theme["surface"], theme["radius"], theme["text"],
+                       render_inline(say)))
             else:
                 rows.append('<p style="margin:0 0 14px;padding:11px 14px;'
-                            'background:%s;border-radius:8px;font-size:15px;'
+                            'background:%s;border-radius:%s;font-size:15px;'
                             'line-height:1.72;color:%s;">%s</p>'
-                            % (theme["surface"], theme["text"],
+                            % (theme["surface"], theme["radius"], theme["text"],
                                render_inline(line.strip())))
         return '<section style="margin:0 0 %s;">%s</section>' % (
             theme["para_gap"], "".join(rows))
@@ -612,15 +838,17 @@ def render_container(kind, label, inner_lines, theme):
                 % (theme["accent"], esc(value.strip()),
                    theme["text_light"], esc(desc.strip())))
         return '<section style="margin:0 0 %s;padding:16px 18px;' \
-               'background:%s;border-radius:6px;">%s</section>' % (
-                   theme["para_gap"], theme["surface"], "".join(rows))
+               'background:%s;border-radius:%s;">%s</section>' % (
+                   theme["para_gap"], theme["surface"], theme["radius"],
+                   "".join(rows))
 
     color = {"note": theme["c_note"], "tip": theme["c_tip"],
              "warn": theme["c_warn"], "danger": theme["c_danger"]}[kind]
     label_html = ""
     if label:
-        label_html = ('<div style="font-size:12px;font-weight:600;color:%s;'
-                      'letter-spacing:1px;margin-bottom:6px;">%s</div>'
+        # 标签用 <section> 不用 <div>
+        label_html = ('<section style="font-size:12px;font-weight:600;color:%s;'
+                      'letter-spacing:1px;margin-bottom:6px;">%s</section>'
                       % (color, esc(label)))
     body = []
     buf = []
@@ -634,8 +862,9 @@ def render_container(kind, label, inner_lines, theme):
     if buf:
         body.append(render_paragraph(" ".join(buf), theme, tight=True))
     return ('<section style="margin:0 0 %s;padding:14px 16px;background:%s;'
-            'border-left:3px solid %s;border-radius:2px;">%s%s</section>'
-            % (theme["para_gap"], theme["surface"], color, label_html, "".join(body)))
+            'border-left:3px solid %s;border-radius:%s;">%s%s</section>'
+            % (theme["para_gap"], theme["surface"], color, theme["radius"],
+               label_html, "".join(body)))
 
 
 # ---------------------------------------------------------------- images
@@ -695,9 +924,10 @@ def handle_mermaid(code, out_dir, diagrams, theme, render):
     note = ("［此处为流程图 %02d，公众号不支持 mermaid。请渲染 diagrams/%s 为图片后手动插入］"
             % (idx, os.path.basename(mmd)))
     return ('<section style="margin:0 0 %s;padding:14px 16px;'
-            'background:%s;border-left:3px solid %s;color:#777;'
-            'font-size:14px;line-height:1.7;border-radius:2px;">%s</section>'
-            % (theme["para_gap"], theme["surface"], theme["accent"], esc(note)))
+            'background:%s;border-left:3px solid %s;color:%s;'
+            'font-size:14px;line-height:1.7;border-radius:%s;">%s</section>'
+            % (theme["para_gap"], theme["surface"], theme["accent"],
+               theme["text_muted"], theme["radius"], esc(note)))
 
 
 # ---------------------------------------------------------------- parser
@@ -715,6 +945,14 @@ def convert_blocks(lines, md_path, out_dir, theme, ctx):
     i = 0
     n = len(lines)
     h2_index = 0
+    h2_titles = []
+    toc_at = None  # 导读落点：首个正文段落之后
+
+    # 预扫描：末章是否为收束类，决定它的编号用数字还是 ∞
+    h2_texts = [HAND_NUM_RE.sub("", l.strip()[3:]).strip() or l.strip()[3:].strip()
+                for l in lines if l.strip().startswith("## ")]
+    h2_total = len(h2_texts)
+    last_is_summary = bool(h2_total) and bool(SUMMARY_H2_RE.match(h2_texts[-1]))
 
     while i < n:
         line = lines[i]
@@ -749,9 +987,14 @@ def convert_blocks(lines, md_path, out_dir, theme, ctx):
         m = HEADING_RE.match(stripped)
         if m:
             level = len(m.group(1))
+            marker = h2_index
             if level == 2:
                 h2_index += 1
-            out.append(render_heading(level, m.group(2).strip(), theme, h2_index))
+                h2_titles.append(HAND_NUM_RE.sub("", m.group(2)).strip()
+                                 or m.group(2).strip())
+                marker = ("∞" if (last_is_summary and h2_index == h2_total)
+                          else h2_index)
+            out.append(render_heading(level, m.group(2).strip(), theme, marker))
             i += 1
             continue
 
@@ -764,6 +1007,14 @@ def convert_blocks(lines, md_path, out_dir, theme, ctx):
             while i < n and not lines[i].strip().startswith(":::"):
                 buf.append(lines[i])
                 i += 1
+            if kind in ("toc", "目录", "导读"):
+                out.append(TOC_TOKEN)
+                i += 1
+                continue
+            if kind in ("sign", "signature", "签名"):
+                out.append(SIGN_TOKEN)
+                i += 1
+                continue
             i += 1
             out.append(render_container(kind, label or DEFAULT_LABELS.get(
                 CONTAINER_KINDS.get(kind, "note"), ""), buf, theme))
@@ -801,7 +1052,7 @@ def convert_blocks(lines, md_path, out_dir, theme, ctx):
                     i += 1
             src = resolve_image(m.group(2), md_path, out_dir,
                                 ctx["assets"], ctx["asset_root"])
-            out.append(render_figure(src, caption, theme))
+            out.append(render_figure(src, caption, theme, alt=m.group(1)))
             i += 1
             continue
 
@@ -817,20 +1068,50 @@ def convert_blocks(lines, md_path, out_dir, theme, ctx):
             buf.append(cur)
             i += 1
         out.append(render_paragraph(" ".join(buf), theme))
+        if toc_at is None:
+            toc_at = len(out)
 
-    return "".join(out)
+    # 自动导读：显式 ::: toc 优先。触发条件是「章节够多」或「正文够长」任一成立——
+    # 只按字数会漏掉「1152 字 / 6 节」这类章节密集的短稿，只按章节数会漏掉
+    # 「3 节 / 3000 字」这类长段落稿。
+    if not any(x == TOC_TOKEN for x in out) and ctx.get("toc"):
+        n_h2 = len(h2_titles)
+        n_han = ctx.get("han_chars", 0)
+        by_h2 = n_h2 >= int(theme.get("toc_min_h2", 4))
+        by_len = n_h2 >= 3 and n_han >= int(theme.get("toc_min_chars", 2000))
+        if by_h2 or by_len:
+            out.insert(toc_at if toc_at is not None else 0, TOC_TOKEN)
+
+    html = "".join(out)
+    html = html.replace(TOC_TOKEN, render_toc(h2_titles, theme))
+    return html
 
 
 def convert(md_text, md_path, out_dir, theme, link_mode="footnote",
-            render_mermaid=False, asset_root=None, use_pangu=True):
+            render_mermaid=False, asset_root=None, use_pangu=True,
+            toc=True, sign_mode="auto", author="", author_bio=""):
+    lines = strip_frontmatter(md_text.split("\n"))
+    han_chars = sum(len(HAN_RE.findall(l)) for l in lines)
     ctx = {"assets": [], "diagrams": [], "footnotes": [],
-           "render_mermaid": render_mermaid, "asset_root": asset_root}
+           "render_mermaid": render_mermaid, "asset_root": asset_root,
+           "toc": bool(toc), "han_chars": han_chars,
+           "sign_mode": sign_mode, "author": author, "author_bio": author_bio}
     CTX["theme"] = theme
     CTX["link_mode"] = link_mode
     CTX["footnotes"] = ctx["footnotes"]
     CTX["use_pangu"] = use_pangu
-    lines = strip_frontmatter(md_text.split("\n"))
+    CTX["hl_scheme"] = build_code_scheme(theme)
+
     body = convert_blocks(lines, md_path, out_dir, theme, ctx)
+
+    # 尾部签名区。auto：稿件末尾已自带签名/CTA 就不重复生成（避免出现两处签名）。
+    sign_html = render_signature(theme, author, author_bio)
+    if SIGN_TOKEN in body:
+        body = body.replace(SIGN_TOKEN, sign_html)
+    elif sign_mode == "on":
+        body += sign_html
+    elif sign_mode == "auto" and not md_tail_has_signature(lines):
+        body += sign_html
 
     if link_mode == "footnote" and ctx["footnotes"]:
         body += render_footnotes(ctx["footnotes"], theme)
@@ -844,11 +1125,85 @@ def render_footnotes(footnotes, theme):
         % (theme["text_muted"], idx, esc(f["label"]), esc(f["url"]))
         for idx, f in enumerate(footnotes, 1)
     )
+    # 标题用 <section> 不用 <div>
     return ('<section style="margin:34px 0 %s;padding:16px 18px;'
-            'background:%s;border-radius:6px;">'
-            '<div style="font-size:13px;font-weight:600;color:%s;'
-            'letter-spacing:1px;margin-bottom:10px;">参考链接</div>%s</section>'
-            % (theme["para_gap"], theme["surface"], theme["text_strong"], items))
+            'background:%s;border-radius:%s;">'
+            '<section style="font-size:13px;font-weight:600;color:%s;'
+            'letter-spacing:1px;margin-bottom:10px;">参考链接</section>%s</section>'
+            % (theme["para_gap"], theme["surface"], theme["radius"],
+               theme["text_strong"], items))
+
+
+# ---------------------------------------------------------------- toc / signature
+
+SIGN_RE = re.compile(
+    r"点赞|在看|三连|点个关注|欢迎关注|关注「|扫码|分享给|我是[^。，,]{0,20}[，,]")
+
+# 流式解析时还不知道全文有哪些 H2，先用占位符标记落点，收尾时统一替换
+TOC_TOKEN = "\x01TOC\x01"
+SIGN_TOKEN = "\x01SIGN\x01"
+
+
+def md_tail_has_signature(lines, window=8):
+    """稿件末尾是否已自带签名/CTA。自带则不再追加，避免出现两处签名区。"""
+    tail = [l.strip() for l in lines if l.strip()][-window:]
+    return any(SIGN_RE.search(l) for l in tail)
+
+
+def render_toc(titles, theme):
+    """前言导读。展示精选看点而非全量目录：超出 toc_max 时截断并注明总节数，
+    不假装全文只有这几节。"""
+    if not titles:
+        return ""
+    cap = int(theme.get("toc_max", 5))
+    shown = titles[:cap]
+    # 导读的标记必须跟正文标题一致：
+    #  - 标题带编号（h2_style 含 number）→ 导读也用编号；末章收束类用 ∞，避免「导读 04 / 正文 ∞」
+    #  - 标题不带编号（center/underline/plain）→ 导读只用中性圆点，不要凭空造出 01/02
+    numbered = "number" in theme.get("h2_style", "number")
+    last_summary = bool(titles) and bool(SUMMARY_H2_RE.match(titles[-1]))
+
+    def label(k):
+        if not numbered:
+            return "·"
+        return "∞" if (last_summary and k == len(titles)) else "%02d" % k
+
+    rows = "".join(
+        '<p style="margin:0 0 7px;font-size:14px;line-height:1.6;color:%s;'
+        'word-break:break-word;">'
+        '<span style="color:%s;font-weight:700;margin-right:8px;'
+        'font-family:%s;">%s</span>%s</p>'
+        % (theme["text"], theme["accent"], theme["mono_stack"], label(k),
+           render_inline(t))
+        for k, t in enumerate(shown, 1))
+    more = ""
+    if len(titles) > len(shown):
+        more = ('<p style="margin:9px 0 0;font-size:12.5px;color:%s;">'
+                '……共 %d 节</p>' % (theme["text_light"], len(titles)))
+    return ('<section style="margin:0 0 26px;padding:15px 17px;background:%s;'
+            'border-left:3px solid %s;border-radius:%s;">'
+            '<p style="margin:0 0 10px;font-size:12.5px;font-weight:600;'
+            'color:%s;letter-spacing:1px;">本文看点</p>%s%s</section>'
+            % (theme["surface"], theme["accent"], theme["radius"],
+               theme["accent"], rows, more))
+
+
+def render_signature(theme, author="", bio=""):
+    """尾部签名区。默认用占位署名，交付时提示用户替换，不替用户编造人名。"""
+    name = esc(author.strip() or "{{作者名}}")
+    blurb = esc(bio.strip() or "{{一句话简介}}")
+    return ('<section style="margin:34px 0 0;padding:16px 18px;background:%s;'
+            'border-top:2px solid %s;border-radius:%s;">'
+            '<p style="margin:0 0 8px;font-size:14px;line-height:1.75;'
+            'color:%s;word-break:break-word;">我是 <span style="font-weight:600;'
+            'color:%s;">%s</span>，%s</p>'
+            '<p style="margin:0;font-size:14px;line-height:1.75;color:%s;'
+            'word-break:break-word;">如果你觉得今天这篇有收获，欢迎'
+            '<span style="font-weight:600;color:%s;">点赞、在看、转发</span>'
+            '三连，我们下篇见。</p></section>'
+            % (theme["surface"], theme["accent"], theme["radius"],
+               theme["text"], theme["text_strong"], name, blurb,
+               theme["text"], theme["accent"]))
 
 
 # ---------------------------------------------------------------- embed
@@ -970,55 +1325,92 @@ def build_notice(embedded, n_images):
 
 
 def audit_inline(body):
-    """正文内联样式的平台合规自检。
+    """正文的平台合规自检，返回 [(级别, 说明)]，空列表即通过。
 
-    对应公众号格式检测会告警的问题：对齐非标准值、px 固定宽度、
-    pre 标签不换行、flex/grid/float/position 等公众号会吞掉的布局属性，
-    以及 <h1>/<figure> 等微信兼容不稳定的标签。
-    返回去重后的告警列表，空列表即通过。
+    级别含义：
+      ERROR —— 公众号会静默丢弃该样式或整段吞掉该标签，产物必然与预览不一致
+      WARN  —— 转换后仍可读，但存在降级风险或移动端体验问题
+
+    红线依据见 references/wechat-constraints.md，本函数是该文档的可执行版本。
     """
     issues = []
 
-    # 标签级：微信对 h1（标题语义映射）/ figure（图片包裹）/ pre（不换行）兼容不稳
-    if "<h1" in body:
-        issues.append("使用了 <h1> 标签（微信会按标题语义覆盖样式，正文标题应用 <p>）")
-    if "<figure" in body:
-        issues.append("使用了 <figure> 标签（微信粘贴可能剥离包裹，图片用 <section>+<p>）")
-    if "<pre" in body:
-        issues.append("使用了 <pre> 标签（移动端不换行，会横向溢出）")
+    def add(level, msg):
+        issues.append((level, msg))
 
-    # 属性级：公众号会吞掉或导致排错的布局属性
-    BLOCKLIST = {
-        "display": ("flex", "grid"),
-        "float": (),
-        "position": (),
-        "flex": (),
-        "grid": (),
-    }
+    # ---- 标签级：会被剥离或不被支持
+    TAGS = [
+        ("<div", "ERROR", "<div> 标签（新版编辑器白名单无 div，包裹的块连同背景/内边距会被整段吞掉，是「粘贴后样式全丢」的头号元凶。改 <section>）"),
+        ("<figure", "ERROR", "<figure> 标签（粘贴时可能剥离包裹导致图注错位。用 <section>+<p>）"),
+        ("<figcaption", "ERROR", "<figcaption> 标签（同上，图注改用独立 <p>）"),
+        ("<pre", "ERROR", "<pre> 标签（公众号端不自动换行，窄屏横向溢出。用 <section>+pre-wrap）"),
+        ("<thead", "ERROR", "<thead> 不被支持（去掉分组标签，表头行直接作为首个 <tr>）"),
+        ("<tbody", "ERROR", "<tbody> 不被支持（同上）"),
+        ("<colgroup", "ERROR", "<colgroup> 不被支持"),
+        ("<h1", "ERROR", "<h1> 标签（微信按标题语义覆盖字号，正文大标题用 <p> + 内联样式）"),
+        ("<iframe", "ERROR", "<iframe> 会被剥离（视频只能用公众号自带组件）"),
+        ("<video", "ERROR", "<video> 会被剥离"),
+        ("<script", "ERROR", "<script> 会被剥离"),
+        ("<style", "ERROR", "<style> 会被剥离，样式必须内联"),
+    ]
+    for tag, lv, msg in TAGS:
+        if tag in body:
+            add(lv, msg)
+
+    # ---- 属性/值级
     for m in re.finditer(r'style="([^"]*)"', body):
-        for decl in m.group(1).split(";"):
-            decl = decl.strip()
-            if not decl:
-                continue
+        decls = [d.strip() for d in m.group(1).split(";") if d.strip()]
+        for decl in decls:
             prop, _, val = decl.partition(":")
-            prop, val = prop.strip(), val.strip()
+            prop, val = prop.strip().lower(), val.strip()
+            low = val.lower()
             if prop == "text-align" and val not in ("left", "center", "right"):
-                issues.append("text-align:%s 非标准值（改 left/center/right）" % val)
-            elif re.fullmatch(r"(max-|min-)?width", prop) and "px" in val:
-                issues.append("%s:%s 固定像素宽度（改百分比）" % (prop, val))
-            elif prop == "white-space" and val in ("pre", "nowrap"):
-                issues.append("white-space:%s 不换行（窄屏溢出）" % val)
-            elif prop in BLOCKLIST:
-                bad = BLOCKLIST[prop]
-                if not bad or any(b in val for b in bad):
-                    issues.append("%s:%s 布局属性（公众号可能吞掉或排错）" % (prop, val))
+                add("ERROR", "text-align:%s 非标准值（只允许 left/center/right）" % val)
+            elif prop in ("width", "max-width", "min-width") and "px" in low:
+                add("ERROR", "%s:%s 固定像素宽度（不同屏宽下表现不一致，改百分比）" % (prop, val))
+            elif prop == "white-space" and low in ("pre", "nowrap"):
+                add("ERROR", "white-space:%s 不换行（窄屏溢出；折行用 pre-wrap）" % val)
+            elif prop in ("position", "float", "transform", "opacity"):
+                add("ERROR", "%s:%s 定位/透明属性（公众号会吞掉，元素错位）" % (prop, val))
+            elif prop == "display" and low in ("flex", "grid"):
+                add("ERROR", "display:%s（布局属性被吞，内容堆叠。用 <section>+padding 模拟）" % val)
             elif prop.startswith("-"):
-                issues.append("%s 私有属性（公众号可能不支持）" % prop)
-    seen, out = set(), []
-    for item in issues:
-        if item not in seen:
-            seen.add(item)
-            out.append(item)
+                add("ERROR", "%s 私有属性（公众号不支持）" % prop)
+            elif prop == "table-layout" and low == "fixed":
+                add("WARN", "table-layout:fixed（各列宽度均分，小屏下中文被压成竖条；除非逐列显式设宽，否则去掉）")
+            elif prop == "display" and low == "inline-block":
+                add("WARN", "display:inline-block（非常规 display 值，公众号支持不稳定）")
+            elif prop == "border-radius":
+                add("WARN", "border-radius（圆角可能被丢弃，降级为直角；属可接受的优雅降级，勿依赖圆角做视觉区分）")
+
+    for pat, lv, msg in [
+        (r"linear-gradient", "ERROR", "linear-gradient（渐变被静默丢弃，退化成无背景。改纯色）"),
+        (r"box-shadow", "ERROR", "box-shadow（阴影被丢弃）"),
+        (r"rgba\(|hsla\(", "ERROR", "rgba()/hsla() 颜色（透明度不被支持，改纯色十六进制）"),
+        (r"var\(--", "ERROR", "CSS 变量（不支持，值必须写死）"),
+        (r"@media|@keyframes", "ERROR", "@media/@keyframes（媒体查询与动画不被支持）"),
+        (r"\sclass=", "ERROR", "class 属性（公众号会剥离，样式必须内联）"),
+        (r"\sid=", "WARN", "id 属性（正文里无意义，可能被剥离）"),
+        (r"<img[^>]*width=\"", "WARN", "<img> 上的 width 属性（公众号不保证保留，宽度用内联 style）"),
+    ]:
+        if re.search(pat, body, re.I):
+            add(lv, msg)
+
+    # ---- 图片宽度：小图被拉伸是高频问题
+    for m in re.finditer(r'<img[^>]*style="([^"]*)"', body):
+        st = m.group(1)
+        if re.search(r"(?<!max-)(?<!min-)\bwidth:\s*100%", st) and "max-width" not in st:
+            add("WARN", "图片用 width:100%（小图会被强行拉满变糊，改 max-width:100%;height:auto）")
+            break
+
+    # 去重（保留首次出现的级别）
+    seen, out = {}, []
+    for lv, msg in issues:
+        if msg not in seen:
+            seen[msg] = lv
+            out.append((lv, msg))
+    # ERROR 在前
+    out.sort(key=lambda x: 0 if x[0] == "ERROR" else 1)
     return out
 
 
@@ -1075,8 +1467,10 @@ def write_manifest(out_dir, slug, title, assets, diagrams, theme, footnotes,
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append("主题：%s · 点缀色 `%s` · 标题样式 `%s`"
-                 % (theme["name"], theme["accent"], theme.get("h2_style", "bar")))
+    lines.append("主题：%s · 点缀色 `%s` · 标题样式 `%s` · 代码色板 `%s`"
+                 % (theme["name"], theme["accent"],
+                    theme.get("h2_style", "number"),
+                    theme.get("code_scheme", "mono")))
     path = os.path.join(out_dir, "图片上传清单.md")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines))
@@ -1087,11 +1481,16 @@ def write_manifest(out_dir, slug, title, assets, diagrams, theme, footnotes,
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--input", required=True)
-    ap.add_argument("--out-dir", required=True)
-    ap.add_argument("--slug", required=True)
+    # 不设 required=True：--list-themes 需要能在不带输入文件时单独运行。
+    # 必填校验放在下面手动做。
+    ap.add_argument("--input", default="")
+    ap.add_argument("--out-dir", default="")
+    ap.add_argument("--slug", default="")
     ap.add_argument("--title", default="")
-    ap.add_argument("--theme", default="")
+    ap.add_argument("--theme", default="",
+                    help="主题：可传标识（tech-blue）、中文名（科技蓝）、JSON 路径，"
+                         "或 genre:题材 按题材自动选（如 genre:评测）。留空用默认主题")
+    ap.add_argument("--list-themes", action="store_true", help="列出所有可用主题后退出")
     ap.add_argument("--link-mode", default="footnote",
                     choices=["footnote", "note", "inline"])
     ap.add_argument("--asset-root", default="",
@@ -1100,7 +1499,24 @@ def main():
     ap.add_argument("--render-mermaid", action="store_true")
     ap.add_argument("--embed-images", action="store_true",
                     help="把正文图片转成 base64 内嵌，粘贴到公众号时带图（推荐）")
+    ap.add_argument("--no-toc", action="store_true",
+                    help="不自动插入前言导读（默认 H2 >=4 个，或 H2 >=3 且正文 >=2000 中文字时插入）")
+    ap.add_argument("--signature", default="auto", choices=["auto", "on", "off"],
+                    help="尾部签名区：auto=稿件末尾已有签名则不重复生成（默认）")
+    ap.add_argument("--author", default="", help="签名区署名；留空写 {{作者名}} 占位")
+    ap.add_argument("--author-bio", default="", help="签名区一句话简介")
     args = ap.parse_args()
+
+    if args.list_themes:
+        for t in list_themes():
+            print("%-14s %-10s %-9s %s" % (t["id"], t["name"], t["accent"],
+                                           "、".join(t["genre"]) or "（未声明题材）"))
+        return
+
+    missing = [n for n, v in (("--input", args.input), ("--out-dir", args.out_dir),
+                              ("--slug", args.slug)) if not v]
+    if missing:
+        sys.exit("缺少必填参数：%s" % "、".join(missing))
 
     theme = load_theme(args.theme)
     with open(args.input, encoding="utf-8") as fh:
@@ -1111,6 +1527,8 @@ def main():
         md_text, os.path.abspath(args.input), args.out_dir, theme,
         args.link_mode, args.render_mermaid, args.asset_root or None,
         not args.no_pangu,
+        toc=not args.no_toc, sign_mode=args.signature,
+        author=args.author, author_bio=args.author_bio,
     )
 
     title = args.title
@@ -1148,12 +1566,19 @@ def main():
     plain = re.sub(r"<[^>]+>", "", body)
     print("HTML     : %s" % html_path)
     audit = audit_inline(body)
-    if audit:
-        print("合规自检 : ✗ %d 项告警（公众号格式检测会报）" % len(audit))
-        for item in audit[:10]:
-            print("   - %s" % item)
+    errors = [m for lv, m in audit if lv == "ERROR"]
+    warns = [m for lv, m in audit if lv == "WARN"]
+    if errors or warns:
+        print("合规自检 : %s（ERROR %d / WARN %d）"
+              % ("✗ 未通过" if errors else "△ 通过但有提示", len(errors), len(warns)))
+        for m in errors:
+            print("   [ERROR] %s" % m)
+        for m in warns[:8]:
+            print("   [WARN ] %s" % m)
+        if len(warns) > 8:
+            print("   …… 另有 %d 条 WARN" % (len(warns) - 8))
     else:
-        print("合规自检 : ✓ 无告警（对齐/宽度/代码块）")
+        print("合规自检 : ✓ 无告警（标签/属性/宽度/对齐 全部通过）")
     print("清单     : %s" % manifest)
     if embed_stats:
         print("图片内嵌 : ✓ %d 张 / %.0f KB（base64 后约 %.1f MB）"
@@ -1161,7 +1586,9 @@ def main():
                  embed_stats["bytes"] * 4 / 3 / 1024 / 1024))
         if embed_stats["skipped"]:
             print("           未内嵌：%s" % "、".join(embed_stats["skipped"]))
-    print("主题     : %s / 标题样式 %s" % (theme["name"], theme.get("h2_style", "bar")))
+    print("主题     : %s（%s） / 标题样式 %s / 代码色板 %s"
+          % (theme["name"], theme.get("id", "-"), theme.get("h2_style", "number"),
+             theme.get("code_scheme", "mono")))
     print("图片     : %d 张（%d 远程）" % (len(assets), sum(1 for a in assets if a.get("remote"))))
     print("图表     : %d 个 mermaid" % len(diagrams))
     print("脚注     : %d 条" % len(footnotes))

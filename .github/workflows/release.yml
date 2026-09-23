@@ -125,3 +125,24 @@ jobs:
             fs.writeFileSync("latest.json", JSON.stringify(latest, null, 2) + "\n");
           '
           gh release upload "$TAG" latest.json --clobber
+
+      # Product policy: keep only the newest 2 GitHub Releases.
+      - name: Prune old releases (keep 2)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEEP=2
+          mapfile -t IDS < <(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
+            --jq '[.[] | {id, tag: .tag_name, at: (.published_at // .created_at)}] | sort_by(.at) | reverse | .[].id')
+          echo "total releases: ${#IDS[@]} keep=${KEEP}"
+          if (( ${#IDS[@]} <= KEEP )); then
+            echo "nothing to prune"
+            exit 0
+          fi
+          for id in "${IDS[@]:$KEEP}"; do
+            echo "deleting release id=${id}"
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${id}" || true
+          done

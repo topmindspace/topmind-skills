@@ -1,52 +1,52 @@
 # topmind Skills
 
-Portable AI skill pack: the same content contract on Claude Code / Codex / OpenCode / Hermes and other hosts.
+可移植 AI 技能包：在 Claude Code / Codex / OpenCode / Hermes 等 Host 上使用同一套内容约定。
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [Publish to skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
+[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
 
 ```bash
-# Community CLI
+# 社区 CLI
 npx skills add topmindspace/topmind-skills -g -y
 
-# Pack-aware installer (includes shared/)
+# Pack-aware 安装器（含 shared/）
 npm run install -- add topmindspace/topmind-skills -g
 npm run update -- --dest $HOME/.claude/skills
 ```
 
-**Version and manifest truth:** [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`).  
-Each `SKILL.md` `version` **must** equal the pack version.
+**版本与清单真源：** [`topmind-pack.json`](./topmind-pack.json)（`npm run versions`）。  
+各 `SKILL.md` 的 `version` **必须**等于 pack 版本。
 
 ---
 
-## Layout
+## 结构
 
 ```text
-topmind-skills/              # pack root = repo root
-├── topmind/                 # only daily entry (router)
+topmind-skills/              # pack 根 = 仓库根
+├── topmind/                 # 唯一日常入口（router）
 ├── topmind-capture|organize|write|memory|maintain|loop/
-├── topmind-weread|x/        # optional connectors
-├── topmind-ledger/          # optional bookkeeping (memory-plane ledgers)
-├── topmind-wechat/          # optional WeChat write sub-skill (not a peer entry)
-├── shared/                  # write receipts · degradation · capture …
-├── install-targets/         # host install shapes
+├── topmind-weread|x/        # 可选连接器
+├── topmind-ledger/          # 可选记账（记忆平面账本）
+├── topmind-wechat/          # 可选公众号 write 子技能（不是并列入口）
+├── shared/                  # 写回回执 · 降级 · 捕获 …
+├── install-targets/         # Host 安装形状
 ├── evals/evals.json
-├── bin/install-skills.mjs   # pack-aware installer (shared/ aware)
+├── bin/install-skills.mjs   # pack-aware 安装器（含 shared/）
 ├── scripts/build-pack.mjs
-└── topmind-pack.json        # version truth
+└── topmind-pack.json        # 版本真源
 ```
 
-| Kind | Modules |
-|------|---------|
-| **Entry** | `topmind` only |
-| **Actions** | capture · organize · write · memory · maintain · loop |
-| **Connectors** | weread · x (optional) |
-| **Optional** | wechat (公众号 write 子技能) · ledger (记账 · memory-plane books) |
+| 类型 | 模块 |
+|------|------|
+| **入口** | `topmind` only |
+| **动作** | capture · organize · write · memory · maintain · loop |
+| **连接器** | weread · x（可选） |
+| **可选** | wechat（公众号 write 子技能）· ledger（记账 · 记忆平面账本） |
 
-> Sub-skill trigger words exist for host routing. They are **not** a second product front door.
+> 子 skill 触发词只服务 Host 路由，**不是**第二前台入口。
 
 ---
 
-## Product contract
+## 产品契约
 
 ```text
 User experience:     capture-first
@@ -57,11 +57,11 @@ Save settings:       auto | confirm
 Safety model:        reversible by default
 ```
 
-Expose only `topmind` as the daily entry. Host session state must not become topmind content truth.  
-**Desktop is not required** for this pack. **UTR is optional** — use host file tools when UTR is absent.
+日常入口只暴露 `topmind`。Host 会话状态不得成为 topmind 内容真源。  
+本 pack **不要求 Desktop**。**UTR 可选** — 没有 UTR 时用 Host 文件工具。
 
-Workflow: `收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
-(If the user says “capture this”, “note it”, “organize”, “write it up”, or “run a loop”, the router infers category / topic / action.)
+工作流：`收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
+（用户说「收一下」「记一下」「整理」「写成稿」「跑一遍 loop」— router 推断类别 / 专题 / 动作。）
 
 ---
 
@@ -83,24 +83,24 @@ degradation: ../shared/capability-degradation.md
 ---
 ```
 
-Enforced by `skills/tests/package-manifest.test.mjs`. One pack JSON; no per-skill second manifest. Full schema: [`../SKILL-ARCHITECTURE.md`](../SKILL-ARCHITECTURE.md).
+由 `skills/tests/package-manifest.test.mjs` 强制校验。一个 pack JSON，无 per-skill 第二清单。完整 schema：[`../SKILL-ARCHITECTURE.md`](../SKILL-ARCHITECTURE.md)。
 
 ---
 
-## Workspace contract
+## 工作区契约
 
 ```text
 {workspace-root}/
 ├── topmind.yaml                # contract v4
-├── memory/                     # profile.md · periodic/ · topics/ · todo.md · optional ledgers/
+├── memory/                     # profile.md · periodic/ · topics/ · todo.md · 可选 ledgers/
 ├── .topmind/                   # rebuildable machine state
 ├── 00-Inbox/                   # role: buffer (live dir name)
-├── 10-Stream/ …                # categories (template-driven)
-├── 88-Delivery/ or 88-交付/     # role: delivery
-└── 99-Archive/ or 99-归档/     # role: system
+├── 10-动态/ …                  # categories (template-driven)
+├── 88-交付/ or 88-Delivery/     # role: delivery
+└── 99-归档/ or 99-Archive/     # role: system
 ```
 
-Topic:
+专题：
 
 ```text
 {category}/{YYYY-theme}/
@@ -109,13 +109,13 @@ Topic:
 └── images/                  # optional
 ```
 
-Loose note: `{category}/{note}.md` when no topic yet.
+尚无专题时，散篇放在 `{category}/{note}.md`。
 
-**Do not create (deprecated):** default `outline.md` / `setting.md` / `style.md`; `project_type` frontmatter; nested topic `notes/` or `outputs/`; top-level `projects/`; `YYYY-类型-项目名` naming.
+**不要创建（已废弃）：** 默认 `outline.md` / `setting.md` / `style.md`；`project_type` frontmatter；专题内嵌套 `notes/` 或 `outputs/`；顶层 `projects/`；`YYYY-类型-项目名` 命名。
 
-**Categories:** discover `{NN-Name}/` at runtime + `topmind.yaml` v4 (`categories.extensions` / `categories.overrides` with `hidden`). Shared resolver: engine `lib/workspace-model.mjs`. Prefer role-based routing over hardcoded `10-`/`20-` numbers.
+**类别：** 运行时发现 `{NN-Name}/` + `topmind.yaml` v4（`categories.extensions` / `categories.overrides` 含 `hidden`）。共享解析器：引擎 `lib/workspace-model.mjs`。优先按角色路由，不要写死 `10-` / `20-` 编号。
 
-Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
+不要硬编码绝对路径 — 从 Host 推断 `workspace_root`，或向用户询问。
 
 ### 6 条核心规约
 
@@ -126,28 +126,28 @@ Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
 5. **参考资料定位**  
 6. **大类命名稳定**（rename via migration）  
 
-Full rules: [`../PROJECT-MODEL.md`](../PROJECT-MODEL.md) §3.
+完整规则：[`../PROJECT-MODEL.md`](../PROJECT-MODEL.md) §3。
 
 ---
 
-## Rules (skills behavior)
+## 行为规则
 
-- Capture first; don’t block simple saves on perfect classification  
-- Auto-route when signal is strong; otherwise **role:buffer** (live inbox dir, not hardcoded-only `00-Inbox/`)  
-- Loose notes at category root when topic is unclear  
-- Every write returns a receipt (path, route reason when available, next step)  
+- 先捕获；不要因为分类不完美而挡住简单保存  
+- 信号足够强时自动路由；否则走 **role:buffer**（现场 Inbox 目录，不要只写死 `00-Inbox/`）  
+- 专题不清时，散篇放在大类根  
+- 每次写入返回回执（路径、路由原因、下一步）  
 - `source_type`: `user-original` | `external-capture` | `ai-derived`  
-- UTR is optional — host file tools preserve the same contract  
-- Save settings protocol: `writeback_mode: auto | confirm`  
-- Locked/final files → revision copy (`文章 - 修订版.md`), not in-place auto-edit  
-- Desktop is not required for this pack  
-- **Compound discipline (no structure change):** organize leaves synthesis on disk; write reads optional `topic.md` first; memory only on explicit confirm; capture never edits `topic.md`; **no** hard `INDEX.md` / parallel wiki trees (see `shared/project-model-brief.md`)  
+- UTR 可选 — Host 文件工具遵守同一契约  
+- 保存设置协议：`writeback_mode: auto | confirm`  
+- 锁定/定稿文件 → 修订副本（`文章 - 修订版.md`），不要原地自动改  
+- 本 pack 不要求 Desktop  
+- **复合纪律（不改结构）：** organize 把综合写回磁盘；write 先读可选 `topic.md`；memory 仅在明确确认后写；capture 从不改 `topic.md`；**不要**硬造 `INDEX.md` / 平行 wiki 树（见 `shared/project-model-brief.md`）  
 
 ---
 
-## Install targets
+## 安装目标
 
-Packaged skill directories (7 core + 2 optional connectors + optional ledger + optional wechat sub-skill) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
-Prefer the pack-aware installer so `shared/` and `topmind-pack.json` stay intact — see [`INSTALL.md`](./INSTALL.md).
+已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
+优先使用 pack-aware 安装器，保证 `shared/` 与 `topmind-pack.json` 完整 — 见 [`INSTALL.md`](./INSTALL.md)。
 
-Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`../PRODUCT-BOUNDARIES.md`](../PRODUCT-BOUNDARIES.md).
+Host 适配器**不得**改变内容真源、新增并列日常入口，或把内容存进 agent 运行态。见 [`../PRODUCT-BOUNDARIES.md`](../PRODUCT-BOUNDARIES.md)。
