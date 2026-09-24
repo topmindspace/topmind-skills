@@ -31,9 +31,9 @@
 1. **唯一前台入口**：AI Agent 日常激活只需推荐 `topmind`。
 2. **渐进式披露 (Progressive Disclosure)**：Discovery (`name+description`) → Activation (`SKILL.md`) → Deep Procedures (`shared/` / `references/`)。
 3. **文件系统即真源**：不引入独立的数据库或 Agent state 依赖。
-4. **遵从 6 条核心规约**：详见根目录 [`PROJECT-MODEL.md`](../PROJECT-MODEL.md)。
+4. **遵从 6 条核心规约**：见 [`shared/project-model-brief.md`](./shared/project-model-brief.md)。
 
 👉 **详细架构、Frontmatter Schema 与安装方法请参阅**：
 - [Skills README](./README.md)（简体中文） · [English](./README.en.md)
 - [多 Host 安装教程 (INSTALL.md)](./INSTALL.md)
-- [根目录架构契约 (SKILL-ARCHITECTURE.md)](../SKILL-ARCHITECTURE.md)
+- Pack 真源：[`topmind-pack.json`](./topmind-pack.json)

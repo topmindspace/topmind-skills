@@ -390,7 +390,7 @@ async function materializeFromRelease(tag, workDir) {
   } else {
     release = await fetchJson(`https://api.github.com/repos/${DEFAULT_OWNER_REPO}/releases/tags/${tag}`);
   }
-  if (!release) fail("no GitHub release found — use owner/repo source or publish pack:skills");
+  if (!release) fail("no GitHub release found — use owner/repo source or publish a v* release tag");
   const assets = release.assets || [];
   const zip =
     assets.find((a) => /^topmind-skills-.*\.zip$/i.test(a.name)) ||

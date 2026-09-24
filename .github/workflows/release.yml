@@ -155,8 +155,8 @@ jobs:
           fi
           npm publish --access public
 
-      # Product policy: keep only the newest 2 GitHub Releases.
-      - name: Prune old releases (keep 2)
+      # Product policy: keep only the newest 2 GitHub Releases + matching tags.
+      - name: Prune old releases and tags (keep 2)
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -164,14 +164,19 @@ jobs:
         run: |
           set -euo pipefail
           KEEP=2
-          mapfile -t IDS < <(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
-            --jq '[.[] | {id, tag: .tag_name, at: (.published_at // .created_at)}] | sort_by(.at) | reverse | .[].id')
-          echo "total releases: ${#IDS[@]} keep=${KEEP}"
-          if (( ${#IDS[@]} <= KEEP )); then
+          mapfile -t ROWS < <(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
+            --jq '[.[] | {id, tag: .tag_name, at: (.published_at // .created_at)}] | sort_by(.at) | reverse | .[] | "\(.id)\t\(.tag)"')
+          echo "total releases: ${#ROWS[@]} keep=${KEEP}"
+          if (( ${#ROWS[@]} <= KEEP )); then
             echo "nothing to prune"
             exit 0
           fi
-          for id in "${IDS[@]:$KEEP}"; do
-            echo "deleting release id=${id}"
+          for row in "${ROWS[@]:$KEEP}"; do
+            id="${row%%$'\t'*}"
+            tag="${row#*$'\t'}"
+            echo "deleting release id=${id} tag=${tag}"
             gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${id}" || true
+            if [[ -n "$tag" ]]; then
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" || true
+            fi
           done

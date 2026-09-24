@@ -2,7 +2,7 @@
 
 可移植 AI 技能包：在 Claude Code / Codex / OpenCode / Hermes 等 Host 上使用同一套内容约定。
 
-[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
 # 1) npm（推荐 · pack-aware · 含 shared/）
@@ -93,7 +93,7 @@ degradation: ../shared/capability-degradation.md
 ---
 ```
 
-由 `skills/tests/package-manifest.test.mjs` 强制校验。一个 pack JSON，无 per-skill 第二清单。完整 schema：[`../SKILL-ARCHITECTURE.md`](../SKILL-ARCHITECTURE.md)。
+由 `tests/package-manifest.test.mjs` 强制校验。一个 pack JSON（[`topmind-pack.json`](./topmind-pack.json)），无 per-skill 第二清单。
 
 ---
 
@@ -136,7 +136,7 @@ degradation: ../shared/capability-degradation.md
 5. **参考资料定位**  
 6. **大类命名稳定**（rename via migration）  
 
-完整规则：[`../PROJECT-MODEL.md`](../PROJECT-MODEL.md) §3。
+完整规则：[`shared/project-model-brief.md`](./shared/project-model-brief.md)。
 
 ---
 
@@ -164,4 +164,4 @@ degradation: ../shared/capability-degradation.md
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 ```
 
-Host 适配器**不得**改变内容真源、新增并列日常入口，或把内容存进 agent 运行态。见 [`../PRODUCT-BOUNDARIES.md`](../PRODUCT-BOUNDARIES.md)。
+Host 适配器**不得**改变内容真源、新增并列日常入口，或把内容存进 agent 运行态。见 [`shared/capability-degradation.md`](./shared/capability-degradation.md)。

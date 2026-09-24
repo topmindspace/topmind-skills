@@ -2,7 +2,7 @@
 
 Portable AI skill pack: the same content contract on Claude Code / Codex / OpenCode / Hermes and other hosts.
 
-[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [Publish to skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
 # 1) npm (recommended · pack-aware · includes shared/)
@@ -93,7 +93,7 @@ degradation: ../shared/capability-degradation.md
 ---
 ```
 
-Enforced by `skills/tests/package-manifest.test.mjs`. One pack JSON; no per-skill second manifest. Full schema: [`../SKILL-ARCHITECTURE.md`](../SKILL-ARCHITECTURE.md).
+Enforced by `tests/package-manifest.test.mjs`. One pack JSON ([`topmind-pack.json`](./topmind-pack.json)); no per-skill second manifest.
 
 ---
 
@@ -136,7 +136,7 @@ Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
 5. **参考资料定位**  
 6. **大类命名稳定**（rename via migration）  
 
-Full rules: [`../PROJECT-MODEL.md`](../PROJECT-MODEL.md) §3.
+Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
 
 ---
 
@@ -160,4 +160,4 @@ Full rules: [`../PROJECT-MODEL.md`](../PROJECT-MODEL.md) §3.
 Packaged skill directories (7 core + 2 optional connectors + optional ledger + optional wechat sub-skill) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
 Prefer the pack-aware installer so `shared/` and `topmind-pack.json` stay intact — see [`INSTALL.md`](./INSTALL.md).
 
-Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`../PRODUCT-BOUNDARIES.md`](../PRODUCT-BOUNDARIES.md).
+Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`shared/capability-degradation.md`](./shared/capability-degradation.md).
