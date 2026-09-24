@@ -2,21 +2,22 @@
 
 Portable AI skill pack: the same content contract on Claude Code / Codex / OpenCode / Hermes and other hosts.
 
-[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [Publish to skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
+[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [Publish to skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
-# 1) Community CLI (fast try; may omit shared/)
+# 1) npm (recommended · pack-aware · includes shared/)
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+# upgrade
+npx @topmindspace/topmind-skills update -g
+
+# 2) Community CLI (fast try; may omit shared/)
 npx skills add topmindspace/topmind-skills -g -y
 
-# 2) Pack-aware installer (recommended · includes shared/ · writes receipt)
-# From a topmind-skills checkout:
-npm run install -- add topmindspace/topmind-skills -g
+# 3) Pack-aware installer (from a source checkout)
+npm run add -- topmindspace/topmind-skills -g
 npm run update -- --dest $HOME/.claude/skills
 
-# Or without clone — run installer from GitHub:
-npx --yes github:topmindspace/topmind-skills install -g
-
-# 3) From GitHub Release (pinned version / offline)
+# 4) From GitHub Release (pinned version / offline)
 node bin/install-skills.mjs add release:latest -g
 # or after downloading topmind-skills-<ver>.zip:
 # node bin/install-skills.mjs add ./unpacked --dest $HOME/.claude/skills

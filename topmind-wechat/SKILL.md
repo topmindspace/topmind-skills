@@ -1,6 +1,6 @@
 ---
 name: topmind-wechat
-version: 4.13.0
+version: 4.13.1
 description: >-
   公众号文章全生命周期子技能（write 族）：交付包、审校改写、质量三关、状态同步、微信内联排版与发布清单。
   支持 forward（底稿→公众号）、reverse（选题原创→回推）、站外拉取（在线精选站→reverse+pending）三条路径；
@@ -215,4 +215,4 @@ Desktop mini-app（`topmind-wechat` 插件）是本技能的**可视化工作流
 - 只想改几个句子 → 直接编辑  
 - 小红书 / 知乎 / 掘金 → 平台约束不同  
 - 通用长文交付 → `topmind-write`  
-- 只去 AI 味不排版 → `scan_ai_flavor.py` 或 humanizer 类技能  
+- 只去 AI 味不排版 → 中文走 `humanizer-zh`（先立保真边界）+ `qu-aiwei-zh`（再扫描定位）；英文走 `humanizer`

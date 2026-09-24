@@ -32,6 +32,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Resolve version
         id: ver
@@ -75,13 +76,17 @@ jobs:
 
           ## Install
           \`\`\`bash
+          # npm (recommended · pack-aware · includes shared/)
+          npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+
+          # community CLI
           npx skills add topmindspace/topmind-skills -g -y
-          # pack-aware (includes shared/)
-          npx --yes github:topmindspace/topmind-skills install -g
           \`\`\`
 
           ## Upgrade
           \`\`\`bash
+          npx @topmindspace/topmind-skills update -g
+          # or
           npx skills update -g -y
           \`\`\`
           "
@@ -118,6 +123,7 @@ jobs:
                 `topmind-skills-${ver}.SHA256SUMS`,
               ],
               install: {
+                npm: "npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g",
                 npx_skills: "npx skills add topmindspace/topmind-skills -g -y",
                 pack_aware: "npx --yes github:topmindspace/topmind-skills install -g",
               },
@@ -125,6 +131,29 @@ jobs:
             fs.writeFileSync("latest.json", JSON.stringify(latest, null, 2) + "\n");
           '
           gh release upload "$TAG" latest.json --clobber
+
+      # Sync npm: @topmindspace/topmind-skills
+      # Requires repo secret NPM_TOKEN (Automation token).
+      # Without it this step is a no-op so GitHub Release still succeeds.
+      # Skip on workflow_dispatch (draft release) — publish only on real v* tags.
+      - name: Publish to npm
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PKG_NAME: "@topmindspace/topmind-skills"
+          PKG_VERSION: ${{ steps.ver.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
+            echo "NPM_TOKEN not set — skip npm publish (GitHub Release only)"
+            exit 0
+          fi
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "${PKG_NAME}@${PKG_VERSION} already on npm — skip"
+            exit 0
+          fi
+          npm publish --access public
 
       # Product policy: keep only the newest 2 GitHub Releases.
       - name: Prune old releases (keep 2)

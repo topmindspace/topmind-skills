@@ -1,6 +1,6 @@
 ---
 name: topmind-write
-version: 4.13.0
+version: 4.13.1
 description: >-
   写作/润色/出稿到专题或交付层（role:delivery）。Use when 写、起草、续写、润色、出稿、交付、write、draft、deliver。
   Do NOT use for 仅捕获、仅结构整理、只写记忆、doctor/loop、社交连接器.
@@ -93,6 +93,16 @@ Draft · Continue · Revise · Polish · Deliver — 按用户当前意图，不
 ## Quality Bar
 
 具体、受众向；去 AI 套话；保用户声音。`topic.md` 风格锚点优先。
+
+改稿按场景选工具，别混用：
+
+| 场景 | 技能 |
+|---|---|
+| 中文改稿的保真边界（不新增事实、不把「可能」写成「确定」） | `humanizer-zh` |
+| 中文 AI 味体检 / 量化评分 / pan 个人风格 | `qu-aiwei-zh` |
+| 英文文本 | `humanizer` |
+
+默认组合是**先 `humanizer-zh` 立边界，再 `qu-aiwei-zh` 扫描定位**。分数不够时只能删套话改表达，不许补数字或硬塞「我」。
 
 ## Capability Degradation
 

@@ -2,21 +2,22 @@
 
 可移植 AI 技能包：在 Claude Code / Codex / OpenCode / Hermes 等 Host 上使用同一套内容约定。
 
-[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry)
+[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [发布到 skills.sh](./INSTALL.md#publishing-to-skillssh--open-agent-skills-registry) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
-# 1) 社区 CLI（快速试用；可能不含 shared/）
+# 1) npm（推荐 · pack-aware · 含 shared/）
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+# 升级
+npx @topmindspace/topmind-skills update -g
+
+# 2) 社区 CLI（快速试用；可能不含 shared/）
 npx skills add topmindspace/topmind-skills -g -y
 
-# 2) Pack-aware 安装器（推荐生产 · 含 shared/ · 可写回执）
-# 在 topmind-skills 仓内：
-npm run install -- add topmindspace/topmind-skills -g
+# 3) Pack-aware 安装器（源码仓内）
+npm run add -- topmindspace/topmind-skills -g
 npm run update -- --dest $HOME/.claude/skills
 
-# 或不 clone，直接用 npx 跑 GitHub 上的安装器：
-npx --yes github:topmindspace/topmind-skills install -g
-
-# 3) 从 GitHub Release 装（离线/固定版本）
+# 4) 从 GitHub Release 装（离线/固定版本）
 node bin/install-skills.mjs add release:latest -g
 # 或下载 topmind-skills-<ver>.zip 后：
 # node bin/install-skills.mjs add ./unpacked --dest $HOME/.claude/skills

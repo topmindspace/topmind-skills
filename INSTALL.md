@@ -19,11 +19,41 @@ Dest    examples:  $HOME/.claude/skills   ./.claude/skills   $HOME/.codex/skills
 ```
 
 Repository: https://github.com/topmindspace/topmind-skills  
+npm: [`@topmindspace/topmind-skills`](https://www.npmjs.com/package/@topmindspace/topmind-skills)  
 Daily entry after install: **`topmind`**
 
 ---
 
-## 0. Via Desktop（推荐 · 探测 + 装/升/卸）
+## 0. Via npm（推荐 · pack-aware · 含 shared/）
+
+```bash
+# 安装到 Claude Code 用户全局 skills
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+
+# 升级（读 dest 回执，重新拉同一源）
+npx @topmindspace/topmind-skills update -g
+
+# 只看会装什么
+npx @topmindspace/topmind-skills list topmindspace/topmind-skills
+
+# 指定宿主 / 目标目录
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills --host codex
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest ./.claude/skills
+```
+
+也可以全局安装 CLI：
+
+```bash
+npm i -g @topmindspace/topmind-skills
+topmind-skills add topmindspace/topmind-skills -g
+```
+
+> npm 包与 GitHub 仓库同一内容真源（`topmind-pack.json` 版本对齐）。  
+> **GitHub skills 更新不会自动同步到 npm**——需要 bump 版本后 `npm publish`（或走 tag 触发的 Release 自动发布，见下文）。
+
+---
+
+## 0b. Via Desktop（推荐 · 探测 + 装/升/卸）
 
 若已安装 **topmind Desktop**，不必先跑 CLI：
 
@@ -60,13 +90,55 @@ Daily entry after install: **`topmind`**
    ```
 4. **生态发现与在线安装**：
    发布后，全球开发者即可通过以下方式发现与安装：
+   - **npm（推荐）**：`npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g`
    - **CLI 直接索引**：`npx skills add topmindspace/topmind-skills -g -y`
    - **查看目录**：`npx skills add topmindspace/topmind-skills -l`
    - **网页版浏览**：访问 `https://skills.sh/topmindspace/topmind-skills`
+   - **npm 包页**：https://www.npmjs.com/package/@topmindspace/topmind-skills
+
+---
+
+## Publishing to npm（@topmindspace/topmind-skills）
+
+包名：[`@topmindspace/topmind-skills`](https://www.npmjs.com/package/@topmindspace/topmind-skills)  
+Org：`topmindspace` · 访问级别：`public` · 版本真源：`topmind-pack.json`（须与 `package.json` `version` 一致）
+
+```bash
+# 1) 同步版本（package.json + topmind-pack.json + 各 SKILL.md）
+npm test
+
+# 2) 发布（需 npmjs 登录；scoped public 包）
+npm publish --access public
+# package.json 已配置 publishConfig.access=public，直接 npm publish 亦可
+
+# 3) 验证
+npm view @topmindspace/topmind-skills
+npx @topmindspace/topmind-skills --help
+```
+
+### GitHub 更新后 npm 会自动更新吗？
+
+**不会。** GitHub 仓库 push / skills 内容变更 **不会** 自动发布到 npmjs。
+
+| 渠道 | 触发 | 是否自动 |
+|------|------|----------|
+| GitHub 仓库 / skills.sh | `git push` | 是（直连索引） |
+| GitHub Release | push tag `v*` | 是（CI 打包 Release） |
+| npm `@topmindspace/topmind-skills` | `npm publish` | **否**（需手动，或依赖下述 tag 自动发布） |
+
+若要在打 tag 发 Release 时 **自动同步 npm**：
+
+1. 在 GitHub 仓库 Secrets 配置 `NPM_TOKEN`（Automation 类型 token，来自 npmjs → Access Tokens）
+2. Release workflow 会在创建 GitHub Release 后执行 `npm publish`
+3. 流程：改 skills → 同步 bump `package.json` + `topmind-pack.json` + 各 `SKILL.md` 版本 → commit → `git tag vX.Y.Z && git push origin vX.Y.Z` → CI 自动发 GitHub Release **并** publish npm
+
+没有 `NPM_TOKEN` 时，npm 发布步骤会跳过，不影响 GitHub Release。
 
 ---
 
 ## Two installers (pick one)
+
+> 优先用上文 **§0 Via npm**（`npx @topmindspace/topmind-skills …`）——它就是 B 的 pack-aware 安装器，且自动带上 `shared/`。下面 A/B 说明底层两种安装路径。
 
 ### A. Community CLI — `npx skills`（和开源 skills 生态一致）
 
@@ -193,8 +265,15 @@ node bin/install-skills.mjs list topmindspace/topmind-skills
 根脚本别名：
 
 ```bash
-npm run install -- add topmindspace/topmind-skills -g
+npm run add -- topmindspace/topmind-skills -g
 npm run update -- --dest $HOME/.claude/skills
+npm run list -- topmindspace/topmind-skills
+```
+
+或直接用 npm 包 CLI（无需 clone）：
+
+```bash
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 ```
 
 私有仓：

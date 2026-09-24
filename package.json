@@ -1,19 +1,48 @@
 {
-  "name": "topmind-skills",
-  "version": "4.13.0",
-  "private": true,
-  "description": "topmind Agent Skills pack \u2014 portable markdown skills for capture, organize, write, memory, maintain, loop.",
+  "name": "@topmindspace/topmind-skills",
+  "version": "4.13.1",
+  "description": "topmind Agent Skills pack — portable markdown skills for capture, organize, write, memory, maintain, loop.",
   "type": "module",
   "license": "MIT",
   "author": "TopMindSpace",
   "repository": {
     "type": "git",
-    "url": "https://github.com/topmindspace/topmind-skills.git"
+    "url": "git+https://github.com/topmindspace/topmind-skills.git"
   },
   "homepage": "https://github.com/topmindspace/topmind-skills#readme",
   "bugs": {
     "url": "https://github.com/topmindspace/topmind-skills/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "shared/",
+    "install-targets/",
+    "integrations/",
+    "evals/",
+    "topmind/",
+    "topmind-capture/",
+    "topmind-ledger/",
+    "topmind-loop/",
+    "topmind-maintain/",
+    "topmind-memory/",
+    "topmind-organize/",
+    "topmind-wechat/",
+    "topmind-weread/",
+    "topmind-write/",
+    "topmind-x/",
+    "topmind-pack.json",
+    "skills.md",
+    "INSTALL.md",
+    "README.md",
+    "README.zh-CN.md",
+    "README.en.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=20.11"
   },
@@ -23,8 +52,9 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs",
     "pack": "node scripts/build-pack.mjs",
+    "prepublishOnly": "npm test",
     "versions": "node -e \"console.log('skills', require('./topmind-pack.json').version)\"",
-    "install": "node bin/install-skills.mjs add",
+    "add": "node bin/install-skills.mjs add",
     "update": "node bin/install-skills.mjs update",
     "list": "node bin/install-skills.mjs list"
   },
