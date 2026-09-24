@@ -51,12 +51,16 @@
     "Single daily user entry remains topmind. Sub-skill descriptions are discovery aids — not parallel products. Keep Action Map + trigger-disambiguation contract.",
     "MCP integration is optional — enable topmind-mcp if the user wants deterministic UTR commands surfaced as tools.",
     "Categories use NN-Name spaced number prefix (dynamic discovery); topics use YYYY-主题 kebab-case; do not introduce YYYY-类型-项目名.",
-    "Claude Code is case-insensitive on macOS / Windows by default — the canonical lowercase `skills.md` covers both `skills.md` and `SKILLS.md` lookups."
+    "Claude Code is case-insensitive on macOS / Windows by default — the canonical lowercase `skills.md` covers both `skills.md` and `SKILLS.md` lookups.",
+    "Install model: canonical <base>/.agents/skills holds the pack; this host gets relative symlinks (or --copy). Universal agents that read .agents/skills need no private links at project scope."
   ],
   "install": {
     "script": "bin/install-skills.mjs",
-    "docs": "skills/INSTALL.md",
-    "from_git": "node bin/install-skills.mjs --from-git --host claude-code",
-    "from_release": "node bin/install-skills.mjs --from-release latest --host claude-code"
+    "docs": "INSTALL.md",
+    "model": "canonical-.agents-skills + agent-link",
+    "matrix": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a claude-code",
+    "from_git": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a claude-code",
+    "from_release": "node bin/install-skills.mjs add release:latest -g -a claude-code",
+    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest <host-skills-root>"
   }
 }

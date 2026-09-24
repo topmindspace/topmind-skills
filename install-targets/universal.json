@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "package": "topmind",
+  "target": "universal",
+  "daily_entry": "topmind",
+  "metadata": {
+    "license": "MIT",
+    "authors": [
+      "TopMindSpace"
+    ],
+    "repository": "https://github.com/topmindspace/topmind-skills",
+    "homepage": "https://github.com/topmindspace/topmind-skills#readme"
+  },
+  "skills": [
+    "topmind",
+    "topmind-capture",
+    "topmind-organize",
+    "topmind-write",
+    "topmind-memory",
+    "topmind-maintain",
+    "topmind-loop",
+    "topmind-weread",
+    "topmind-x",
+    "topmind-ledger",
+    "topmind-wechat"
+  ],
+  "install_strategy": "canonical-copy",
+  "target_root_hint": "agents-skills-root",
+  "capabilities": [
+    "skills"
+  ],
+  "content_truth": "topmind-workspace/categories-and-topics",
+  "host_must_not": [
+    "change-content-truth",
+    "add-daily-entrypoints",
+    "fork-skill-semantics",
+    "persist-content-in-agent-state",
+    "introduce-legacy-project-naming",
+    "introduce-project_type-field"
+  ],
+  "config_shape": {
+    "skills_root": ".agents/skills"
+  },
+  "notes": [
+    "Open standard root: project ./.agents/skills, global ~/.agents/skills.",
+    "Agents whose project skillsDir is .agents/skills (Codex, Cursor, Gemini CLI, Warp, Zed, …) read this directly.",
+    "This is the canonical pack body. Private hosts symlink into it."
+  ],
+  "install": {
+    "script": "bin/install-skills.mjs",
+    "docs": "INSTALL.md",
+    "model": "canonical-.agents-skills",
+    "matrix": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a universal",
+    "from_git": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a universal",
+    "from_release": "node bin/install-skills.mjs add release:latest -g -a universal",
+    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest ~/.agents/skills"
+  }
+}

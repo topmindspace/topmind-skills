@@ -52,12 +52,16 @@
     "Use the host tool's discovered OpenCode config root.",
     "Expose the skill pack first; add MCP and plugin adapters only when the host environment enables them.",
     "Categories use 10-60/88/99 spaced number prefix (dynamic discovery); topics use YYYY-主题 kebab-case; do not introduce YYYY-类型-项目名.",
-    "v4.3 progressive disclosure: name+description discovery; SKILL.md on activation; shared/ and references/ on demand. Single daily entry topmind."
+    "v4.3 progressive disclosure: name+description discovery; SKILL.md on activation; shared/ and references/ on demand. Single daily entry topmind.",
+    "Install model: canonical <base>/.agents/skills holds the pack; this host gets relative symlinks (or --copy). Universal agents that read .agents/skills need no private links at project scope."
   ],
   "install": {
     "script": "bin/install-skills.mjs",
-    "docs": "skills/INSTALL.md",
-    "from_git": "node bin/install-skills.mjs --from-git --host opencode",
-    "from_release": "node bin/install-skills.mjs --from-release latest --host opencode"
+    "docs": "INSTALL.md",
+    "model": "canonical-.agents-skills + agent-link",
+    "matrix": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a opencode",
+    "from_git": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a opencode",
+    "from_release": "node bin/install-skills.mjs add release:latest -g -a opencode",
+    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest <host-skills-root>"
   }
 }

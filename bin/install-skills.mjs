@@ -53,7 +53,7 @@
  * Private GitHub: export GH_TOKEN or GITHUB_TOKEN.
  */
 
-import { promises as fs } from "node:fs";
+import { promises as fs, existsSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -70,13 +70,151 @@ const DEFAULT_GIT = `https://github.com/${DEFAULT_OWNER_REPO}.git`;
 const DEFAULT_PATH = ".";
 const RECEIPT_NAME = ".topmind-skills-install.json";
 
+const AGENTS_SUB = path.join(".agents", "skills");
+
+function homeDir() {
+  return process.env.HOME || process.env.USERPROFILE || os.homedir();
+}
+
+function configHome() {
+  return process.env.XDG_CONFIG_HOME || path.join(homeDir(), ".config");
+}
+
+/**
+ * Ecosystem agent matrix (aligned with `npx skills` / skills.sh):
+ *   canonical  <base>/.agents/skills   (project base=cwd, global base=~)
+ *   universal  agents whose skillsDir is .agents/skills read it directly
+ *   private    others get relative symlink (default) or copy into their own root
+ */
+function agentCatalog() {
+  const home = homeDir();
+  const cfg = configHome();
+  return {
+    universal: {
+      id: "universal",
+      label: "Universal (.agents/skills)",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(home, AGENTS_SUB),
+      detect: () => true,
+      universal: true,
+    },
+    "claude-code": {
+      id: "claude-code",
+      label: "Claude Code",
+      projectDir: path.join(".claude", "skills"),
+      globalDir: path.join(home, ".claude", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".claude")),
+      universal: false,
+    },
+    mimocode: {
+      id: "mimocode",
+      label: "MiMoCode / MiMo Desktop",
+      projectDir: path.join(".mimocode", "skills"),
+      globalDir: path.join(cfg, "mimocode", "skills"),
+      detect: () => fsSyncExists(path.join(cfg, "mimocode")) || fsSyncExists(path.join(home, ".mimocode")),
+      universal: false,
+    },
+    codex: {
+      id: "codex",
+      label: "Codex",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(home, ".codex", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".codex")),
+      universal: false,
+    },
+    cursor: {
+      id: "cursor",
+      label: "Cursor",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(home, ".cursor", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".cursor")),
+      universal: false,
+    },
+    "gemini-cli": {
+      id: "gemini-cli",
+      label: "Gemini CLI",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(home, ".gemini", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".gemini")),
+      universal: false,
+    },
+    opencode: {
+      id: "opencode",
+      label: "OpenCode",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(cfg, "opencode", "skills"),
+      detect: () => fsSyncExists(path.join(cfg, "opencode")) || fsSyncExists(path.join(home, ".opencode")),
+      universal: false,
+    },
+    hermes: {
+      id: "hermes",
+      label: "Hermes",
+      projectDir: path.join(".hermes", "skills"),
+      globalDir: path.join(home, ".hermes", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".hermes")),
+      universal: false,
+    },
+    "github-copilot": {
+      id: "github-copilot",
+      label: "GitHub Copilot",
+      projectDir: AGENTS_SUB,
+      globalDir: path.join(home, ".copilot", "skills"),
+      detect: () => fsSyncExists(path.join(home, ".copilot")),
+      universal: false,
+    },
+  };
+}
+
+/** Legacy --host names → agent ids + single-dir default dest. */
 const HOST_DEFAULTS = {
-  "claude-code": () => path.join(os.homedir(), ".claude", "skills"),
-  codex: () => path.join(os.homedir(), ".codex", "skills"),
-  hermes: () => path.join(os.homedir(), ".hermes", "skills"),
+  "claude-code": () => path.join(homeDir(), ".claude", "skills"),
+  codex: () => path.join(homeDir(), ".codex", "skills"),
+  hermes: () => path.join(homeDir(), ".hermes", "skills"),
   opencode: () => path.join(process.cwd(), ".opencode", "skills"),
   generic: () => path.join(process.cwd(), "topmind-skills"),
+  mimocode: () => path.join(configHome(), "mimocode", "skills"),
 };
+
+function fsSyncExists(p) {
+  return existsSync(p);
+}
+
+function canonicalBase(global) {
+  return path.join(global ? homeDir() : process.cwd(), AGENTS_SUB);
+}
+
+function agentSkillsRoot(agent, global) {
+  return global ? agent.globalDir : path.join(process.cwd(), agent.projectDir);
+}
+
+function samePath(a, b) {
+  return path.resolve(a) === path.resolve(b);
+}
+
+function detectedAgentIds() {
+  return Object.values(agentCatalog())
+    .filter((a) => a.detect())
+    .map((a) => a.id);
+}
+
+function resolveAgentSelection(requested, global) {
+  const cat = agentCatalog();
+  const all = Object.keys(cat);
+  let ids;
+  if (!requested || !requested.length) ids = detectedAgentIds();
+  else if (requested.includes("*")) ids = all;
+  else ids = [...new Set(requested)];
+  for (const id of ids) {
+    if (!cat[id]) fail(`unknown agent: ${id}\nknown: ${all.join(", ")}`);
+  }
+  ids.sort((a, b) => (a === "universal" ? -1 : b === "universal" ? 1 : a.localeCompare(b)));
+  if (!ids.includes("universal")) ids.unshift("universal");
+  return ids.map((id) => {
+    const agent = cat[id];
+    const root = agentSkillsRoot(agent, global);
+    return { agent, root, sharesCanonical: samePath(root, canonicalBase(global)) };
+  });
+}
 
 function log(msg) {
   process.stdout.write(`[install-skills] ${msg}\n`);
@@ -92,21 +230,34 @@ function printHelp() {
   node bin/install-skills.mjs add <source> [options]
   node bin/install-skills.mjs update [--dest <dir>]
   node bin/install-skills.mjs list <source> [options]
+  node bin/install-skills.mjs agents | paths | doctor [--repair]
 
 Source: owner/repo | owner/repo@ref | git-url | local-path | release:<tag>
 
-Same idea as:  npx skills add <owner/repo> -g
-Pack-aware:    also installs shared/ + topmind-pack.json so relative links work.
+Layout (aligned with npx skills / skills.sh):
+  canonical  <base>/.agents/skills     pack body lives here (one copy)
+  universal  agents that read .agents/skills need nothing else
+  private    Claude Code / MiMoCode / Hermes … get symlink (or --copy)
 
 Options:
-  --locale <code>   Install locale overlay (e.g. en-US); falls back to topmind_LOCALE env
-  --dest <dir>      Host skills root to install into
-  --host <name>     Default dest: claude-code|codex|hermes|opencode|generic
-  --mode copy|symlink  copy (default) or symlink (local sources only)
-  --skill <id>      Only install these skill ids (repeatable / comma-separated)
-  --global / -g     Alias: --host claude-code (user-level ~/.claude/skills)
-  --dry-run         Print plan only
-  --force           Replace non-symlink destinations when using symlink mode
+  -g, --global         Global scope (canonical ~/.agents/skills + agent global roots)
+  -p, --project        Project scope (canonical ./.agents/skills + agent project roots)
+  -a, --agent <ids>    Target agents (repeatable / comma-separated; '*' = all)
+  --copy               Copy into each private agent dir (default: symlink)
+  --dest <dir>         Install ONLY into this skills root (single-dir / legacy)
+  --host <name>        Legacy single-host dest: claude-code|codex|hermes|opencode|mimocode|generic
+  --mode copy|symlink  Mode for --dest/--host single-dir installs (default: copy)
+  --skill <id>         Only install these skill ids (repeatable / comma-separated)
+  --locale <code>      Install locale overlay (e.g. en-US); falls back to topmind_LOCALE env
+  -n, --dry-run        Print plan only
+  --force              Replace non-symlink destinations when using symlink mode
+
+Examples:
+  node bin/install-skills.mjs add topmindspace/topmind-skills -g
+  node bin/install-skills.mjs add topmindspace/topmind-skills -a claude-code -a mimocode
+  node bin/install-skills.mjs add . --dest ~/.claude/skills
+  node bin/install-skills.mjs update -g
+  node bin/install-skills.mjs doctor --repair
 
 See INSTALL.md for full docs.
 `);
@@ -121,11 +272,15 @@ function parseArgs(argv) {
     dest: null,
     repoPath: DEFAULT_PATH,
     mode: "copy",
-    host: "claude-code",
-    skillsFilter: null, // null = all, else Set of ids
+    host: null,
+    agents: [],
+    scope: null, // 'global' | 'project' | null
+    linkMode: "symlink", // for agent matrix: symlink | copy
+    skillsFilter: null,
     dryRun: false,
     force: false,
     locale: null,
+    repair: false,
   };
 
   if (argv.length === 0) {
@@ -133,7 +288,6 @@ function parseArgs(argv) {
     process.exit(0);
   }
 
-  // Legacy flag-only form (no subcommand) → treat as add with flags
   const first = argv[0];
   if (first === "add" || first === "install" || first === "a") {
     out.command = "add";
@@ -144,14 +298,21 @@ function parseArgs(argv) {
   } else if (first === "list" || first === "ls") {
     out.command = "list";
     argv = argv.slice(1);
+  } else if (first === "agents") {
+    out.command = "agents";
+    argv = argv.slice(1);
+  } else if (first === "paths") {
+    out.command = "paths";
+    argv = argv.slice(1);
+  } else if (first === "doctor") {
+    out.command = "doctor";
+    argv = argv.slice(1);
   } else if (first === "--help" || first === "-h") {
     printHelp();
     process.exit(0);
   } else if (first.startsWith("-")) {
-    // npm run skills:install -- --from-git  (legacy)
     out.command = "add";
   } else {
-    // bare source: install-skills.mjs topmindspace/topmind-skills
     out.command = "add";
   }
 
@@ -167,7 +328,6 @@ function parseArgs(argv) {
     else if (a === "--path" || a === "--subdir") out.repoPath = next().replace(/^\/+|\/+$/g, "") || ".";
     else if (a === "--source" || a === "-s") out.source = next();
     else if (a === "--from-git") {
-      // legacy: --from-git [url]
       const peek = argv[i + 1];
       if (peek && !peek.startsWith("-")) out.source = next();
       else out.source = DEFAULT_OWNER_REPO;
@@ -176,23 +336,31 @@ function parseArgs(argv) {
       out.source = peek && !peek.startsWith("-") ? `release:${next()}` : "release:latest";
     } else if (a === "--mode" || a === "-m") out.mode = next();
     else if (a === "--host") out.host = next();
-    else if (a === "--global" || a === "-g") {
-      out.host = "claude-code";
-      if (!out.dest) out.dest = HOST_DEFAULTS["claude-code"]();
-    } else if (a === "--skill") {
+    else if (a === "--global" || a === "-g") out.scope = "global";
+    else if (a === "--project" || a === "-p") out.scope = "project";
+    else if (a === "--agent" || a === "-a") {
+      const raw = next();
+      for (const part of raw.split(",")) {
+        const id = part.trim();
+        if (id) out.agents.push(id);
+      }
+    } else if (a === "--copy") {
+      out.linkMode = "copy";
+      out.mode = "copy";
+    } else if (a === "--link") out.linkMode = "symlink";
+    else if (a === "--skill") {
       const raw = next();
       out.skillsFilter = out.skillsFilter || new Set();
       for (const part of raw.split(",")) {
         const id = part.trim();
         if (id) out.skillsFilter.add(id);
       }
-    } else if (a === "--dry-run") out.dryRun = true;
+    } else if (a === "--dry-run" || a === "-n") out.dryRun = true;
     else if (a === "--locale") out.locale = next();
     else if (a === "--force" || a === "-f") out.force = true;
-    else if (a === "--update" || a === "-u") {
-      // npm run skills:update compatibility
-      out.command = "update";
-    } else if (a === "--help" || a === "-h") {
+    else if (a === "--repair") out.repair = true;
+    else if (a === "--update" || a === "-u") out.command = "update";
+    else if (a === "--help" || a === "-h") {
       printHelp();
       process.exit(0);
     } else if (a.startsWith("-")) fail(`unknown option: ${a}`);
@@ -201,17 +369,24 @@ function parseArgs(argv) {
   }
 
   if (!["copy", "symlink"].includes(out.mode)) fail(`--mode must be copy|symlink`);
-  if (!out.dest) {
+  if (!["copy", "symlink"].includes(out.linkMode)) fail(`--copy/--link must be copy|symlink`);
+
+  // Scope default: project (matches npx skills); -g flips to global.
+  if (!out.scope) out.scope = "project";
+  out.global = out.scope === "global";
+
+  // Single-dir path: --dest or legacy --host (not the multi-agent matrix).
+  if (out.dest) {
+    out.dest = path.resolve(out.dest.replace(/^~(?=\/|$)/, os.homedir()));
+  } else if (out.host) {
     if (!HOST_DEFAULTS[out.host]) {
       fail(`unknown --host ${out.host}; pass --dest or use: ${Object.keys(HOST_DEFAULTS).join("|")}`);
     }
     out.dest = HOST_DEFAULTS[out.host]();
+    out.dest = path.resolve(out.dest.replace(/^~(?=\/|$)/, os.homedir()));
   }
-  out.dest = path.resolve(out.dest.replace(/^~(?=\/|$)/, os.homedir()));
-  // Resolve locale: --locale flag → topmind_LOCALE env → null (no overlay)
-  if (!out.locale) {
-    out.locale = process.env.topmind_LOCALE || null;
-  }
+
+  if (!out.locale) out.locale = process.env.topmind_LOCALE || null;
   return out;
 }
 
@@ -551,7 +726,7 @@ async function installSymlink(skillsRoot, dest, entries, { force }) {
 
 async function writeInstallReceipt(dest, meta) {
   const receipt = {
-    schema: 1,
+    schema: 2,
     package: meta.name || "topmind",
     version: meta.version,
     installed_at: new Date().toISOString(),
@@ -559,20 +734,194 @@ async function writeInstallReceipt(dest, meta) {
     source_raw: meta.sourceRaw,
     repo_path: meta.repoPath,
     mode: meta.mode,
-    host: meta.host,
+    host: meta.host || null,
+    scope: meta.scope || null,
+    agents: meta.agents || null,
     skill_ids: meta.skillIds,
     locale: meta.locale || null,
     repository: `https://github.com/${DEFAULT_OWNER_REPO}`,
-    // Enough to re-run update without remembering flags
     update: {
       command: "add",
       source: meta.sourceRaw,
       path: meta.repoPath,
       mode: meta.mode,
-      host: meta.host,
+      host: meta.host || null,
+      scope: meta.scope || null,
+      agents: meta.agents || null,
     },
   };
   await fs.writeFile(path.join(dest, RECEIPT_NAME), JSON.stringify(receipt, null, 2) + "\n", "utf8");
+}
+
+/** Relative-symlink each pack entry from an agent root back to the canonical body. */
+async function linkPackEntries(canonicalRoot, agentRoot, entryNames, { force }) {
+  await fs.mkdir(agentRoot, { recursive: true });
+  for (const name of entryNames) {
+    const src = path.join(canonicalRoot, name);
+    const dst = path.join(agentRoot, name);
+    if (!(await pathExists(src))) continue;
+    if (samePath(agentRoot, canonicalRoot)) continue;
+    if ((await pathExists(dst)) || (await isBrokenSymlink(dst))) {
+      const st = await fs.lstat(dst).catch(() => null);
+      if (st && st.isSymbolicLink()) await fs.rm(dst, { recursive: true, force: true });
+      else if (force) await fs.rm(dst, { recursive: true, force: true });
+      else {
+        log(`  ! ${dst} exists (not symlink) — skip (pass --force to replace)`);
+        continue;
+      }
+    }
+    const rel = path.relative(agentRoot, src);
+    await fs.symlink(rel, dst, "junction");
+    log(`  ~ ${path.join(agentRoot, name)} → ${rel}`);
+  }
+}
+
+async function isBrokenSymlink(p) {
+  let st;
+  try {
+    st = await fs.lstat(p);
+  } catch {
+    return false;
+  }
+  if (!st.isSymbolicLink()) return false;
+  try {
+    await fs.stat(p);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Install pack into canonical `.agents/skills`, then link/copy into agent-private roots.
+ * Returns the canonical dest (receipt lives there).
+ */
+async function installViaMatrix(skillsRoot, plan, opts) {
+  const global = !!opts.global;
+  const canonical = canonicalBase(global);
+  const targets = resolveAgentSelection(opts.agents, global);
+  const linkMode = opts.linkMode || "symlink";
+
+  log(`matrix ${global ? "global" : "project"} · ${linkMode} · canonical ${canonical}`);
+
+  if (opts.dryRun) {
+    log(`  · ${canonical}  [canonical pack]`);
+    for (const t of targets) {
+      if (t.sharesCanonical) continue;
+      log(`  · ${t.root}  [${t.agent.label} → ${linkMode}]`);
+    }
+    log("(dry-run)");
+    return { canonical, targets, plan };
+  }
+
+  // 1) Full pack body → canonical
+  await installCopy(skillsRoot, canonical, plan.entries, opts.locale);
+
+  // 2) Private agent dirs: symlink entries (default) or copy
+  for (const t of targets) {
+    if (t.sharesCanonical) {
+      log(`  · shared via .agents/skills: ${t.agent.id}`);
+      continue;
+    }
+    if (linkMode === "copy") {
+      await installCopy(skillsRoot, t.root, plan.entries, opts.locale);
+    } else {
+      await linkPackEntries(canonical, t.root, plan.entries, opts);
+    }
+  }
+
+  await writeInstallReceipt(canonical, {
+    name: plan.name,
+    version: plan.version,
+    sourceLabel: "matrix",
+    sourceRaw: opts.source,
+    repoPath: opts.repoPath,
+    mode: linkMode,
+    host: null,
+    scope: opts.scope,
+    agents: targets.map((t) => t.agent.id),
+    skillIds: plan.skillIds,
+    locale: opts.locale,
+  });
+
+  log(`done → ${canonical}`);
+  log(`daily entry: ${path.join(canonical, "topmind", "SKILL.md")}`);
+  log(`update later: node bin/install-skills.mjs update -g`);
+  return { canonical, targets, plan };
+}
+
+function cmdAgents() {
+  const cat = agentCatalog();
+  const det = new Set(detectedAgentIds());
+  log("Agents (id · kind · project · global · status):");
+  for (const a of Object.values(cat)) {
+    const kind = a.projectDir === AGENTS_SUB ? "universal-project" : "private-project";
+    const st = det.has(a.id) ? "detected" : "-";
+    log(`  ${a.id.padEnd(16)} ${kind}`);
+    log(`  ${"".padEnd(16)} project ${a.projectDir}`);
+    log(`  ${"".padEnd(16)} global  ${a.globalDir}`);
+    log(`  ${"".padEnd(16)} ${st}`);
+  }
+}
+
+function cmdPaths(opts) {
+  const global = !!opts.global;
+  log(`Canonical (${global ? "global" : "project"}):`);
+  log(`  ${canonicalBase(global)}`);
+  log("Agents:");
+  for (const a of Object.values(agentCatalog())) {
+    const root = agentSkillsRoot(a, global);
+    const share = samePath(root, canonicalBase(global)) ? " (shares .agents/skills)" : "";
+    const det = a.detect() ? "detected" : "not detected";
+    log(`  ${a.id.padEnd(16)} ${root}${share}  [${det}]`);
+  }
+}
+
+async function cmdDoctor(opts) {
+  const cat = agentCatalog();
+  let problems = 0;
+  log("Skill root health:");
+  for (const a of Object.values(cat)) {
+    for (const [scopeName, root] of [
+      ["project", path.join(process.cwd(), a.projectDir)],
+      ["global", a.globalDir],
+    ]) {
+      if (!(await pathExists(root)) && !(await pathExists(path.dirname(root)))) continue;
+      let st = null;
+      try {
+        st = await fs.lstat(root);
+      } catch {
+        st = null;
+      }
+      if (st && st.isSymbolicLink()) {
+        let ok = true;
+        try {
+          await fs.stat(root);
+        } catch {
+          ok = false;
+        }
+        if (!ok) {
+          problems++;
+          log(`  ✗ ${root}  [${a.label} · ${scopeName}] broken symlink`);
+          if (opts.repair) {
+            await fs.rm(root, { force: true });
+            await fs.mkdir(root, { recursive: true });
+            log("    repaired → real directory");
+          }
+          continue;
+        }
+      }
+      if (st && !st.isDirectory() && !(st.isSymbolicLink())) {
+        problems++;
+        log(`  ✗ ${root}  [${a.label} · ${scopeName}] not a directory`);
+        continue;
+      }
+      if (st) log(`  ✓ ${root}  [${a.label} · ${scopeName}]`);
+    }
+  }
+  if (!problems) log("  all clear");
+  else if (!opts.repair) log("Run `topmind-skills doctor --repair` to replace broken symlinks.");
+  if (problems && !opts.repair) process.exitCode = 1;
 }
 
 async function readReceipt(dest) {
@@ -590,10 +939,15 @@ async function readReceipt(dest) {
 async function cmdAdd(opts, sourceOverride) {
   const sourceRaw = sourceOverride || opts.source || DEFAULT_OWNER_REPO;
   const sourceDesc = parseSource(sourceRaw, opts.repoPath);
-  const dest = opts.dest;
+  const useMatrix = !opts.dest;
+  const dest = opts.dest || canonicalBase(opts.global);
 
   log(`add  source=${sourceDesc.label}`);
-  log(`     path=${opts.repoPath}  mode=${opts.mode}  dest=${dest}`);
+  log(
+    useMatrix
+      ? `     path=${opts.repoPath}  scope=${opts.scope}  link=${opts.linkMode}  agents=${opts.agents.length ? opts.agents.join(",") : "detected"}`
+      : `     path=${opts.repoPath}  mode=${opts.mode}  dest=${dest}`,
+  );
 
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "topmind-skills-"));
   try {
@@ -601,9 +955,21 @@ async function cmdAdd(opts, sourceOverride) {
     const plan = await listInstallEntries(skillsRoot, opts.skillsFilter);
     log(`pack ${plan.name}@${plan.version} · ${plan.skillIds.length} skill(s) · ${plan.entries.length} entries`);
 
-    if (opts.command === "list" || opts.dryRun) {
+    if (opts.command === "list") {
       for (const e of plan.entries) log(`  - ${e}`);
-      log(opts.dryRun ? `(dry-run) would install → ${dest}` : `(list only)`);
+      log("(list only)");
+      return;
+    }
+
+    if (useMatrix) {
+      await installViaMatrix(skillsRoot, plan, opts);
+      return;
+    }
+
+    // Legacy / explicit single-dir install
+    if (opts.dryRun) {
+      for (const e of plan.entries) log(`  - ${e}`);
+      log(`(dry-run) would install → ${dest}`);
       return;
     }
 
@@ -624,6 +990,8 @@ async function cmdAdd(opts, sourceOverride) {
       repoPath: opts.repoPath,
       mode: opts.mode,
       host: opts.host,
+      scope: opts.scope,
+      agents: opts.agents,
       skillIds: plan.skillIds,
       locale: opts.locale,
     });
@@ -631,19 +999,29 @@ async function cmdAdd(opts, sourceOverride) {
     log(`done → ${dest}`);
     log(`daily entry: ${path.join(dest, "topmind", "SKILL.md")}`);
     log(`update later: node bin/install-skills.mjs update --dest ${dest}`);
-    log(`community CLI (optional): npx skills add ${sourceRaw.includes("/") && !sourceRaw.includes("://") ? sourceRaw.split("@")[0] : DEFAULT_OWNER_REPO} -g -y`);
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true }).catch(() => {});
   }
 }
 
 async function cmdUpdate(opts) {
-  const dest = opts.dest;
-  const receipt = await readReceipt(dest);
+  // Prefer receipt at matrix canonical; fall back to explicit --dest receipt.
+  const destCandidates = opts.dest
+    ? [opts.dest]
+    : [canonicalBase(opts.global), canonicalBase(!opts.global), HOST_DEFAULTS["claude-code"]()];
+  let dest = null;
+  let receipt = null;
+  for (const d of destCandidates) {
+    receipt = await readReceipt(d);
+    if (receipt) {
+      dest = d;
+      break;
+    }
+  }
   if (!receipt) {
     fail(
-      `no ${RECEIPT_NAME} in ${dest}.\n` +
-        `  First install: node bin/install-skills.mjs add ${DEFAULT_OWNER_REPO} --dest ${dest}\n` +
+      `no ${RECEIPT_NAME} in ${destCandidates.join(", ")}.\n` +
+        `  First install: node bin/install-skills.mjs add ${DEFAULT_OWNER_REPO} -g\n` +
         `  Or community:  npx skills update -g -y`,
     );
   }
@@ -654,11 +1032,17 @@ async function cmdUpdate(opts) {
     source: receipt.source_raw || receipt.update?.source || DEFAULT_OWNER_REPO,
     repoPath: receipt.repo_path || receipt.update?.path || DEFAULT_PATH,
     mode: receipt.mode === "symlink" ? "symlink" : "copy",
+    linkMode: receipt.agents ? "symlink" : opts.linkMode,
     host: receipt.host || opts.host,
+    scope: receipt.scope || opts.scope,
+    agents: receipt.agents || opts.agents,
     locale: receipt.locale || opts.locale,
   };
-  // symlink update only works if original local path still exists
-  if (next.mode === "symlink") {
+  // Keep matrix mode when the receipt was a matrix install (no single dest host).
+  if (receipt.agents) next.dest = null;
+  else if (!next.dest) next.dest = dest;
+
+  if (next.mode === "symlink" && next.dest) {
     const local = parseSource(next.source, next.repoPath);
     if (local.kind !== "local" || !(await pathExists(local.value))) {
       log("original symlink source gone — falling back to copy from default git source");
@@ -672,6 +1056,18 @@ async function cmdUpdate(opts) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
 
+  if (opts.command === "agents") {
+    cmdAgents();
+    return;
+  }
+  if (opts.command === "paths") {
+    cmdPaths(opts);
+    return;
+  }
+  if (opts.command === "doctor") {
+    await cmdDoctor(opts);
+    return;
+  }
   if (opts.command === "list") {
     opts.dryRun = true;
     if (!opts.source) opts.source = DEFAULT_OWNER_REPO;
@@ -682,7 +1078,6 @@ async function main() {
     await cmdUpdate(opts);
     return;
   }
-  // add
   if (!opts.source) opts.source = DEFAULT_OWNER_REPO;
   await cmdAdd(opts);
 }

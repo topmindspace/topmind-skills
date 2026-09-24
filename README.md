@@ -5,23 +5,29 @@
 [简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
-# 1) npm（推荐 · pack-aware · 含 shared/）
+# 1) npm（推荐 · pack-aware · 含 shared/ · canonical .agents + 多智能体）
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+# 只装给部分智能体
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
 # 升级
 npx @topmindspace/topmind-skills update -g
 
-# 2) 社区 CLI（快速试用；可能不含 shared/）
+# 2) 社区 CLI（快速试用；不含 shared/ — 见 INSTALL.md）
 npx skills add topmindspace/topmind-skills -g -y
 
 # 3) Pack-aware 安装器（源码仓内）
 npm run add -- topmindspace/topmind-skills -g
-npm run update -- --dest $HOME/.claude/skills
+npm run update -- -g
 
 # 4) 从 GitHub Release 装（离线/固定版本）
 node bin/install-skills.mjs add release:latest -g
-# 或下载 topmind-skills-<ver>.zip 后：
-# node bin/install-skills.mjs add ./unpacked --dest $HOME/.claude/skills
+
+# 查看矩阵 / 修断链
+node bin/install-skills.mjs agents
+node bin/install-skills.mjs doctor --repair
 ```
+
+安装模型：**canonical `.agents/skills` 一份真身** + 私有目录（Claude Code / MiMoCode…）相对软链；与 [`npx skills`](https://github.com/vercel-labs/skills) / `@topmindspace/tms-skills` 一致。详见 [INSTALL.md](./INSTALL.md)。
 
 **版本与清单真源：** [`topmind-pack.json`](./topmind-pack.json)（`npm run versions`）。  
 各 `SKILL.md` 的 `version` **必须**等于 pack 版本。
@@ -38,9 +44,9 @@ topmind-skills/              # pack 根 = 仓库根
 ├── topmind-ledger/          # 可选记账（记忆平面账本）
 ├── topmind-wechat/          # 可选公众号 write 子技能（不是并列入口）
 ├── shared/                  # 写回回执 · 降级 · 捕获 …
-├── install-targets/         # Host 安装形状
+├── install-targets/         # Host 安装形状（claude-code / codex / mimocode / …）
 ├── evals/evals.json
-├── bin/install-skills.mjs   # pack-aware 安装器（含 shared/）
+├── bin/install-skills.mjs   # pack-aware + agent matrix 安装器
 ├── scripts/build-pack.mjs
 └── topmind-pack.json        # 版本真源
 ```

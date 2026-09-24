@@ -7,10 +7,12 @@ npm: [`@topmindspace/topmind-skills`](https://www.npmjs.com/package/@topmindspac
 Daily entry after install: **`topmind`**
 
 ```text
-Source → install into host skills root → update later from the same source
-Source:  topmindspace/topmind-skills | . | release:latest
-Dest:    $HOME/.claude/skills | ./.claude/skills | $HOME/.codex/skills | …
+canonical  <base>/.agents/skills     ← pack body (one copy)
+universal  tools that read .agents/skills need nothing else
+private    Claude Code / MiMoCode / Hermes …  ← relative symlink (or --copy)
 ```
+
+安装模型与开源生态 [`npx skills`](https://github.com/vercel-labs/skills) / [skills.sh](https://skills.sh) 对齐，与 `@topmindspace/tms-skills` 同一套机制。
 
 ---
 
@@ -21,7 +23,7 @@ Dest:    $HOME/.claude/skills | ./.claude/skills | $HOME/.codex/skills | …
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 npx @topmindspace/topmind-skills update -g
 
-# 社区 CLI（快速试用；不含 shared/）
+# 社区 CLI（快速试用；不含 shared/ — 见下文）
 npx skills add topmindspace/topmind-skills -g -y
 
 # 从 GitHub Release（离线 / 固定版本）
@@ -32,6 +34,45 @@ node bin/install-skills.mjs add release:latest -g
 
 ---
 
+## 安装模型（canonical + agents）
+
+| 概念 | 路径 | 说明 |
+|------|------|------|
+| **Canonical** | `<base>/.agents/skills/` | 整包只存一份（project base = cwd，global base = `~`） |
+| **Universal** | 就是 `.agents/skills` | Codex / Cursor / Gemini CLI / Warp / Zed… 项目级**直接读** |
+| **Private** | `.claude/skills` · `.mimocode/skills` · `~/.codex/skills` … | 相对**软链**到 canonical（默认）；`--copy` 改为独立副本 |
+
+装完结构（global 示例）：
+
+```text
+~/.agents/skills/                 ← canonical（真身 + receipt）
+├── topmind/SKILL.md              ← 日常唯一入口
+├── topmind-*/
+├── shared/
+├── topmind-pack.json
+└── .topmind-skills-install.json
+
+~/.claude/skills/topmind    → ../../.agents/skills/topmind
+~/.claude/skills/shared     → ../../.agents/skills/shared
+~/.config/mimocode/skills/topmind → ../../../.agents/skills/topmind
+…
+```
+
+`../shared/*.md` 渐进披露：在 canonical 内解析到 `~/.agents/skills/shared`；经软链进入时同样落在 canonical 的 `shared/`（相对链接指向同一真身）。
+
+| 命令 | 作用 |
+|------|------|
+| `add <source>` | 默认 **matrix**：canonical + 已检测智能体 |
+| `add … -g` / `-p` | 全局 `~/.agents/skills` / 项目 `./.agents/skills` |
+| `add … -a claude-code -a mimocode` | 指定智能体（可多个；`'*'` 全部） |
+| `add … --copy` | 私有目录独立副本（默认软链） |
+| `add … --dest <dir>` | **只**装进一个目录（单宿主 / 兼容旧用法） |
+| `add … --host claude-code` | 兼容旧用法：单宿主默认 dest |
+| `update -g` | 从 canonical 里的 receipt 重装 |
+| `agents` · `paths` · `doctor [--repair]` | 智能体矩阵 / 路径 / 修复断链 |
+
+---
+
 ## Installers
 
 ### A. npm / Pack-aware（推荐）
@@ -39,26 +80,28 @@ node bin/install-skills.mjs add release:latest -g
 装齐 skill 目录 + `shared/` + `topmind-pack.json`，保证 `../shared/*.md` 渐进披露可用。
 
 ```bash
-# 无需 clone
+# 矩阵：canonical .agents + 已检测智能体（全局）
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+
+# 只喂给部分智能体
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
+
+# 项目级
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -p
+
+# 单目录（旧 --dest 仍可用）
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest ~/.claude/skills
+
+# 升级（读 receipt）
 npx @topmindspace/topmind-skills update -g
-npx @topmindspace/topmind-skills list topmindspace/topmind-skills
 
-# 全局 CLI
-npm i -g @topmindspace/topmind-skills
-topmind-skills add topmindspace/topmind-skills -g
+# 查看
+npx @topmindspace/topmind-skills agents
+npx @topmindspace/topmind-skills paths -g
+npx @topmindspace/topmind-skills doctor --repair
 
-# 指定宿主 / 目标
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills --host codex
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest ./.claude/skills
-
-# 源码仓内
-npm run add -- topmindspace/topmind-skills -g
-npm run update -- --dest $HOME/.claude/skills
-npm run list -- topmindspace/topmind-skills
-
-# 本地目录 / symlink 热更新
-node bin/install-skills.mjs add . --mode symlink --dest $HOME/.claude/skills
+# 本地开发：symlink 热更新（单目录）
+node bin/install-skills.mjs add . --mode symlink --dest ~/.claude/skills
 
 # Release zip
 node bin/install-skills.mjs add release:latest -g
@@ -68,7 +111,7 @@ node bin/install-skills.mjs add release:latest -g
 
 ### B. Community CLI — `npx skills`
 
-适用于 Claude Code / Cursor / Codex / OpenCode 等认 Agent Skills 目录布局的 host。
+适用于认 Agent Skills 目录布局的 host。
 
 ```bash
 npx skills add topmindspace/topmind-skills -g -y
@@ -80,9 +123,9 @@ npx skills add topmindspace/topmind-skills -l
 **注意：社区 CLI 不会装 `shared/`。** topmind skill 有 `../shared/*.md` 链接，缺了会打不开子文档。装完后请再跑一次 pack-aware（或手动拷 `shared/`）：
 
 ```bash
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest $HOME/.agents/skills
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 # 或
-cp -R /path/to/topmind-skills/shared $HOME/.agents/skills/shared
+cp -R /path/to/topmind-skills/shared ~/.agents/skills/shared
 ```
 
 日志末尾若出现 `Failed to install 9` 且指向 **PromptScript**，是该 host 不支持 global 安装，可忽略；topmind 本身已装上。
@@ -101,21 +144,31 @@ cp -R /path/to/topmind-skills/shared $HOME/.agents/skills/shared
 
 | Option | 含义 |
 |--------|------|
-| `--dest <dir>` | 安装目标 = host 的 skills 根 |
-| `-g` / `--global` | dest → `$HOME/.claude/skills` |
-| `--host codex` 等 | 换默认 dest |
-| `--mode symlink` | 仅本地源；开发时热更新 |
-| `--skill topmind` | 只装列出的 skill id |
+| `-g` / `--global` | **全局 scope**（canonical `~/.agents/skills`）— 与 `npx skills -g` 同义 |
+| `-p` / `--project` | 项目 scope（canonical `./.agents/skills`） |
+| `-a` / `--agent <ids>` | 目标智能体（可多个；`'*'` 全部） |
+| `--copy` | 私有目录复制而非软链 |
+| `--dest <dir>` | 只装进这个 skills 根（绕过矩阵） |
+| `--host <name>` | 兼容旧用法：单宿主默认 dest |
+| `--mode copy\|symlink` | 单目录安装模式（默认 copy） |
+| `--skill <id>` | 只装列出的 skill id |
 | `--locale en-US` | locale overlay（当前未提供 overlay，回退中文正文） |
+| `-n` / `--dry-run` | 只打印计划 |
+| `--force` | symlink 模式下替换非软链目标 |
 
-### Host destinations
+### Agents
 
-| Host | 典型 dest | 写法 |
-|------|-----------|------|
-| Claude Code | `$HOME/.claude/skills` 或项目 `.claude/skills` | `-g` 或 `--dest ./.claude/skills` |
-| Codex | `$HOME/.codex/skills` | `--host codex` |
-| Hermes | `$HOME/.hermes/skills` | `--host hermes` |
-| OpenCode | 项目 skills 路径 / config `skills.paths` | `--host opencode` 或见 `integrations/opencode/` |
+| id | 项目路径 | 全局路径 | 类型 |
+|----|----------|----------|------|
+| `universal` | `.agents/skills` | `~/.agents/skills` | canonical |
+| `claude-code` | `.claude/skills` | `~/.claude/skills` | private |
+| `mimocode` | `.mimocode/skills` | `~/.config/mimocode/skills` | private |
+| `codex` | `.agents/skills` | `~/.codex/skills` | 项目 universal / 全局 private |
+| `cursor` | `.agents/skills` | `~/.cursor/skills` | 同上 |
+| `gemini-cli` | `.agents/skills` | `~/.gemini/skills` | 同上 |
+| `opencode` | `.agents/skills` | `~/.config/opencode/skills` | 同上 |
+| `hermes` | `.hermes/skills` | `~/.hermes/skills` | private |
+| `github-copilot` | `.agents/skills` | `~/.copilot/skills` | 项目 universal / 全局 private |
 
 无 skill 系统的 host：把 `topmind/SKILL.md` 当 system 片段粘贴，`shared/` 按链接手动附上。
 
@@ -123,25 +176,14 @@ cp -R /path/to/topmind-skills/shared $HOME/.agents/skills/shared
 
 ## Update
 
-安装后 dest 会写入 `{dest}/.topmind-skills-install.json`（记录 `source` / `path` / `version`）：
+安装后 **canonical** 会写入 `.topmind-skills-install.json`（记录 `source` / `scope` / `agents` / `version`）：
 
 ```bash
 npx @topmindspace/topmind-skills update -g
 # 或
-node bin/install-skills.mjs update --dest <同一 dest>
+node bin/install-skills.mjs update -g
 # 社区 CLI
 npx skills update -g -y
-```
-
-装完结构：
-
-```text
-{dest}/
-├── topmind/SKILL.md      # 日常唯一入口
-├── topmind-*/
-├── shared/
-├── topmind-pack.json
-└── .topmind-skills-install.json
 ```
 
 ---
@@ -218,4 +260,5 @@ npx skills add topmindspace/topmind-skills -l
 
 - Skills 是 Markdown 指令；不信任的 fork 先审再装。
 - API Key 不要写进 skill 文件。
-- 安装器只写 `--dest`，不改其他目录。
+- 安装器只写 canonical 与所选智能体技能根，不改其他目录。
+- 断链（第三方卸载残留）用 `doctor --repair` 修复，不要手删整棵技能树。

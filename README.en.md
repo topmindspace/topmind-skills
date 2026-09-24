@@ -5,23 +5,29 @@ Portable AI skill pack: the same content contract on Claude Code / Codex / OpenC
 [简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
 
 ```bash
-# 1) npm (recommended · pack-aware · includes shared/)
+# 1) npm (recommended · pack-aware · includes shared/ · canonical .agents + agents)
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+# subset of agents
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
 # upgrade
 npx @topmindspace/topmind-skills update -g
 
-# 2) Community CLI (fast try; may omit shared/)
+# 2) Community CLI (fast try; omits shared/ — see INSTALL.md)
 npx skills add topmindspace/topmind-skills -g -y
 
 # 3) Pack-aware installer (from a source checkout)
 npm run add -- topmindspace/topmind-skills -g
-npm run update -- --dest $HOME/.claude/skills
+npm run update -- -g
 
 # 4) From GitHub Release (pinned version / offline)
 node bin/install-skills.mjs add release:latest -g
-# or after downloading topmind-skills-<ver>.zip:
-# node bin/install-skills.mjs add ./unpacked --dest $HOME/.claude/skills
+
+# Inspect matrix / repair broken roots
+node bin/install-skills.mjs agents
+node bin/install-skills.mjs doctor --repair
 ```
+
+Install model: **one canonical body under `.agents/skills`** plus relative symlinks into private host roots (Claude Code, MiMoCode, …) — same as [`npx skills`](https://github.com/vercel-labs/skills) and `@topmindspace/tms-skills`. See [INSTALL.md](./INSTALL.md).
 
 **Version and manifest truth:** [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`).  
 Each `SKILL.md` `version` **must** equal the pack version.

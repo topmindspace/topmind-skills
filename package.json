@@ -1,6 +1,6 @@
 {
   "name": "@topmindspace/topmind-skills",
-  "version": "4.13.2",
+  "version": "4.13.3",
   "description": "topmind Agent Skills pack — portable markdown skills for capture, organize, write, memory, maintain, loop.",
   "type": "module",
   "license": "MIT",
@@ -56,7 +56,10 @@
     "versions": "node -e \"console.log('skills', require('./topmind-pack.json').version)\"",
     "add": "node bin/install-skills.mjs add",
     "update": "node bin/install-skills.mjs update",
-    "list": "node bin/install-skills.mjs list"
+    "list": "node bin/install-skills.mjs list",
+    "agents": "node bin/install-skills.mjs agents",
+    "paths": "node bin/install-skills.mjs paths",
+    "doctor": "node bin/install-skills.mjs doctor"
   },
   "keywords": [
     "agent-skills",
