@@ -1,6 +1,6 @@
 # topmind-wechat · 技能侧设计摘要
 
-> 全案见 [`docs/wechat-studio-DESIGN.md`](../../../docs/wechat-studio-DESIGN.md)。本文只记技能包边界。
+> 技能边界以本文件、`SKILL.md` 和 `references/` 为准。不要另做一份用浏览器本地存储的公众号编辑器。
 
 ## 定位
 
