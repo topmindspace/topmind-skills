@@ -67,7 +67,7 @@ topmind-skills/              # pack 根 = 仓库根
 ```text
 User experience:     capture-first
 Data organization:   category-first + topic-emerges
-Content truth:       topmind-workspace/categories-and-topics
+Content truth:       topmind-workspace
 Capability model:    action-first
 Save settings:       auto | confirm
 Safety model:        reversible by default
@@ -163,7 +163,7 @@ degradation: ../shared/capability-degradation.md
 
 ## 安装目标
 
-已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
+已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账 + 可选公众号 `topmind-wechat`）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
 优先使用 npm / pack-aware 安装器，保证 `shared/` 与 `topmind-pack.json` 完整 — 见 [`INSTALL.md`](./INSTALL.md)。
 
 ```bash

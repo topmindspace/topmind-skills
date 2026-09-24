@@ -231,7 +231,7 @@ push tag `v*` 后 CI 自动：
 1. 测试 + 打包
 2. 创建 GitHub Release（附 zip / tar.gz / manifest / SHA256SUMS / latest.json）
 3. `npm publish` → [`@topmindspace/topmind-skills`](https://www.npmjs.com/package/@topmindspace/topmind-skills)（需仓库 Secret `NPM_TOKEN`，Automation token）
-4. **只保留最近 2 个 GitHub Release**，更旧的 Release 与 tag 会被删除
+4. **只保留最近 2 个 GitHub Release**（删旧 Release 与附件）。git tag 保留。
 
 | 渠道 | 触发 | 自动 |
 |------|------|------|

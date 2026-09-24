@@ -67,7 +67,7 @@ topmind-skills/              # pack root = repo root
 ```text
 User experience:     capture-first
 Data organization:   category-first + topic-emerges
-Content truth:       topmind-workspace/categories-and-topics
+Content truth:       topmind-workspace
 Capability model:    action-first
 Save settings:       auto | confirm
 Safety model:        reversible by default

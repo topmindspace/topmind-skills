@@ -31,8 +31,6 @@ const CORE_SKILLS = EXPECTED_SKILLS.filter(
   (s) => !OPTIONAL_SKILLS.includes(s),
 );
 
-const CONTENT_TRUTH = "topmind-workspace/categories-and-topics";
-
 // v4.1 frontmatter schema required fields
 const REQUIRED_FRONTMATTER_FIELDS = [
   "name",
@@ -292,7 +290,9 @@ test("topmind skill pack has a portable host contract for non-Codex agents (v3.4
   assert.deepEqual(manifest.entry_files, EXPECTED_SKILLS.map((skill) => `${skill}/SKILL.md`));
   assert.equal(manifest.portable_contract.requires_desktop, false);
   assert.equal(manifest.portable_contract.requires_utr, false);
-  assert.equal(manifest.portable_contract.content_truth, CONTENT_TRUTH);
+  assert.equal(manifest.portable_contract.content_truth.includes("/"), false);
+  assert.doesNotMatch(manifest.portable_contract.content_truth, /categories-and-topics/u);
+  assert.equal(manifest.product_contract.content_truth, manifest.portable_contract.content_truth);
   assert.equal(manifest.portable_contract.host_may_provide.includes("skills"), true);
   assert.equal(manifest.portable_contract.host_may_provide.includes("mcp"), true);
   // v3.4: tui removed from host_may_provide
@@ -323,7 +323,8 @@ test("agent install target manifests include topmind-loop and use v3.4 content t
     assert.deepEqual(config.skills, EXPECTED_SKILLS);
     assert.equal(config.install_strategy, "symlink-or-copy");
     assert.ok(Array.isArray(config.capabilities) && config.capabilities.includes("skills"));
-    assert.equal(config.content_truth, CONTENT_TRUTH);
+    assert.equal(config.content_truth, manifest.portable_contract.content_truth);
+    assert.doesNotMatch(config.content_truth, /categories-and-topics/u);
     assert.ok(config.host_must_not.includes("change-content-truth"));
     assert.ok(config.host_must_not.includes("add-daily-entrypoints"));
     assert.ok(config.host_must_not.includes("introduce-legacy-project-naming"));
@@ -744,4 +745,31 @@ test("skill pack states the two-track output-language rule once and router links
   assert.doesNotMatch(memory, /写进 topic\.md/u);
   assert.doesNotMatch(disambig, /memory \| 仅 confirmed stable → `topic\.md`/u);
   assert.doesNotMatch(brief, /输出语言跟随 UI|AI follows the UI/u);
+});
+
+test("pack UTR node floor matches package.json engines, not an older major", async () => {
+  const pkg = await readJson("package.json");
+  const manifest = await readJson("topmind-pack.json");
+  const version = String(pkg.engines.node).match(/\d+\.\d+(?:\.\d+)?/u)?.[0];
+  assert.ok(version, "package.json engines.node must name a version");
+  const utr = manifest.metadata.compatibility.optional_dependencies.utr;
+  assert.match(utr, new RegExp(version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(utr, /node\s*>=\s*18\b/u);
+});
+
+test("README copies name shipped optional wechat, and evals use the current loop path and skill count", async () => {
+  const manifest = await readJson("topmind-pack.json");
+  const zh = await fs.readFile(path.join(skillsRoot, "README.md"), "utf8");
+  const en = await fs.readFile(path.join(skillsRoot, "README.en.md"), "utf8");
+  assert.match(zh, /wechat|公众号/u);
+  assert.match(en, /wechat/iu);
+  const evals = await fs.readFile(path.join(skillsRoot, "evals", "evals.json"), "utf8");
+  assert.doesNotMatch(evals, /\.loop\//u);
+  assert.match(evals, /\.topmind\/loop\//u);
+  assert.match(evals, new RegExp(`${manifest.skills.length} total`));
+  const state = await fs.readFile(
+    path.join(skillsRoot, "topmind-loop", "references", "state-file.md"),
+    "utf8",
+  );
+  assert.match(state, /\.topmind\/loop\//u);
 });

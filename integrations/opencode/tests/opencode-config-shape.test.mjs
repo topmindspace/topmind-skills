@@ -57,7 +57,9 @@ test("OpenCode adapter follows the portable skill-pack contract", async () => {
   assert.match(readme, /content truth/u);
   assert.match(readme, /Expose only `topmind`|only daily.*`topmind`/iu);
 
-  assert.match(pluginSource, /contentTruth:\s*"topmind-workspace\/categories-and-topics"/u);
+  const truth = String(pack.portable_contract.content_truth).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(pluginSource, new RegExp(`contentTruth:\\s*"${truth}"`));
+  assert.doesNotMatch(pluginSource, /categories-and-topics/u);
   assert.match(pluginSource, /writesContent:\s*false/u);
   assert.doesNotMatch(readme + "\n" + pluginSource, /should fork OpenCode|write topmind content directly:\s*true|writesContent:\s*true/u);
 });

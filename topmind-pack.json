@@ -72,7 +72,7 @@
       ],
       "runtime": "pure-markdown",
       "optional_dependencies": {
-        "utr": "node >= 18, optional deterministic CLI/MCP commands",
+        "utr": "node >= 20.11, optional deterministic CLI/MCP commands",
         "desktop": "Electron, optional GUI client (topmind-desktop/)"
       }
     },
@@ -216,7 +216,7 @@
     "topic_emerges": true,
     "action_first": true,
     "single_user_entry": true,
-    "content_truth": "topmind-workspace/categories-and-topics",
+    "content_truth": "topmind-workspace",
     "inbox_role": "unassigned-capture",
     "topic_role": "assigned-work",
     "loose_note_role": "unfiled-but-categorized"
@@ -279,7 +279,7 @@
   "portable_contract": {
     "requires_desktop": false,
     "requires_utr": false,
-    "content_truth": "topmind-workspace/categories-and-topics",
+    "content_truth": "topmind-workspace",
     "host_may_provide": [
       "skills",
       "cli",

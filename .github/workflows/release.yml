@@ -155,8 +155,9 @@ jobs:
           fi
           npm publish --access public
 
-      # Product policy: keep only the newest 2 GitHub Releases + matching tags.
-      - name: Prune old releases and tags (keep 2)
+      # Product policy: keep only the newest 2 GitHub Releases.
+      # Git tags stay (topmind docs/REPO-MAINTENANCE.md §5.1). Do not delete refs/tags.
+      - name: Prune old releases (keep 2)
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -174,9 +175,6 @@ jobs:
           for row in "${ROWS[@]:$KEEP}"; do
             id="${row%%$'\t'*}"
             tag="${row#*$'\t'}"
-            echo "deleting release id=${id} tag=${tag}"
+            echo "deleting release id=${id} tag=${tag} (git tag kept)"
             gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${id}" || true
-            if [[ -n "$tag" ]]; then
-              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" || true
-            fi
           done

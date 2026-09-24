@@ -8,8 +8,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Pack lives at repo root after the topmind-skills split.
 const repoRoot = path.resolve(__dirname, "..");
 
-const CONTENT_TRUTH = "topmind-workspace/categories-and-topics";
-
 async function readText(relativePath) {
   return fs.readFile(path.join(repoRoot, relativePath), "utf8");
 }
@@ -18,8 +16,10 @@ async function readJson(relativePath) {
   return JSON.parse(await readText(relativePath));
 }
 
-function assertSurfaceContract(source, label, { desktopOptional = true, utrOptional = true } = {}) {
-  assert.match(source, /topmind-workspace\/categories-and-topics/u, `${label} should name the v3.4 portable content truth`);
+function assertSurfaceContract(source, label, contentTruth, { desktopOptional = true, utrOptional = true } = {}) {
+  const escaped = contentTruth.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(source, new RegExp(escaped, "u"), `${label} should name the portable content truth`);
+  assert.doesNotMatch(source, /categories-and-topics/u, `${label} must not name a nested categories-and-topics directory`);
   assert.match(
     source,
     /only [`"]?topmind[`"]?|only daily|Expose only `topmind`|same daily entry \(`topmind`\)|日常入口只暴露 `?topmind`?/iu,
@@ -57,7 +57,9 @@ test("portable surface docs mirror the skill-pack content contract", async () =>
   const pack = await readJson("topmind-pack.json");
   const contentTruth = pack.portable_contract.content_truth;
 
-  assert.equal(contentTruth, CONTENT_TRUTH);
+  assert.equal(contentTruth.includes("/"), false);
+  assert.doesNotMatch(contentTruth, /categories-and-topics/u);
+  assert.equal(pack.product_contract.content_truth, contentTruth);
   assert.equal(pack.daily_entry, "topmind");
   assert.equal(pack.portable_contract.requires_desktop, false);
   assert.equal(pack.portable_contract.requires_utr, false);
@@ -70,7 +72,7 @@ test("portable surface docs mirror the skill-pack content contract", async () =>
   };
 
   for (const [label, source] of Object.entries(surfaceDocs)) {
-    assertSurfaceContract(source, label);
+    assertSurfaceContract(source, label, contentTruth);
   }
 });
 
@@ -136,4 +138,61 @@ test("pack does not reference TUI surface (removed)", async () => {
   const pack = await readJson("topmind-pack.json");
   assert.ok(!pack.surfaces.includes("tui"), "pack surfaces should not include tui");
   assert.ok(!pack.portable_contract.host_may_provide.includes("tui"), "host_may_provide should not include tui");
+});
+
+test("content_truth is the workspace directory the engine canon marks as 内容真源", async (t) => {
+  const pack = await readJson("topmind-pack.json");
+  const candidates = [
+    process.env.TOPMIND_SRC && path.join(process.env.TOPMIND_SRC, "PRODUCT-BOUNDARIES.md"),
+    path.resolve(repoRoot, "..", "topmind", "PRODUCT-BOUNDARIES.md"),
+    path.resolve(repoRoot, ".topmind-src", "PRODUCT-BOUNDARIES.md"),
+  ].filter(Boolean);
+  let boundaries = null;
+  for (const candidate of candidates) {
+    try {
+      boundaries = await fs.readFile(candidate, "utf8");
+      break;
+    } catch {
+      /* try the next engine checkout */
+    }
+  }
+  if (!boundaries) {
+    t.skip("engine PRODUCT-BOUNDARIES.md not available");
+    return;
+  }
+  const marked = boundaries.match(/^├──\s+([A-Za-z0-9._-]+)\/\s+#\s*内容真源/m);
+  assert.ok(marked, "PRODUCT-BOUNDARIES home layout must mark one directory as 内容真源");
+  assert.equal(pack.portable_contract.content_truth, marked[1]);
+  assert.equal(pack.product_contract.content_truth, marked[1]);
+});
+
+test("INSTALL prune step keeps git tags and does not document tag deletion", async () => {
+  const install = await readText("INSTALL.md");
+  assert.match(install, /只保留最近 2 个 GitHub Release/);
+  assert.match(install, /git tag 保留/);
+  assert.doesNotMatch(install, /tag 会被删除/);
+  const workflow = await readText(".github/workflows/release.yml");
+  const code = workflow
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim();
+      return trimmed && !trimmed.startsWith("#");
+    })
+    .join("\n");
+  assert.doesNotMatch(code, /git\/refs\/tags/u);
+});
+
+test("integration README relative links resolve inside this pack", async () => {
+  for (const host of ["codex", "hermes", "opencode"]) {
+    const rel = path.join("integrations", host, "README.md");
+    const source = await readText(rel);
+    assert.doesNotMatch(source, /skills\/topmind-pack\.json/u, `${rel} must cite the pack file that exists at repo root`);
+    assert.doesNotMatch(source, /10 modules/u, `${rel} must not freeze a stale module count`);
+    const links = [...source.matchAll(/\]\(([^)]+)\)/g)].map((match) => match[1]);
+    for (const link of links) {
+      if (/^(https?:|mailto:|#)/u.test(link)) continue;
+      const abs = path.resolve(repoRoot, "integrations", host, link.split("#")[0]);
+      await fs.stat(abs);
+    }
+  }
 });

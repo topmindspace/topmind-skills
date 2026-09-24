@@ -112,28 +112,28 @@
       "prompt": "跑一遍 topmind-loop，做整体巡检。",
       "primary_skill": "topmind-loop",
       "extra_skills": [],
-      "expected_output": "Routes through topmind-loop (independent skill, not a maintain sub-action), walks all topics/inbox/archive scopes, applies well-defined fixes via UTR commands, writes decisions to .loop/topics.md, and flags architecture drift signals."
+      "expected_output": "Routes through topmind-loop (independent skill, not a maintain sub-action), walks all topics/inbox/archive scopes, applies well-defined fixes via UTR commands, writes decisions to .topmind/loop/topics.md, and flags architecture drift signals."
     },
     {
       "id": 16,
       "prompt": "继续 loop，从上次断点恢复。",
       "primary_skill": "topmind-loop",
       "extra_skills": [],
-      "expected_output": "Routes through topmind-loop, reads cursor from .loop/{scope}.md state files, resumes walk at the cursor item, updates done/total and cursor after each item, and appends new decisions."
+      "expected_output": "Routes through topmind-loop, reads cursor from .topmind/loop/{scope}.md state files, resumes walk at the cursor item, updates done/total and cursor after each item, and appends new decisions."
     },
     {
       "id": 17,
       "prompt": "loop 一下 20-研究 大类下的所有专题。",
       "primary_skill": "topmind-loop",
       "extra_skills": [],
-      "expected_output": "Routes through topmind-loop with scoped walk (only 20-研究 category topics), writes scoped progress to .loop/topics.md, applies UTR fixes for well-defined issues, escalates ambiguous decisions to Errors/Blockers."
+      "expected_output": "Routes through topmind-loop with scoped walk (only 20-研究 category topics), writes scoped progress to .topmind/loop/topics.md, applies UTR fixes for well-defined issues, escalates ambiguous decisions to Errors/Blockers."
     },
     {
       "id": 18,
       "prompt": "[schema validation] Verify all SKILL.md files have required frontmatter fields: name, version, description, action_category, triggers. Verify action_category values are within the enum. Verify name matches directory name in kebab-case.",
       "primary_skill": "topmind-maintain",
       "extra_skills": [],
-      "expected_output": "Validates frontmatter schema across all SKILL.md files (10 total: 7 core + 2 connector + 1 optional ledger). Reports any missing required fields, invalid action_category values, or name/directory mismatches."
+      "expected_output": "Validates frontmatter schema across all SKILL.md files (11 total: 7 core + 2 connector + optional ledger + optional wechat). Reports any missing required fields, invalid action_category values, or name/directory mismatches."
     },
     {
       "id": 19,

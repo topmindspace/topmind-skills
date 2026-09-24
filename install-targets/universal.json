@@ -29,7 +29,7 @@
   "capabilities": [
     "skills"
   ],
-  "content_truth": "topmind-workspace/categories-and-topics",
+  "content_truth": "topmind-workspace",
   "host_must_not": [
     "change-content-truth",
     "add-daily-entrypoints",
