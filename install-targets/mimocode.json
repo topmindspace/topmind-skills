@@ -43,8 +43,8 @@
     "workspace_root": "host-provided"
   },
   "notes": [
-    "MiMoCode / MiMo Desktop: project root .mimocode/skills, global root ~/.config/mimocode/skills.",
-    "Brand root ~/.agents/skills may also be scanned — canonical install already covers it.",
+    "MiMoCode / MiMo Desktop: project root .mimocode/skills, global root <mimocode-global-skills>.",
+    "Brand root <agents-skills> may also be scanned — canonical install already covers it.",
     "Single daily entry topmind. v4.3 progressive disclosure."
   ],
   "install": {
@@ -54,6 +54,6 @@
     "matrix": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a mimocode",
     "from_git": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a mimocode",
     "from_release": "node bin/install-skills.mjs add release:latest -g -a mimocode",
-    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest ~/.config/mimocode/skills"
+    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest <mimocode-global-skills>"
   }
 }

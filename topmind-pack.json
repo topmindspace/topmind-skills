@@ -2,7 +2,7 @@
   "schema_version": 1,
   "name": "topmind",
   "label": "topmind",
-  "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills open-standard aligned, capture-first template-driven categories, optional weread/x connectors and optional ledger (记账). File-system-first content truth; UTR optional.",
+  "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills open-standard aligned, capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账), optional write sub-skill topmind-wechat. None of the optional skills is an extra user concept. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
   "version": "4.13.3",
   "updated": "2026-09-24",
@@ -313,6 +313,14 @@
     {
       "id": "claude-code",
       "path": "install-targets/claude-code.json"
+    },
+    {
+      "id": "mimocode",
+      "path": "install-targets/mimocode.json"
+    },
+    {
+      "id": "universal",
+      "path": "install-targets/universal.json"
     }
   ],
   "utr": {

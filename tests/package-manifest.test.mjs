@@ -168,6 +168,16 @@ test("all declared SKILL.md files have recommended metadata frontmatter (author 
 
 test("all install-targets/*.json declare metadata (license / authors / repository / homepage)", async () => {
   const manifest = await readJson("topmind-pack.json");
+  const onDisk = (await fs.readdir(path.join(skillsRoot, "install-targets")))
+    .filter((name) => name.endsWith(".json"))
+    .sort();
+  const listed = manifest.install_targets.map((target) => path.basename(target.path)).sort();
+  assert.deepEqual(listed, onDisk, "every install-targets/*.json must be listed on pack.install_targets");
+  for (const file of onDisk) {
+    const config = await readJson(path.join("install-targets", file));
+    const entry = manifest.install_targets.find((target) => path.basename(target.path) === file);
+    assert.equal(entry.id, config.target, file);
+  }
 
   for (const target of manifest.install_targets) {
     const config = await readJson(target.path);
@@ -321,7 +331,12 @@ test("agent install target manifests include topmind-loop and use v3.4 content t
     assert.equal(config.package, "topmind");
     assert.equal(config.daily_entry, "topmind");
     assert.deepEqual(config.skills, EXPECTED_SKILLS);
-    assert.equal(config.install_strategy, "symlink-or-copy");
+    const notes = Array.isArray(config.notes) ? config.notes.join("\n") : "";
+    assert.equal(
+      config.install_strategy,
+      /canonical pack body/u.test(notes) ? "canonical-copy" : "symlink-or-copy",
+      target.id,
+    );
     assert.ok(Array.isArray(config.capabilities) && config.capabilities.includes("skills"));
     assert.equal(config.content_truth, manifest.portable_contract.content_truth);
     assert.doesNotMatch(config.content_truth, /categories-and-topics/u);
@@ -745,6 +760,24 @@ test("skill pack states the two-track output-language rule once and router links
   assert.doesNotMatch(memory, /写进 topic\.md/u);
   assert.doesNotMatch(disambig, /memory \| 仅 confirmed stable → `topic\.md`/u);
   assert.doesNotMatch(brief, /输出语言跟随 UI|AI follows the UI/u);
+});
+
+test("pack description names every optional skill, and host-loading counts match the pack", async () => {
+  const manifest = await readJson("topmind-pack.json");
+  const n = manifest.skills.length;
+  for (const skill of manifest.skills.filter((item) => item.optional)) {
+    assert.match(manifest.description, new RegExp(skill.id), skill.id);
+  }
+  const host = await fs.readFile(path.join(skillsRoot, "shared", "host-loading.md"), "utf8");
+  assert.match(host, new RegExp(`${n} 个目录各有 \`SKILL\\.md\``));
+  assert.match(host, new RegExp(`其余 ${n - 2} 个`));
+  const copy = host.match(/cp -R (\S+) /u);
+  assert.ok(copy, "host-loading must show a cp -R of the shared directory");
+  assert.notEqual(copy[1], "skills/shared");
+  assert.equal((await fs.stat(path.join(skillsRoot, copy[1]))).isDirectory(), true);
+  for (const skill of manifest.skills.filter((item) => item.optional)) {
+    assert.match(host, new RegExp(skill.id), skill.id);
+  }
 });
 
 test("pack UTR node floor matches package.json engines, not an older major", async () => {
