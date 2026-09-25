@@ -1,6 +1,6 @@
 ---
 name: topmind-wechat
-version: 4.13.3
+version: 4.13.4
 description: >-
   公众号文章全生命周期子技能（write 族）：交付包、审校改写、质量三关、状态同步、微信内联排版与发布清单。
   支持 forward（底稿→公众号）、reverse（选题原创→回推）、站外拉取（在线精选站→reverse+pending）三条路径；

@@ -1,6 +1,6 @@
 {
   "name": "@topmindspace/topmind-skills",
-  "version": "4.13.3",
+  "version": "4.13.4",
   "description": "topmind Agent Skills pack — portable markdown skills for capture, organize, write, memory, maintain, loop.",
   "type": "module",
   "license": "MIT",

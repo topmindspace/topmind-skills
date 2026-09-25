@@ -4,8 +4,8 @@
   "label": "topmind",
   "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills open-standard aligned, capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账), optional write sub-skill topmind-wechat. None of the optional skills is an extra user concept. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
-  "version": "4.13.3",
-  "updated": "2026-09-24",
+  "version": "4.13.4",
+  "updated": "2026-09-25",
   "license": "MIT",
   "locales": {
     "default": "zh-CN",

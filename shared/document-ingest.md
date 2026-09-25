@@ -59,7 +59,7 @@ ingest_converter: anydoc@0.1.8 | markitdown@… | pptx-ooxml
 
 失败时原件导入 + 说明笔记；可选原件进 `99-归档/ingest-originals/`。
 
-相关：网页剪藏分层见 [`long-url-capture.md`](./long-url-capture.md)；能力勾选见 [`../../docs/capture-clip-matrix.md`](../../docs/capture-clip-matrix.md)。
+相关：网页剪藏分层见 [`long-url-capture.md`](./long-url-capture.md)；能力勾选见 [`capture-clip-matrix.md`](https://github.com/topmindspace/topmind/blob/main/docs/capture-clip-matrix.md)。
 
 ## 格式与本机工具
 
