@@ -375,7 +375,11 @@
         "promote",
         "digest",
         "append-profile",
-        "append-topic"
+        "append-topic",
+        "retire-profile",
+        "update-profile",
+        "compact-history",
+        "restore-profile"
       ],
       "lifecycle": [
         "scan"
@@ -384,8 +388,8 @@
         "rebuild"
       ]
     },
-    "command_count": 28,
-    "mcp_default_count": 19,
+    "command_count": 32,
+    "mcp_default_count": 23,
     "command_exposure": {
       "primary": [
         "workspace-read.list-categories",
@@ -402,7 +406,11 @@
         "memory.promote",
         "memory.digest",
         "memory.append-profile",
-        "memory.append-topic"
+        "memory.append-topic",
+        "memory.retire-profile",
+        "memory.update-profile",
+        "memory.compact-history",
+        "memory.restore-profile"
       ],
       "danger": [
         "workspace-maintain.archive-topic",

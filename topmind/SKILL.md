@@ -127,7 +127,7 @@ Connector：[`references/connector-resolution.md`](references/connector-resoluti
 主路径：host 文件工具 + project-model-brief。Skills pack **不依赖** Pi / `pi-agent-core`；不要编造 bash / shell。宿主若有唯一片段替换，中段改稿优先用它。  
 降级：[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。
 
-UTR 可选（MCP primary+danger 共 19；注册表 28 = 8 域 / 28 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
+UTR 可选（MCP primary+danger 共 23；注册表 32 = 8 域 / 32 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
 
 字段始终独立 **`category` + `topic`**（真实目录名，非写死编号）。
 

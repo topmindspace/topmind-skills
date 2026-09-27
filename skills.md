@@ -1,7 +1,7 @@
 # topmind Skills Package Index (包索引)
 
 > [!NOTE]
-> **每日唯一入口**：`topmind` (router)。其余 6 个 action、2 个 optional connector、1 个 optional 记账模块均由 router 调度。  
+> **每日唯一入口**：`topmind` (router)。其余 6 个 action、2 个 optional connector、1 个 optional 记账模块、1 个 optional 公众号 write 子技能（共 11）均由 router 调度。  
 > **通用与可移植**：兼容 Claude Code / OpenCode / Codex / Hermes 等 Agent Host。  
 > **版本真源**：`topmind-pack.json`（可执行 `npm run versions` 查看完整版本号）。  
 > 详见权威说明：[Skills README](./README.md)（简体中文） · [English](./README.en.md) · [安装与部署指南 (INSTALL.md)](./INSTALL.md)。

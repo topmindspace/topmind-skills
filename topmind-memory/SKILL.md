@@ -23,7 +23,7 @@ compatibility: workspace core profile (memory/profile.md) + periodic reflections
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-08-17
+updated: 2026-09-25
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -61,17 +61,19 @@ degradation: ../shared/capability-degradation.md
 - 缺失时创建模板后追加  
 
 ```text
-UTR: memory.append-profile --content "…"
-Desktop: append_core_memory · update_core_memory · retire_core_memory
-Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史记录 → 写回
+UTR: memory.append-profile · memory.update-profile · memory.retire-profile · memory.restore-profile · memory.compact-history
+Desktop: append_core_memory · update_core_memory · retire_core_memory · restore_core_memory · compact_core_memory_history
+Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史记录 / RESTORE 回活跃 / COMPACT-HISTORY → 写回
 ```
 
 **事实生命周期（确认式，无自动遗忘，不是只追加）**：
 - **追加（ADD）**：新稳定事实 → `append_core_memory` / `memory.append-profile`（跨活跃段落去重，禁止第二条活事实）
-- **更新（UPDATE）**：含义变了 → `update_core_memory`（原位改写并刷新日期，不要再 append 一行）
+- **更新（UPDATE）**：含义变了 → `update_core_memory`（原位改写并刷新日期，旧表述进历史 `sup`，不要再 append 一行）
 - **归档（RETIRE）**：已完成/过期 → `retire_core_memory`（活跃段 → `## 历史记录`，加 `（YYYY-MM-DD 归档）` 前缀，**不删内容**）
+- **恢复（RESTORE）**：历史事实仍有效需重新生效 → `restore_core_memory`（历史 → 活跃段；若活跃已有等价事实则拒绝）
+- **历史压缩（COMPACT-HISTORY）**：用户要求清理近重复历史行 → `compact_core_memory_history`（**需确认**；保留最新，丢更早近重复）
 
-用户说「这件事做完了 / 这条过时了」→ 归档，**不要删除**；「这条改成…」→ 原位更新。`memory_organize` 产出 `append_profile` / `update_profile` / `retire_profile` 建议（须确认）。AI 上下文只注入活跃事实（历史段折叠为计数）。
+用户说「这件事做完了 / 这条过时了」→ 归档，**不要删除**；「这条改成…」→ 原位更新；「这条还是对的，恢复」→ RESTORE。`memory_organize` 产出 `append_profile` / `update_profile` / `retire_profile` 建议（须确认）。AI 上下文只注入活跃事实（历史段折叠为计数）。
 
 ## 周期反思（Periodic）
 
