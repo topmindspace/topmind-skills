@@ -43,7 +43,7 @@ topmind-skills/              # pack root = repo root
 ├── topmind-weread|x/        # optional connectors
 ├── topmind-ledger/          # optional bookkeeping (memory-plane ledgers)
 ├── topmind-wechat/          # optional WeChat write sub-skill (not a peer entry)
-├── shared/                  # write receipts · degradation · capture …
+├── shared/                  # write receipts · degradation · auto-suggest · capture …
 ├── install-targets/         # host install shapes
 ├── evals/evals.json
 ├── bin/install-skills.mjs   # pack-aware installer (shared/ aware)
@@ -71,12 +71,14 @@ Content truth:       topmind-workspace
 Capability model:    action-first
 Save settings:       auto | confirm
 Safety model:        reversible by default
+Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — shared/auto-suggest.md
 ```
 
 Expose only `topmind` as the daily entry. Host session state must not become topmind content truth.  
 **Desktop is not required** for this pack. **UTR is optional** — use host file tools when UTR is absent.
 
 Workflow: `收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
+**Capture whenever / use whenever:** capture lands with zero questions; classification alternatives, todo extraction, and memory candidates are prepared as L1 suggestions for one-word accept ([`shared/auto-suggest.md`](./shared/auto-suggest.md)). `memory/todo.md` is a satellite — not a sixth concept.
 (If the user says “capture this”, “note it”, “organize”, “write it up”, or “run a loop”, the router infers category / topic / action.)
 
 ---
@@ -133,14 +135,14 @@ Loose note: `{category}/{note}.md` when no topic yet.
 
 Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
 
-### 6 条核心规约
+### 6 core rules
 
-1. **大类不重叠**  
-2. **专题自然涌现**  
-3. **动态类特殊**（默认平铺）  
-4. **兜底类清理**（约 30 天）  
-5. **参考资料定位**  
-6. **大类命名稳定**（rename via migration）  
+1. **Categories never overlap**  
+2. **Topics emerge** (do not force-create)  
+3. **Dynamic/stream category is special** (flat-default)  
+4. **Catch-all cleanup** (~30 days)  
+5. **Reference materials stay reference-only**  
+6. **Category names stay stable** (rename via migration)  
 
 Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
 
@@ -155,7 +157,7 @@ Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
 - `source_type`: `user-original` | `external-capture` | `ai-derived`  
 - UTR is optional — host file tools preserve the same contract  
 - Save settings protocol: `writeback_mode: auto | confirm`  
-- Locked/final files → revision copy (`文章 - 修订版.md`), not in-place auto-edit  
+- Locked: editable under auto (task-level first-write snapshot); permanent delete of locked/core is user-only  
 - Desktop is not required for this pack  
 - **Compound discipline (no structure change):** organize leaves synthesis on disk; write reads optional `topic.md` first; memory only on explicit confirm; capture never edits `topic.md`; **no** hard `INDEX.md` / parallel wiki trees (see `shared/project-model-brief.md`)  
 

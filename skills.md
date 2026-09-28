@@ -32,6 +32,7 @@
 2. **渐进式披露 (Progressive Disclosure)**：Discovery (`name+description`) → Activation (`SKILL.md`) → Deep Procedures (`shared/` / `references/`)。
 3. **文件系统即真源**：不引入独立的数据库或 Agent state 依赖。
 4. **遵从 6 条核心规约**：见 [`shared/project-model-brief.md`](./shared/project-model-brief.md)。
+5. **自动建议阶梯**：L0 零提问落盘 · L1 默认准备建议（分类/待办/记忆/专题）· L2 确认后写。见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。待办是 `memory/todo.md` 卫星，不是第六概念。
 
 👉 **详细架构、Frontmatter Schema 与安装方法请参阅**：
 - [Skills README](./README.md)（简体中文） · [English](./README.en.md)

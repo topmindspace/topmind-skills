@@ -4,8 +4,8 @@
   "label": "topmind",
   "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills open-standard aligned, capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账), optional write sub-skill topmind-wechat. None of the optional skills is an extra user concept. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
-  "version": "4.13.5",
-  "updated": "2026-09-25",
+  "version": "4.14.0",
+  "updated": "2026-09-28",
   "license": "MIT",
   "locales": {
     "default": "zh-CN",
@@ -379,7 +379,10 @@
         "retire-profile",
         "update-profile",
         "compact-history",
-        "restore-profile"
+        "restore-profile",
+        "list-todos",
+        "add-todo",
+        "toggle-todo"
       ],
       "lifecycle": [
         "scan"
@@ -388,8 +391,8 @@
         "rebuild"
       ]
     },
-    "command_count": 32,
-    "mcp_default_count": 23,
+    "command_count": 35,
+    "mcp_default_count": 26,
     "command_exposure": {
       "primary": [
         "workspace-read.list-categories",
@@ -410,7 +413,10 @@
         "memory.retire-profile",
         "memory.update-profile",
         "memory.compact-history",
-        "memory.restore-profile"
+        "memory.restore-profile",
+        "memory.list-todos",
+        "memory.add-todo",
+        "memory.toggle-todo"
       ],
       "danger": [
         "workspace-maintain.archive-topic",

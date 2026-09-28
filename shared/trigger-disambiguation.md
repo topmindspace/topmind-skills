@@ -9,6 +9,9 @@
 |--------|--------------|------|
 | 总结要点 | organize vs memory | 默认 → `topmind-organize`。仅「更新我的情况 / 加到专题记忆 / 沉淀到记忆」→ memory |
 | 沉淀 | capture vs memory | 默认 → `topmind-capture`。仅「沉淀成稳定结论 / 更新我的情况」→ memory |
+| 记一下要做 X / 别忘了 X | capture vs todo | → `topmind-capture`（材料落盘）+ 待办写入/建议 `memory/todo.md`（见 `auto-suggest.md`） |
+| 待办 / 有什么要做的 | router 直达 | 读 `memory/todo.md` 活跃项；不新建概念、不进 organize |
+| X 做完了 / 这条不用了 | todo vs organize | 清单项 → 勾掉/归档 `memory/todo.md`；整周事项状态 → organize「整理本周」 |
 | 体检 / 检查 | maintain vs loop | 「快速体检 / 体检 / 检查 / doctor」→ maintain。「整体体检 / 全面检查 / 巡检 / audit / review」→ loop |
 | 审计 / audit | maintain vs loop | 默认 → loop。maintain 用 doctor / 诊断 / 快速体检 |
 | 整理 | organize | 「整理 inbox」→ organize + `plan-inbox-routing`。其它 → organize |
@@ -24,9 +27,10 @@
 
 | 动作 | 默认写什么 | 禁止 |
 |------|------------|------|
-| capture | 材料笔记 | 改 `topic.md`；自动 organize/memory |
-| organize | 专题根综合/结构笔记（留痕） | 自动写稳定记忆；建 `INDEX.md` / entities 树 |
+| capture | 材料笔记；显式行动语可写/建议 `memory/todo.md` | 改 `topic.md`；自动 organize；静默写 memory/profile 或 memory/topics |
+| organize | 专题根综合/结构笔记（留痕）；L1 待办/记忆/专题建议 | 自动写稳定记忆；建 `INDEX.md` / entities 树 |
 | memory | 仅 confirmed stable → `memory/profile.md` 或 `memory/periodic/`（用户明说才写 `memory/topics/`） | 因 capture/整理顺手刷写；把 `topic.md` 当记忆默认落点 |
+| todo（卫星） | `memory/todo.md` checklist | 新建顶层 `todo/`；当第六用户概念 |
 | write | 稿件 / delivery | 为「补结构」空建 `topic.md` |
 | loop | 状态 / 可逆修复 | 代写记忆；建硬索引 |
 | ledger | `{memory.dir}/ledgers/` 追加一行 | 改 `topic.md`；发明 ClassFund/Giggs/Mom；当第六用户概念 |

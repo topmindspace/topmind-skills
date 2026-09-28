@@ -1,6 +1,6 @@
 ---
 name: topmind-weread
-version: 4.13.5
+version: 4.14.0
 description: >-
   同步微信读书划线/想法/统计到专题。Use when 微信读书、划线同步、weread、读书笔记。
   Do NOT use for 普通 URL 捕获、仅整理、出稿、X.
@@ -92,6 +92,6 @@ RPC：`weread.getStatus` · `testConnection` · `listNotebooks` · `syncHighligh
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
 

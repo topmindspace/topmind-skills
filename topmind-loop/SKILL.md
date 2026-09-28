@@ -1,6 +1,6 @@
 ---
 name: topmind-loop
-version: 4.13.5
+version: 4.14.0
 description: >-
   可中断的工作区语义巡检（走专题/Inbox，.loop 断点续跑）。Use when 跑一遍 loop、巡检、整体体检、复盘、
   继续 loop、audit。Do NOT use for 快速 doctor（→maintain）、单专题整理、捕获、写作、仅记忆.
@@ -104,8 +104,8 @@ Scopes、walk、guardrails 细节：[`references/scopes-and-walk.md`](references
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
 
 Loop 写状态文件与可逆修复时同样适用；危险操作先备份。
 

@@ -30,6 +30,7 @@ Level 3（最低）: 仅对话
 | 看专题 | 列出类别下专题目录 + 根层单篇 `.md` |
 | 检视专题 | 读 `topic.md`（若有）+ 专题根 `.md` |
 | 捕获 | 写带 frontmatter 的 `.md` 到专题根 / 大类根 / role:buffer |
+| 待办 | 读写 `memory/todo.md` checklist（卫星）；从周期本/活动窗口识别行动语提取 |
 | 交付 | 写到 role:delivery（常为 `88-交付/`） |
 | 追加记忆 | 默认 `memory/profile.md`（主）或 `memory/periodic/{YYYY}/`（周期反思）；**开专题**写内容大类 `{YYYY-主题}/`；仅用户明说才写 `memory/topics/{slug}.md` |
 | 健康检查 | 遍历结构、报告缺失 / 垃圾；自定义类合法 |
@@ -43,9 +44,10 @@ Level 3（最低）: 仅对话
 |------|------|
 | 类别 / 专题 | `list-categories`（WorkspaceModel Descriptor）· `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` |
 | 捕获 / 创建 | `create-topic` · `capture-note` · `save-output` |
-| 记忆 | `memory.append-profile` · `memory.append-topic` · `memory.promote` · `memory.digest` |
+| 待办 | `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` |
+| 记忆 | `memory.append-profile` · `memory.append-topic` · `memory.promote` · `memory.digest` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` |
 | Inbox 路由 | `plan-inbox-routing`（primary；整理 inbox 前规划） |
-| 检查 / 维护 | `doctor-workspace` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt` · `contract.reseed` |
+| 检查 / 维护 | `doctor-workspace` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt` · `contract.validate` · `contract.reseed` |
 
 扩展面见 `TOOLS.md` §Current Command Surface。输入用独立字段 `category` + `topic`。
 

@@ -1,6 +1,6 @@
 ---
 name: topmind-write
-version: 4.13.5
+version: 4.14.0
 description: >-
   写作/润色/出稿到专题或交付层（role:delivery）。Use when 写、起草、续写、润色、出稿、交付、write、draft、deliver。
   Do NOT use for 仅捕获、仅结构整理、只写记忆、doctor/loop、社交连接器.
@@ -32,7 +32,7 @@ compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-D
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-22
+updated: 2026-09-28
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -46,6 +46,7 @@ degradation: ../shared/capability-degradation.md
 2. 起草或修订；去 AI 腔 / 适配格式  
 3. 落盘专题根或 `save-output` → delivery  
 4. 路径回执；交付勿塞进专题内 `outputs/`  
+5. 可选 L1：稿件里稳定结论/待办可在回执建议（不自动写 memory/todo）— [`../shared/auto-suggest.md`](../shared/auto-suggest.md)
 
 ## When NOT to use
 
@@ -111,6 +112,6 @@ Draft · Continue · Revise · Polish · Deliver — 按用户当前意图，不
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
 

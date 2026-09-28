@@ -43,7 +43,7 @@ topmind-skills/              # pack 根 = 仓库根
 ├── topmind-weread|x/        # 可选连接器
 ├── topmind-ledger/          # 可选记账（记忆平面账本）
 ├── topmind-wechat/          # 可选公众号 write 子技能（不是并列入口）
-├── shared/                  # 写回回执 · 降级 · 捕获 …
+├── shared/                  # 写回回执 · 降级 · 自动建议 · 捕获 …
 ├── install-targets/         # Host 安装形状（claude-code / codex / mimocode / …）
 ├── evals/evals.json
 ├── bin/install-skills.mjs   # pack-aware + agent matrix 安装器
@@ -71,6 +71,7 @@ Content truth:       topmind-workspace
 Capability model:    action-first
 Save settings:       auto | confirm
 Safety model:        reversible by default
+Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — shared/auto-suggest.md
 ```
 
 日常入口只暴露 `topmind`。Host 会话状态不得成为 topmind 内容真源。  
@@ -78,6 +79,8 @@ Safety model:        reversible by default
 
 工作流：`收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
 （用户说「收一下」「记一下」「整理」「写成稿」「跑一遍 loop」— router 推断类别 / 专题 / 动作。）
+
+**想记就记 / 随用随记**：捕获零提问落盘（L0）；分类备选 / 待办 / 记忆候选默认 L1 准备——显式行动语待办在 auto 下同轮写入 `memory/todo.md`，其余建议点头再落（[`shared/auto-suggest.md`](./shared/auto-suggest.md)）。
 
 ---
 
@@ -155,7 +158,7 @@ degradation: ../shared/capability-degradation.md
 - `source_type`: `user-original` | `external-capture` | `ai-derived`  
 - UTR 可选 — Host 文件工具遵守同一契约  
 - 保存设置协议：`writeback_mode: auto | confirm`  
-- 锁定/定稿文件 → 修订副本（`文章 - 修订版.md`），不要原地自动改  
+- locked：auto 下可编辑（任务级首写快照）；永久删 locked/core 仅用户  
 - 本 pack 不要求 Desktop  
 - **复合纪律（不改结构）：** organize 把综合写回磁盘；write 先读可选 `topic.md`；memory 仅在明确确认后写；capture 从不改 `topic.md`；**不要**硬造 `INDEX.md` / 平行 wiki 树（见 `shared/project-model-brief.md`）  
 

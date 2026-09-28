@@ -1,6 +1,6 @@
 ---
 name: topmind-organize
-version: 4.13.5
+version: 4.14.0
 description: >-
   整理本周动态、专题内整理/研究/分析/路由 Inbox。Use when 整理本周、整理、分析、研究、对比、总结要点、organize、summarize。
   Do NOT use for 首次捕获、最终出稿、仅写我的情况、快速 doctor、全库 loop.
@@ -37,7 +37,7 @@ compatibility: topmind workspace with stream period notes, topics, or Inbox.
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-08-15
+updated: 2026-09-28
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -51,7 +51,7 @@ degradation: ../shared/capability-degradation.md
 2. 否则确认已有笔记 / Inbox（无材料则先 capture）  
 3. `list-categories` / 读周期本或专题 `.md`  
 4. 按 writeback 写回（默认 auto；整篇替换先备份）  
-5. 回执；不自动 memory（只建议候选）  
+5. 回执；L1 建议待办/记忆/专题候选，不自动写 memory（见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）  
 
 ## When NOT to use
 
@@ -86,10 +86,13 @@ degradation: ../shared/capability-degradation.md
    - 合并同一事项状态（「要做 X」+「X 完成」→ 进行中列表更新）
    - 去重、整理 ## 进行中
    - 保留可读叙事；不要为分类而拆文件
-3. 可选候选（列表请用户接受后再写）：
+3. L1 候选（列表请用户接受后再写；见 ../shared/auto-suggest.md）：
+   - **待办维护**：对照 memory/todo.md，新增/完成/更新（todo_maintain 语义）
    - 更新「我的情况」/ 周期反思 → memory skill（profile + periodic，不是专题）
    - 反复主题 → 建议在内容大类下开/并入专题（勿写 memory/topics；勿自动升专题）
 ```
+
+**待办同步是整理本周的默认建议之一**（不是第六概念）：周期本里「要做 / 完成了」与 `memory/todo.md` 对不上时，给出 diff 建议，点头后写。纯 Host 自行 diff；Desktop `todo_maintain`/`maintainTodos`；UTR `memory.list-todos`/`add-todo`/`toggle-todo`。
 
 **流水可以永远只是流水**——不升专题也完全健康。  
 条目上的「增补」= 同文件续写（评论感），不是平行评论库。
@@ -101,7 +104,7 @@ degradation: ../shared/capability-degradation.md
 
 读专题材料 → 聚类提炼 → 结构化笔记或建议；克制整理，保留原始细节；识别可升 memory 的候选（不自动写 memory）。
 
-**整理留痕（复利，不改目录）**：用户要整理/总结/分析时，除对话回答外，**默认按 writeback 写回**专题根一篇 md（或更新已有综合笔记）。不要只回话不落盘。不建 `INDEX.md`、不建 entities/、不强制 topic.md。可升 memory 的条目只在回执里**建议**，用户说「记住」再走 memory。
+**整理留痕（复利，不改目录）**：用户要整理/总结/分析时，除对话回答外，**默认按 writeback 写回**专题根一篇 md（或更新已有综合笔记）。不要只回话不落盘。不建 `INDEX.md`、不建 entities/、不强制 topic.md。可升 memory 的条目、可提取的待办只在回执里**建议**（L1），用户说「记住 / 记上」再落。
 
 ### 研究分析
 
@@ -139,6 +142,6 @@ degradation: ../shared/capability-degradation.md
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
 

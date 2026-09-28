@@ -1,15 +1,20 @@
 ---
 name: topmind
-version: 4.13.5
+version: 4.14.0
 description: >-
-  topmind 总入口与多意图路由（类别/专题/笔记/交付）。Use when 用户说 topmind、意图模糊、或需要
-  收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger|wechat。
+  topmind 总入口与多意图路由（类别/专题/笔记/待办/交付）。Use when 用户说 topmind、意图模糊、
+  待办/有什么要做的/todo list、或需要收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger|wechat。
   Do NOT invent parallel front doors; do NOT skip a matching sub-skill.
 action_category: router
 triggers:
   - topmind
   - 知识库
   - 工作区
+  - 待办
+  - 有什么要做的
+  - 要做的事
+  - todo
+  - todo list
 tags: [router, entrypoint, topmind]
 entrypoint: true
 compatibility: >-
@@ -18,7 +23,7 @@ compatibility: >-
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-22
+updated: 2026-09-28
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -33,7 +38,7 @@ degradation: ../shared/capability-degradation.md
 3. 读 `topmind.yaml`（contract_version **4**）若存在  
 4. 推断：**category · topic · object · action · writeback_mode**（auto|confirm）  
 5. 派生子 skill 语义（逻辑路由；不假装进程内调用 API）  
-6. 回执含路径；**不**自动链式下一 skill；记忆/提升类建议须用户确认  
+6. 回执含路径；**不**自动链式下一 skill；L1 建议默认准备、L2 须用户确认（[`../shared/auto-suggest.md`](../shared/auto-suggest.md)）
 
 
 ## Quick Reference
@@ -42,6 +47,9 @@ degradation: ../shared/capability-degradation.md
 用户说什么              → 路由到哪            → 目标位置
 ─────────────────────────────────────────────────────────────
 记/存/收/链接/想法       → topmind-capture     → 动态周期本 / 专题 / Inbox
+记一下要做 X / 别忘了 X  → topmind-capture     → 材料落盘 + 待办写入/建议（memory/todo.md）
+待办 / 有什么要做的/todo → 本 router           → 读 memory/todo.md 活跃项（卫星，非新概念）
+X 做完了 / 这条不用了    → 本 router           → 勾掉/归档对应待办（可恢复）
 整理本周/理顺流水        → topmind-organize    → 活动窗口就地理顺 + 建议（确认后写）
 整理/分析/研究/总结/对比 → topmind-organize    → 当前专题 / Inbox 路由 / 活动窗口
 写/改/稿/交付/导出       → topmind-write       → delivery 或专题根
@@ -58,6 +66,8 @@ loop/整体体检/巡检       → topmind-loop        → .topmind/loop/ 可恢
 公众号创作子技能细节      → topmind-wechat      → write 族；见 SKILL.md
 不确定 / 多意图          → 本 router 拆步      → 先 capture 再建议
 ```
+
+待办是 `memory/todo.md` **卫星**（与 profile 同层），不是第六概念。提取/维护语义见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)。
 
 English: capture → capture · weekly review/organize (activity window) → organize · write → write · about me → memory/profile · period reflection → memory/periodic/{YYYY}/ · new topic folder → organize (content category) · doctor → maintain · loop → loop · bookkeeping/spent/deposited → ledger (`memory/ledgers/`, personal default).
 
@@ -92,8 +102,9 @@ Which category? Which topic (or loose note)? Which object? Which action? Which s
 - 高信心类别+专题 → `{大类}/{专题}/`  
 - 高信心类别、中信心专题 → 写入专题 + 回执 `route_reason`  
 - 高信心类别、无专题 → `{大类}/*.md`，建议是否升级专题  
-- 低信心类别 → **role:buffer**（常为 `00-Inbox/`）  
+- 低信心类别 → **role:buffer**（常为 `00-Inbox/`）+ L1 分类备选（最多 3）  
 - 跳过 `hidden` 类别  
+- 行动语 / 稳定个人信息 → L1 待办提取、记忆候选（不打断落盘）
 
 ### Minimum Context
 
@@ -121,23 +132,23 @@ Connector：[`references/connector-resolution.md`](references/connector-resoluti
 - 子 skill **不得**自动 dispatch 下一 skill  
 - 下一步由 Router 再裁决或用户显式发起  
 - 例外：回执可**建议**「稍后 organize / loop」——仅用户面  
+- L1 建议（待办 / 记忆 / 分类 / 专题）同样只挂在回执上，不是链式调用  
 
 ## Tool Boundary
 
 主路径：host 文件工具 + project-model-brief。Skills pack **不依赖** Pi / `pi-agent-core`；不要编造 bash / shell。宿主若有唯一片段替换，中段改稿优先用它。  
 降级：[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。
 
-UTR 可选（MCP primary+danger 共 23；注册表 32 = 8 域 / 32 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
+UTR 可选（MCP primary+danger 共 26；注册表 35 = 8 域 / 35 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` · `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
 
 字段始终独立 **`category` + `topic`**（真实目录名，非写死编号）。
 
 ## 保存设置
 
-- **auto**：直接写 + 路径回执（危险动作可逆）  
-- **confirm**：先审阅再写  
+- **自动保存 (auto)**：直接写 + 路径回执（危险动作可逆）  
+- **需要审阅 (confirm)**：分级——内容直接落盘；仅删/归档待确认  
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。  
 
-详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。  
-**6 条核心规约**：见 [`../shared/project-model-brief.md`](../shared/project-model-brief.md)。
 
 ## Error Handling
 

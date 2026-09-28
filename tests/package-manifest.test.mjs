@@ -277,7 +277,7 @@ test("topmind skill pack declares one daily entry and action modules including l
   assert.equal(manifest.topic_naming.style, "kebab-case");
   assert.equal(manifest.topic_naming.deprecated_field, "project_type");
 
-  // 命令面（command_vocabulary） — v4: 8 域 / 32 命令
+  // 命令面（command_vocabulary） — v4: 8 域 / 35 命令
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("list-categories"));
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("list-topics"));
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("inspect-topic"));
@@ -621,6 +621,7 @@ test("v1.0 progressive disclosure: shared resources + skill references exist and
     "trigger-disambiguation.md",
     "long-url-capture.md",
     "document-ingest.md",
+    "auto-suggest.md",
   ];
   for (const f of sharedRequired) {
     const p = path.join(skillsRoot, "shared", f);
@@ -642,9 +643,17 @@ test("v1.0 progressive disclosure: shared resources + skill references exist and
   const router = await fs.readFile(path.join(skillsRoot, "topmind", "SKILL.md"), "utf8");
   assert.match(router, /shared\/trigger-disambiguation\.md/u);
   assert.match(router, /references\/multi-intent\.md/u);
+  assert.match(router, /shared\/auto-suggest\.md/u);
+  assert.match(router, /memory\/todo\.md/u, "router should route todo satellite");
 
   const capture = await fs.readFile(path.join(skillsRoot, "topmind-capture", "SKILL.md"), "utf8");
   assert.match(capture, /shared\/long-url-capture\.md/u);
+  assert.match(capture, /shared\/auto-suggest\.md/u);
+  assert.match(capture, /memory\/todo\.md/u, "capture should mention todo extract path");
+
+  const organize = await fs.readFile(path.join(skillsRoot, "topmind-organize", "SKILL.md"), "utf8");
+  assert.match(organize, /shared\/auto-suggest\.md/u);
+  assert.match(organize, /memory\/todo\.md/u, "organize should suggest todo maintain");
 });
 
 test("v1.0 description quality: non-empty, under 1024 chars, includes use-when signal", async () => {

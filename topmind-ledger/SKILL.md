@@ -1,6 +1,6 @@
 ---
 name: topmind-ledger
-version: 4.13.5
+version: 4.14.0
 description: >-
   通用记账到记忆平面（默认个人/自己账本，用户自建账本与分类）。Use when 记账、记一笔、花了、存入、查看账单、账户余额。
   Do NOT use for 记一下到动态、待办、微信读书、发推、Feishu/lark-cli.
@@ -82,5 +82,5 @@ Desktop 可选小应用（看板 / 流水 / 分类 / 快捷记账）。**如何�
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。

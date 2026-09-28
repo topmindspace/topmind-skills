@@ -1,6 +1,6 @@
 ---
 name: topmind-x
-version: 4.13.5
+version: 4.14.0
 description: >-
   X/Twitter：归档/搜索（Bearer）、发帖（xurl）、Agent 可用官方 MCP。Use when 发推、推特、twitter、x.com。
   Do NOT use for 微信读书、非 X 捕获、doctor、长文交付.
@@ -90,8 +90,8 @@ Bearer 加密存储；不自动关注/点赞/转发；遵守 X API 规则。
 ## 保存设置
 
 - **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
-- **需要审阅 (confirm)**：先进入目标路径/内容审阅入口再保存
-- Host 可编码为 `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
 
 发布动作始终二次确认（即使 auto）。
 

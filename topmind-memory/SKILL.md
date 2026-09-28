@@ -1,6 +1,6 @@
 ---
 name: topmind-memory
-version: 4.13.5
+version: 4.14.0
 description: >-
   更新「我的情况」或周期反思。Use when 记住这个、更新我的情况、加到专题记忆、沉淀结论。
   Do NOT use for 捕获、仅总结（→organize）、整理本周正文、出稿、开/并专题、doctor/loop.
@@ -23,7 +23,7 @@ compatibility: workspace core profile (memory/profile.md) + periodic reflections
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-25
+updated: 2026-09-28
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -37,7 +37,8 @@ degradation: ../shared/capability-degradation.md
 | **周期子 memory** | `memory/periodic/{YYYY}/{period}.md` | 周期反思（stream_digest / ai_summary 确认后） |
 
 **建立/归入专题**（内容大类夹）→ **organize / topic_classify**，路径 `{大类}/{YYYY-主题}/topic.md`。  
-**不是**默认写入 `memory/topics/`。
+**不是**默认写入 `memory/topics/`。  
+**待办清单** → 卫星 `memory/todo.md`（UTR `memory.*-todo`；capture/organize 提取，见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）。本 skill 不主写待办，只在周期反思里引用。
 
 | 用户意图 | 写哪里 |
 |----------|--------|
@@ -45,6 +46,7 @@ degradation: ../shared/capability-degradation.md
 | **周期反思** | `memory/periodic/{YYYY}/` |
 | **开/并专题**（长期主题夹） | 内容大类下专题（organize 建议 · 确认后 create_topic） |
 | 明确说「把结论写进专题记忆层」 | 可选 `memory/topics/{slug}.md`（语义平面 · **非默认**） |
+| **记一下要做 X** | 材料 → capture；X → `memory/todo.md`（卫星） |
 
 ## Activation checklist
 
@@ -62,6 +64,7 @@ degradation: ../shared/capability-degradation.md
 
 ```text
 UTR: memory.append-profile · memory.update-profile · memory.retire-profile · memory.restore-profile · memory.compact-history
+UTR todos（卫星）: memory.list-todos · memory.add-todo · memory.toggle-todo
 Desktop: append_core_memory · update_core_memory · retire_core_memory · restore_core_memory · compact_core_memory_history
 Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史记录 / RESTORE 回活跃 / COMPACT-HISTORY → 写回
 ```
@@ -99,7 +102,8 @@ Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史�
 
 - **禁止**因 capture / 剪藏 / 导入 自动改 profile 或 `memory/topics/`  
 - **禁止**整理过程中顺手狂写（organize 只可**建议**候选；topic 建议进**内容大类**）  
-- 仅用户明确「记住 / 更新我的情况 / 写进专题记忆」或当轮确认  
+- **写入**仅用户明确「记住 / 更新我的情况 / 写进专题记忆」或当轮确认（L2）  
+- **准备候选**是默认行为（L1）：capture / organize 看到稳定事实就附建议，用户点头再写——不必让用户先学会说「记住」  
 
 ## Role-aware density
 
@@ -110,10 +114,11 @@ Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史�
 ## Capability Degradation
 
 [`../shared/capability-degradation.md`](../shared/capability-degradation.md)。  
-`memory.append-profile` · `memory.append-topic` · `inspect-topic`。
+`memory.append-profile` · `memory.append-topic` · `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `inspect-topic`。
 
 ## 保存设置
 
-- **自动保存 (auto)**：默认；写回执  
-- **需要审阅 (confirm)**：先预览  
-- 见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+- **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+

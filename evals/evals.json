@@ -1,7 +1,7 @@
 {
   "skill_name": "topmind",
   "daily_entry": "topmind",
-  "version": "4.13.5",
+  "version": "4.14.0",
   "evals": [
     {
       "id": 1,
@@ -231,6 +231,27 @@
       "primary_skill": "topmind-ledger",
       "extra_skills": [],
       "expected_output": "Routes through topmind-ledger as 收入 into the default Personal/自己 book. Does not create ClassFund. Writes via writeback to memory/ledgers/."
+    },
+    {
+      "id": 32,
+      "prompt": "记一下：明天要交季度报告，别忘了附上数据表。",
+      "primary_skill": "topmind-capture",
+      "extra_skills": [],
+      "expected_output": "Capture-first: material lands in the stream period note (or topic/Inbox) with provenance + path receipt. Explicit action language also extracts todo item(s) into memory/todo.md (write under writeback auto, or one-word suggest under confirm) per shared/auto-suggest.md. Does not ask the user to choose category/todo/memory modules. Does not write profile.md."
+    },
+    {
+      "id": 33,
+      "prompt": "有什么要做的？",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "expected_output": "Router reads memory/todo.md active checklist items (todo satellite, not a 6th concept) and lists them with paths. Does not invent a top-level todo/ directory, does not run organize, does not ask the user which skill to use."
+    },
+    {
+      "id": 34,
+      "prompt": "整理本周，顺便看看待办有没有要更新的。",
+      "primary_skill": "topmind-organize",
+      "extra_skills": [],
+      "expected_output": "Organize 整理本周 on the activity window: tidies the period note in place, then L1-suggests todo maintain diff (add/complete/update vs memory/todo.md) and optional memory/topic candidates per shared/auto-suggest.md. User accepts before writing todo/memory changes. No auto memory writes, no INDEX.md."
     }
   ]
 }

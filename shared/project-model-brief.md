@@ -82,10 +82,10 @@ memory:
 
 | 动作 | 纪律 |
 |------|------|
-| organize | 整理/总结默认落盘专题根笔记（按 writeback）；不只回话；可建议 memory 候选，不自动写 topic.md |
+| organize | 整理/总结默认落盘专题根笔记（按 writeback）；不只回话；L1 建议 memory/todo/专题候选，不自动写 topic.md |
 | write | 有 `topic.md` 先读再写；无则不强制创建 |
-| memory | 仅用户明确沉淀；禁止 capture 自动改 memory/topics/ |
-| capture | 只写材料笔记；不改 topic.md、不自动链式 |
+| memory | 写入仅用户明确沉淀（L2）；L1 默认准备候选；禁止 capture 自动改 memory/topics/ |
+| capture | 只写材料笔记；不改 topic.md、不自动链式；行动语 → `memory/todo.md`（显式可写，隐含建议） |
 | loop | 材料多而首页空时只**建议** organize/memory，不代写记忆/不建 INDEX |
 
 ## source_type
