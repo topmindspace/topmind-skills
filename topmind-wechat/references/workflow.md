@@ -60,20 +60,31 @@ python3 scripts/sync-status.py --set 定稿 <包> --apply
 
 | 输出 | 口径 | 用途 |
 |------|------|------|
-| frontmatter `word_count` | 纯中文 `\[一-鿿\]` | 映射真源 |
+| frontmatter `word_count` | 正文**全文**的 `[\u4e00-\u9fff]` 计数 —— **frontmatter 之后的一切都算，含图注、也含图片路径里的中文** | 映射真源 |
 | lint「字数」 | 视觉长度（中 1 + 英数 ×0.6，URL 不计） | 阅读时长 / 段长 |
 | md2wechat「正文字数」 | 渲染后字符 | 仅展示 |
+
+⚠️ `word_count` **只能由 `sync-status.py --apply` 回写，禁止手算**。它的口径与直觉不同：一篇 9 图稿，光 `images/NN-中文名.png` 这一串路名就贡献 40+ 字。自制口径（如「剔掉图注与路径」）会得出一个更小、更像「正文字数」的值，写进 frontmatter 后会被 `sync-mapping.py` 判为漂移 —— 实测一篇 1,027 vs 1,450，而错值同时落进 `topic.md` 总表与包内 README，**一个错值三处落盘**。
 
 ## 定稿验收命令串
 
 ```bash
-python3 scripts/scan_ai_flavor.py <包>/公众号稿.md    # ≥85
+python3 scripts/scan_ai_flavor.py <包>/公众号稿.md    # 总分 ≥85 且「作者姿态分」≥85
 python3 scripts/lint-wechat.py --input <包>/公众号稿.md
+python3 scripts/audit-provenance.py --draft <包>/公众号稿.md --source <包>/源稿-*.md
 python3 scripts/sync-mapping.py --no-topstream
 python3 scripts/sync-status.py
 python3 scripts/md2wechat.py --input <包>/公众号稿.md --out-dir <包> \
   --slug <slug> --asset-root <素材根> --embed-images
 ```
+
+第 3 行只在**有源稿**时跑（`reverse` / 站外拉取；`forward` 的底稿在 `notes/` 也一样适用）。退出码 **0 = 双向干净**、**1 = 有待判定项**、2 = 参数错。**1 不等于稿子有问题**——它只是把「本稿有源稿找不到」和「源稿有本稿落下」两类段摆出来，由人逐条判：归入已声明的修正/增补，或改回去。判定完把结论写进包内 `README.md`，这一关才算收口。
+
+三个易踩的点：
+
+- **阈值别乱调**：默认 `0.72`。调高会把正常的改写（换词、调序）判成新增，调低会漏掉真扩写。
+- **源稿后加的块要 `--skip`**：若源稿顶部有本包后补的勘误/说明块（`> [!note] …`），它在本稿侧不存在，会恒定报一条反向待判定。用 `--skip '^>\s*\[!'` 排除，别去改稿子。
+- **图注不算遗漏**：脚本反向侧额外建了一个「去掉 `▲ 图 N` 前缀」的候选池，图注编号不会被误判为漏段。
 
 ## 收尾
 

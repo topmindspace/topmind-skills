@@ -1,9 +1,10 @@
 ---
 name: topmind-capture
-version: 4.14.0
+version: 4.15.0
 description: >-
-  把链接、摘录、随手记收进动态周期本、Inbox 或专题；行动语自动提取/建议待办。Use when 记一下、收进、
-  剪藏、保存链接、记一下要做/别忘了、capture、save URL/idea。
+  把链接、摘录、随手记收进动态周期本、Inbox 或专题；行动语自动提取/建议待办。Use when 记一下、
+  收进、剪藏、保存链接、记一下要做/别忘了、capture、save URL/idea、Note it。
+  记下/Log it 是动态主区「写入当前周期本」——路由仍进本 skill，但不作 frontmatter 触发词（见 shared/trigger-disambiguation.md）。
   Do NOT use for 整理本周、出稿、写我的情况、doctor/loop、微信读书、X.
 action_category: capture
 triggers:
@@ -30,6 +31,7 @@ triggers:
   - capture
   - note
   - save
+  - "Note it"
 tags: [capture, inbox, note, material]
 entrypoint: false
 compatibility: topmind workspace. Host file tools or optional UTR capture-note.

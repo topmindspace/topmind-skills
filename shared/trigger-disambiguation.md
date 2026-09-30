@@ -9,6 +9,8 @@
 |--------|--------------|------|
 | 总结要点 | organize vs memory | 默认 → `topmind-organize`。仅「更新我的情况 / 加到专题记忆 / 沉淀到记忆」→ memory |
 | 沉淀 | capture vs memory | 默认 → `topmind-capture`。仅「沉淀成稳定结论 / 更新我的情况」→ memory |
+| **记一下 / Note it** | capture 主入口 | **完整捕获**（笔记 / 链接 / 附件）→ `topmind-capture` |
+| **记下 / Log it** | capture（追加） | **写入当前周期本**（动态追加，同文件续写）→ `topmind-capture`，默认平铺到当前周期；不弹分类访谈 |
 | 记一下要做 X / 别忘了 X | capture vs todo | → `topmind-capture`（材料落盘）+ 待办写入/建议 `memory/todo.md`（见 `auto-suggest.md`） |
 | 待办 / 有什么要做的 | router 直达 | 读 `memory/todo.md` 活跃项；不新建概念、不进 organize |
 | X 做完了 / 这条不用了 | todo vs organize | 清单项 → 勾掉/归档 `memory/todo.md`；整周事项状态 → organize「整理本周」 |

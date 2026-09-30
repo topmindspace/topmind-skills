@@ -1,6 +1,6 @@
 ---
 name: topmind-wechat
-version: 4.14.0
+version: 4.15.0
 description: >-
   公众号文章全生命周期子技能（write 族）：交付包、审校改写、质量三关、状态同步、微信内联排版与发布清单。
   支持 forward（底稿→公众号）、reverse（选题原创→回推）、站外拉取（在线精选站→reverse+pending）三条路径；
@@ -49,14 +49,15 @@ compatibility: topmind workspace. Writes via UTR workspace-write / Desktop Works
 | `scripts/push-to-topstream.py` | 可选回推：公众号稿降级为纯 Markdown notes |
 | `scripts/lint-wechat.py` | 排版体检 + 自动修复（中英文间距、段长、AI 腔…） |
 | `scripts/md2wechat.py` | Markdown → 全内联 HTML；**必加 `--embed-images`** |
-| `scripts/scan_ai_flavor.py` | 中文去 AI 味扫描（与 `qu-aiwei-zh` 同源） |
+| `scripts/scan_ai_flavor.py` | 中文去 AI 味扫描 —— **转发器**，实现在 canonical `qu-aiwei-zh`（`--which` 可查解析结果；本目录不含实现，避免副本漂移） |
+| `scripts/audit-provenance.py` | **改稿保真审计**：双向逐段溯源（本稿→源稿 / 源稿→本稿），抓悄悄扩写与被落下的段。有源稿时定稿必跑 |
 
 ```bash
 # 路径解析：CLI --base/--workspace → env TOPMIND_WECHAT_BASE / TOPMIND_WORKSPACE / TOPSTREAM_ROOT → 惯例
 export TOPMIND_WORKSPACE=/path/to/workspace   # 推荐
 python3 scripts/new-article.py --slug demo --title "标题" --direction reverse
 python3 scripts/lint-wechat.py --input <包>/公众号稿.md --fix
-python3 scripts/scan_ai_flavor.py <包>/公众号稿.md          # 目标 ≥85
+python3 scripts/scan_ai_flavor.py <包>/公众号稿.md          # 总分与作者姿态分都 ≥85
 python3 scripts/md2wechat.py --input <包>/公众号稿.md --out-dir <包> --slug demo \
   --asset-root <素材根> --embed-images
 python3 scripts/sync-status.py --set 定稿 <包> --apply
@@ -147,6 +148,13 @@ python3 scripts/sync-status.py --set 定稿 <包> --apply
 - 改稿续写：正文已有数字**回源重核**（上一轮文本最不可信）  
 - 多口径（主轮/复跑）显式拆开；表格从数据源生成，禁止手抄  
 - 外部工具改过的稿：**先核数字再动文字**；「比值对但绝对值错」= 全段重核  
+- **有源稿时（`reverse` / 站外拉取）跑一次双向溯源审计**，别靠「我记得只改了三处」：
+
+  ```bash
+  python3 scripts/audit-provenance.py --draft <包>/公众号稿.md --source <包>/源稿-*.md
+  ```
+
+  正向查「本稿有、源稿找不到」（扩写藏在这里），反向查「源稿有、本稿落下」。**退出码 1 不是失败，是「有待判定项」**——每一项要么归入已声明的修正/增补，要么就是不该有的改动；逐条在包内 README 声明后即收口。源稿里后加的块（勘误等）用 `--skip '^>\s*\[!'` 排除。  
 
 ### 关 2 · 逻辑
 
@@ -156,13 +164,16 @@ python3 scripts/sync-status.py --set 定稿 <包> --apply
 ### 关 3 · 文字（去 AI 味）
 
 ```bash
-python3 scripts/scan_ai_flavor.py <包>/公众号稿.md   # ≥85（人话）
+python3 scripts/scan_ai_flavor.py <包>/公众号稿.md   # 总分 ≥85（人话）
 ```
 
+- **同时看「作者姿态分」（E 类，与总分独立）**，目标同样 ≥85。实测两者会严重背离：同一篇 AI 完整版总分 92 / 姿态 21，手改发布版 100 / 100——**总分只差 8 分，姿态差 79 分**，只看总分会被骗
+- ⚠️ 这里调的是 canonical `qu-aiwei-zh` 的脚本（本目录的 `scripts/scan_ai_flavor.py` 是转发器）。**若输出里没有「作者姿态层」一节，说明拿到的是 E 类之前的旧版本**，分数不可信——先 `--which` 确认实际执行的是哪一份
 - 删套话/黑话/工程圈行话；降调段末加粗金句  
 - **满分 ≠ 有人味**：再查「段末金句癖 / 节奏过分整齐 / 没有场景与我 / 报告体标注」  
 - **口语化 ≠ 有人味**：删社交垫词（元叙述、空转过渡、姿态句）  
 - 判据：**这句话删掉之后，读者少知道了什么？**  
+- **姿态分只对文章有效**：清单 / 词表 / 说明书不适用（检测器会把被引用的反例当真命中），脚本命中 ≥70% 落在表格行时会提示「疑似清单文档」，看到提示先确认再改
 
 详见 [`references/writing-quality.md`](references/writing-quality.md)。
 

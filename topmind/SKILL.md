@@ -1,6 +1,6 @@
 ---
 name: topmind
-version: 4.14.0
+version: 4.15.0
 description: >-
   topmind 总入口与多意图路由（类别/专题/笔记/待办/交付）。Use when 用户说 topmind、意图模糊、
   待办/有什么要做的/todo list、或需要收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger|wechat。
@@ -139,7 +139,7 @@ Connector：[`references/connector-resolution.md`](references/connector-resoluti
 主路径：host 文件工具 + project-model-brief。Skills pack **不依赖** Pi / `pi-agent-core`；不要编造 bash / shell。宿主若有唯一片段替换，中段改稿优先用它。  
 降级：[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。
 
-UTR 可选（MCP primary+danger 共 26；注册表 35 = 8 域 / 35 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` · `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
+UTR 可选（MCP primary+danger 共 29；注册表 38 = 8 域 / 38 命令，见 TOOLS.md）：`list-categories` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` · `create-topic` · `capture-note` · `save-output` · `contract.validate` · `contract.reseed` · `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` · `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `memory.update-todo` · `memory.set-todo-due` · `memory.delete-todo` · `doctor-workspace` · `plan-inbox-routing` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt`。
 
 字段始终独立 **`category` + `topic`**（真实目录名，非写死编号）。
 

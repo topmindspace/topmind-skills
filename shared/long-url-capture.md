@@ -74,6 +74,9 @@ word_count: 1200
 - URL 类型提示（GitHub README / GitHub 原文 / X / 网页）  
 - Inbox：按 `source_type` 筛选「网页/摘录」  
 - AI `fetch_url` 支持 `maxLen` + `render`；Obsidian `fetch_url` 对 GitHub md 自动走 raw  
+- AI `capture_url`：一键抓取并入库（带 source URL + 标题）；Desktop 与 Obsidian 对齐（`forceInbox` / `forceAtom`）  
+- AI `web_search`：无需 Key 的网络搜索短列表（域名打分 + 同域去重）；命中后 `fetch_url` / `capture_url`  
+- 工具失败会返回**一条**具体恢复步骤（如 edit 失败 → 先 read_file 刷 contentHash）
 
 ## 不要做的事
 

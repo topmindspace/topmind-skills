@@ -65,8 +65,10 @@ Host 能力映射：
 | 能力 | Desktop | UTR | 纯 Host Agent |
 |------|---------|-----|---------------|
 | 提取 | `add_todo` · `todo_maintain` | `memory.add-todo` | 读活动窗口 → 识别行动语 → 写 checklist |
-| 维护 | `toggle_todo` · `maintainTodos` | `memory.toggle-todo` | 对照周期本与 todo.md 做 diff 建议 |
+| 维护 | `toggle_todo` · `update_todo` · `set_todo_due` · `delete_todo` · `maintainTodos` | `memory.toggle-todo` | 对照周期本与 todo.md 做 diff 建议 |
 | 列表 | `list_todos` · Todo 面板 | `memory.list-todos` | 读 `memory/todo.md` 活跃段 |
+| 动态查询 | `list_recent_stream` | `workspace-read.list-recent-captures` | 读最近周期本日段 |
+| 记忆查询 | `list_recent_memories` | `memory.list-profile` 等 | 读 `memory/` 活跃段（勿整库倾倒） |
 | 分类/专题建议 | `topic_classify`（确认后 `create_topic`） | 文件工具 + role 路由 | 按 role + 内容性质给最多 3 候选 |
 | 记忆建议 | `memory_organize`（append/update/retire 建议） | `memory.append-profile` 等（确认后） | 识别稳定事实 → L1 候选 |
 
