@@ -4,6 +4,14 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## Unreleased
+
+### 优化
+
+- GitHub Actions 改用 Node 24 运行时的版本：`actions/checkout` v5 → v7、`actions/setup-node` v5 → v7、`actions/setup-python` v5 → v7、`actions/upload-artifact` v5 → v7；CI 与 Release 的 `node-version` 已是 24，不变。
+- `runs-on` 由 `ubuntu-latest` 固定为 `ubuntu-24.04`：GitHub 在 2026-10-19 至 11-19 期间把 `ubuntu-latest` 逐步切到 Ubuntu 26.04，先停在当前已验证的镜像，切 26.04 另行验证后再改。
+- 只改工作流，技能内容与版本号不变。
+
 ## 4.15.2 — 2026-10-08
 
 ### 不兼容变更（请先看）

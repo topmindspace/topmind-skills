@@ -13,21 +13,21 @@ concurrency:
 jobs:
   validate:
     name: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout skills
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Checkout topmind engine (for contract cross-check)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: topmindspace/topmind
           ref: main
           path: .topmind-src
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
@@ -37,7 +37,7 @@ jobs:
         run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
 
       - name: Setup Python (Agent Skills validator)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload pack artifacts
         if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: pack-smoke
           path: |
