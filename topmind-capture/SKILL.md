@@ -1,6 +1,6 @@
 ---
 name: topmind-capture
-version: 4.15.0
+version: 4.15.1
 description: >-
   把链接、摘录、随手记收进动态周期本、Inbox 或专题；行动语自动提取/建议待办。Use when 记一下、
   收进、剪藏、保存链接、记一下要做/别忘了、capture、save URL/idea、Note it。

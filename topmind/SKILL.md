@@ -1,6 +1,6 @@
 ---
 name: topmind
-version: 4.15.0
+version: 4.15.1
 description: >-
   topmind 总入口与多意图路由（类别/专题/笔记/待办/交付）。Use when 用户说 topmind、意图模糊、
   待办/有什么要做的/todo list、或需要收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger|wechat。
@@ -23,7 +23,7 @@ compatibility: >-
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-28
+updated: 2026-10-08
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -51,7 +51,8 @@ degradation: ../shared/capability-degradation.md
 待办 / 有什么要做的/todo → 本 router           → 读 memory/todo.md 活跃项（卫星，非新概念）
 X 做完了 / 这条不用了    → 本 router           → 勾掉/归档对应待办（可恢复）
 整理本周/理顺流水        → topmind-organize    → 活动窗口就地理顺 + 建议（确认后写）
-整理/分析/研究/总结/对比 → topmind-organize    → 当前专题 / Inbox 路由 / 活动窗口
+整理/分析/研究/总结/对比 → topmind-organize    → 当前专题 / Inbox 路由 / 活动窗口（对象是已存材料）
+对外检索/论文/AI 动态    → topmind-research*   → 专题 / Inbox（*外部可选；未装 → organize）
 写/改/稿/交付/导出       → topmind-write       → delivery 或专题根
 公众号/微信排版/定稿发稿  → topmind-wechat      → 创作类 YYYY-公众号/ 交付包
 记住我/更新我的情况      → topmind-memory      → memory/profile.md（主 memory）
@@ -69,7 +70,7 @@ loop/整体体检/巡检       → topmind-loop        → .topmind/loop/ 可恢
 
 待办是 `memory/todo.md` **卫星**（与 profile 同层），不是第六概念。提取/维护语义见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)。
 
-English: capture → capture · weekly review/organize (activity window) → organize · write → write · about me → memory/profile · period reflection → memory/periodic/{YYYY}/ · new topic folder → organize (content category) · doctor → maintain · loop → loop · bookkeeping/spent/deposited → ledger (`memory/ledgers/`, personal default).
+English: capture → capture · weekly review/organize (activity window) → organize · write → write · about me → memory/profile · period reflection → memory/periodic/{YYYY}/ · new topic folder → organize (content category) · doctor → maintain · loop → loop · bookkeeping/spent/deposited → ledger (`memory/ledgers/`, personal default) · external primary-source research / papers / official AI news → optional external `topmind-research` when installed, else organize.
 
 读配置：`stream.packing`（默认 weekly）· `stream.year_dir`（默认 true）· `memory.layers.global.file`（`profile.md`）。  
 **活动窗口**（Desktop/Kernel 与 organize 共用）：近期周期本 ∪ 近期改动笔记 ∪ 增补锚定的原文——不只「最新周期文件名」。
@@ -125,6 +126,7 @@ Which category? Which topic (or loose note)? Which object? Which action? Which s
 
 真源：[`../shared/trigger-disambiguation.md`](../shared/trigger-disambiguation.md)。  
 多意图：[`references/multi-intent.md`](references/multi-intent.md)。  
+外部可选技能（`topmind-research` 等）：不随本包发布，已安装才路由，未安装按真源表回退；不是第二前台。  
 Connector：[`references/connector-resolution.md`](references/connector-resolution.md)。
 
 ## Sub-Skill Receipt Chaining

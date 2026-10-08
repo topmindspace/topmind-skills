@@ -1,7 +1,8 @@
 # Trigger Disambiguation（路由消歧真源）
 
 > Router（`topmind`）与各子 skill 的「When NOT」必须与本表一致。  
-> 子 skill **不得**自动链式 dispatch 下一 skill；「下一步」仅用户面建议。
+> 子 skill **不得**自动链式 dispatch 下一 skill；「下一步」仅用户面建议。  
+> 外部可选技能（`topmind-research`、`topmind-briefs`、`last30days`、`TopStream每日精选`）不随本包发布：仅在宿主已安装时按表路由；未安装按该行写明的回退处理，回执可提示可选安装，不报错。
 
 ## 碰撞词裁决
 
@@ -21,6 +22,9 @@
 | 归档 | capture vs maintain | 「归档材料」→ capture。「归档专题 / archive topic」→ maintain |
 | 笔记 / note | capture vs write | 未限定 → capture。「写作 / 起草 / 续写」→ write |
 | 记账 / 记一笔 / 花了 / 存入 | ledger vs capture | 「记账 / 记一笔 / 花了 / 存入 / 查看账单 / 账户余额」→ `topmind-ledger`（记忆平面账本）。「记一下」仍 → capture |
+| 研究 / 分析 / 对比 | organize vs topmind-research（外部可选） | 对象是工作区里已存的笔记、专题内材料 → `topmind-organize`。需要对外检索一手资料（论文、技术报告、官方公告、模型或产品横向对比）、AI 前沿深挖 → `topmind-research`（analyze）；未安装 → `topmind-organize`「研究分析」 |
+| AI 动态 / 大厂动态 / AI 周报 / 最近有什么新的 | topmind-research vs last30days vs TopStream每日精选（均外部可选） | 官方公告、技术报告、论文的周度汇总 → `topmind-research`（collect）。社区讨论与口碑（X、Reddit、HN 等）→ `last30days`。每日精选例行 → `TopStream每日精选`。对应技能未安装 → `topmind-organize`（只用工作区已存材料，回执注明）。「整理本周 / 理顺本周动态」指工作区动态类别，仍 → organize「整理本周」 |
+| 读论文 / 论文解读 | topmind-research vs topmind-briefs（均外部可选） | 想弄懂内容、要带来源的研究报告 → `topmind-research`（analyze）；未安装 → `topmind-organize`「研究分析」。要直接出一篇短稿发布 → `topmind-briefs`（可附 research 产出的已核验事实表）；未安装 → `topmind-write` |
 | 公众号 / 微信排版 | wechat vs write | 「公众号 / 微信排版 / 公众号定稿 / 发公众号」→ `topmind-wechat`。通用「写一篇」仍 → `topmind-write` |
 
 **原则**：动作动词定 action；修饰词定 confidence。无法判定 → capture（先存后整）。
@@ -36,6 +40,7 @@
 | write | 稿件 / delivery | 为「补结构」空建 `topic.md` |
 | loop | 状态 / 可逆修复 | 代写记忆；建硬索引 |
 | ledger | `{memory.dir}/ledgers/` 追加一行 | 改 `topic.md`；发明 ClassFund/Giggs/Mom；当第六用户概念 |
+| topmind-research（外部可选） | 研究报告、周报、已核验事实表，按 `writeback-receipt.md` 落专题或 Inbox（frontmatter `source_type: ai-derived`） | 自动写记忆；自动改它自带的 `config/sources.yaml`；未经用户点名自动深挖；自动链式 briefs / write |
 
 ## 多意图顺序
 
@@ -46,6 +51,8 @@
 | organize + write | 先 organize（落盘综合），再 write |
 | organize + memory | 先 organize 候选与综合笔记，**用户接受建议后再** memory |
 | write + memory | 先 write，回执建议 memory |
+| research + write | 先 research 出报告与事实表，回执建议 briefs / write（不自动链式） |
+| research + memory | 先 research 落盘，回执建议 memory（须用户再确认才写） |
 | 整理 inbox | organize + plan-inbox-routing（不是 maintain/loop） |
 | 清理工作区 | maintain |
 

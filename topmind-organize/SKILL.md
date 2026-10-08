@@ -1,9 +1,9 @@
 ---
 name: topmind-organize
-version: 4.15.0
+version: 4.15.1
 description: >-
   整理本周动态、专题内整理/研究/分析/路由 Inbox。Use when 整理本周、整理、分析、研究、对比、总结要点、organize、summarize。
-  Do NOT use for 首次捕获、最终出稿、仅写我的情况、快速 doctor、全库 loop.
+  Do NOT use for 首次捕获、最终出稿、仅写我的情况、快速 doctor、全库 loop、对外检索一手资料与 AI 前沿深挖（已装外部 topmind-research 时）.
 action_category: organize
 triggers:
   - 整理本周
@@ -37,7 +37,7 @@ compatibility: topmind workspace with stream period notes, topics, or Inbox.
 author: TopMindSpace
 license: MIT
 homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-28
+updated: 2026-10-08
 degradation: ../shared/capability-degradation.md
 ---
 
@@ -59,6 +59,7 @@ degradation: ../shared/capability-degradation.md
 - 交付最终报告/文章 → `topmind-write`  
 - 只写「我的情况」/ 周期反思 → `topmind-memory`  
 - doctor / 全库巡检 → `topmind-maintain` / `topmind-loop`  
+- 对外检索一手资料（论文、技术报告、官方公告、模型或产品横向对比）、AI 前沿深挖、周度官方动态 → 外部可选 `topmind-research`（已安装时）；未安装仍由本 skill「研究分析」接手，回执注明来源范围（见 [`../shared/trigger-disambiguation.md`](../shared/trigger-disambiguation.md)）  
 
 ## 动作入口判断
 
@@ -109,6 +110,8 @@ degradation: ../shared/capability-degradation.md
 ### 研究分析
 
 证据链：来源 → 事实 → 推断 → 待验证。对比用表；保留 URL/日期；区分确认与假设。有价值的对比/结论同样**默认落盘**（专题根 md），避免只留在聊天里。
+
+对象是工作区已存材料。需要对外检索一手资料时，已装外部可选 `topmind-research` 则交给它；未安装时本节接手，回执写明只用了工作区材料和宿主可用的检索。
 
 ### 实体提取（非默认）
 

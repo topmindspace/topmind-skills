@@ -11,6 +11,8 @@
 | organize + memory | 先 organize 候选，再 memory 落盘 | organize 产出列表 |
 | organize + todo | 整理本周后 L1 待办 diff 建议 | 不自动批量改清单 |
 | write + memory | 先 write，回执中建议 memory | 写作不改 memory/profile |
+| research + write | 先 research 出报告与已核验事实表，回执中建议 briefs / write | `topmind-research`、`topmind-briefs` 为外部可选；未装 research → organize「研究分析」，未装 briefs → write |
+| research + memory | 先 research 落盘专题或 Inbox，回执中建议 memory | research 不自动写记忆；用户确认后才走 memory |
 | 整理 inbox | `topmind-organize` + `plan-inbox-routing` | 不是 maintain/loop |
 | 清理工作区 | `topmind-maintain` | 系统健康 |
 

@@ -1,7 +1,7 @@
 {
   "skill_name": "topmind",
   "daily_entry": "topmind",
-  "version": "4.15.0",
+  "version": "4.15.1",
   "evals": [
     {
       "id": 1,
@@ -252,6 +252,29 @@
       "primary_skill": "topmind-organize",
       "extra_skills": [],
       "expected_output": "Organize 整理本周 on the activity window: tidies the period note in place, then L1-suggests todo maintain diff (add/complete/update vs memory/todo.md) and optional memory/topic candidates per shared/auto-suggest.md. User accepts before writing todo/memory changes. No auto memory writes, no INDEX.md."
+    },
+    {
+      "id": 35,
+      "prompt": "对比一下 Claude 和 Gemini 最新发布的技术报告，要带一手来源。",
+      "primary_skill": "topmind",
+      "extra_skills": [
+        "topmind-organize"
+      ],
+      "expected_output": "Router applies the 研究 / 分析 / 对比 row in shared/trigger-disambiguation.md: the request needs external primary sources, so it hands off to the optional external skill topmind-research (analyze) when installed. When topmind-research is not installed, falls back to topmind-organize 研究分析 and states in the receipt that only workspace materials and host search were used. Output lands in a topic or Inbox per shared/writeback-receipt.md with source_type: ai-derived. No auto memory writes, no auto chaining to briefs or write."
+    },
+    {
+      "id": 36,
+      "prompt": "对比一下 20-研究/2026-示例研究 专题里已经存的几篇笔记的观点。",
+      "primary_skill": "topmind-organize",
+      "extra_skills": [],
+      "expected_output": "Routes through topmind-organize 研究分析 because the objects are notes already saved in the workspace; does not hand off to topmind-research even if it is installed. Builds a comparison table with provenance, writes the synthesis to a topic-root note per writeback_mode (leave-a-trace), and only L1-suggests memory candidates."
+    },
+    {
+      "id": 37,
+      "prompt": "这周 AI 大厂有什么新的官方动态？顺便看看社区怎么评价。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "expected_output": "Router splits into ordered steps per shared/trigger-disambiguation.md: official announcements, technical reports and papers → optional external topmind-research (collect); community discussion → optional external last30days. Does not route to topmind-organize 整理本周 (that phrase means the workspace stream category) and does not use TopStream每日精选 unless the user asks for the daily digest. Any skill that is not installed falls back to topmind-organize on saved workspace materials, and the receipt says so. Each step returns its own receipt; no auto chaining."
     }
   ]
 }
