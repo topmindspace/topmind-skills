@@ -15,11 +15,11 @@
 
 ## 组合式 Pack 如何被 Host 理解
 
-topmind 是 **multi-skill pack**（目录与 `topmind-pack.json` 的 `skills` 一一对应，含 router、action、connector、可选 ledger 与可选 wechat write 子技能），不是单文件 skill。业界对齐：
+topmind 是 **multi-skill pack**（目录与 `topmind-pack.json` 的 `skills` 一一对应，含 router、action、connector 与可选 ledger；公众号等外部技能不在包内），不是单文件 skill。业界对齐：
 
 | 约定 | topmind 做法 |
 |------|----------------|
-| Agent Skills 单 skill = `{name}/SKILL.md` | 11 个目录各有 `SKILL.md` |
+| Agent Skills 单 skill = `{name}/SKILL.md` | 10 个目录各有 `SKILL.md` |
 | 部分 host 对 **zip 根** 找 `SKILL.md` | Release zip 根额外含 **router `SKILL.md`**（= `topmind/SKILL.md`） |
 | Pack 索引 | `skills.md` / `topmind-pack.json`（人类 + 机器） |
 | 共享资源 | `shared/` 与 skill 目录**同级** |
@@ -42,7 +42,7 @@ topmind-skills-<ver>/          ← Release zip 顶层
 │   └── SKILL.md
 ├── topmind-capture/
 │   └── SKILL.md
-├── …（其余 9 个，含可选 topmind-weread / topmind-x / topmind-ledger / topmind-wechat）
+├── …（其余 8 个，含可选 topmind-weread / topmind-x / topmind-ledger）
 ├── shared/                 ← 与 skill 同级！相对链接 ../shared/ 才能解析
 │   ├── capability-degradation.md
 │   ├── project-model-brief.md

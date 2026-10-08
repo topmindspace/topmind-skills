@@ -27,10 +27,10 @@ node bin/install-skills.mjs agents
 node bin/install-skills.mjs doctor --repair
 ```
 
-Install model: **one canonical body under `.agents/skills`** plus relative symlinks into private host roots (Claude Code, MiMoCode, …) — same as [`npx skills`](https://github.com/vercel-labs/skills) and `@topmindspace/tms-skills`. See [INSTALL.md](./INSTALL.md).
+Install model: **one canonical body under `.agents/skills`** plus relative symlinks into private host roots (Claude Code, MiMoCode, …) — same as [`npx skills`](https://github.com/vercel-labs/skills). See [INSTALL.md](./INSTALL.md).
 
 **Version and manifest truth:** [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`).  
-Each `SKILL.md` `version` **must** equal the pack version.
+Each `SKILL.md` `metadata.version` **must** equal the pack version.
 
 ---
 
@@ -42,7 +42,6 @@ topmind-skills/              # pack root = repo root
 ├── topmind-capture|organize|write|memory|maintain|loop/
 ├── topmind-weread|x/        # optional connectors
 ├── topmind-ledger/          # optional bookkeeping (memory-plane ledgers)
-├── topmind-wechat/          # optional WeChat write sub-skill (not a peer entry)
 ├── shared/                  # write receipts · degradation · auto-suggest · capture …
 ├── install-targets/         # host install shapes
 ├── evals/evals.json
@@ -56,7 +55,8 @@ topmind-skills/              # pack root = repo root
 | **Entry** | `topmind` only |
 | **Actions** | capture · organize · write · memory · maintain · loop |
 | **Connectors** | weread · x (optional) |
-| **Optional** | wechat (公众号 write 子技能) · ledger (记账 · memory-plane books) |
+| **Optional** | ledger (记账 · memory-plane books) |
+| **External optional (not bundled)** | WeChat `topmind-wechat-post` and other writing skills (topmind-writing-skills) · `topmind-research` · `topmind-presentation` · `topmind-handoff`; routing in `shared/trigger-disambiguation.md` |
 
 > Sub-skill trigger words exist for host routing. They are **not** a second product front door.
 
@@ -88,20 +88,24 @@ Workflow: `收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`
 ```yaml
 ---
 name: <kebab-case-id>           # required; matches directory name
-version: <pack.version>         # required; = topmind-pack.json version
-description: >-                  # required; Use when + Do not use
+description: >-                  # required; what + Use when + Do NOT use
   …
-action_category: capture        # skill taxonomy (not user note category)
-triggers: [...]
-entrypoint: false               # only topmind router is true
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind-skills
-degradation: ../shared/capability-degradation.md
+compatibility: …                # optional; environment notes (≤500 chars)
+metadata:                       # Agent Skills spec: custom fields live here, string values
+  version: "<pack.version>"     # required; = topmind-pack.json version
+  action_category: "capture"    # skill taxonomy (not user note category)
+  entrypoint: "false"           # only the topmind router is "true"
+  triggers: "记一下, 收进, capture"   # comma-separated
+  tags: "capture, inbox"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "YYYY-MM-DD"
+  degradation: "../shared/capability-degradation.md"
 ---
 ```
 
-Enforced by `tests/package-manifest.test.mjs`. One pack JSON ([`topmind-pack.json`](./topmind-pack.json)); no per-skill second manifest.
+Top level allows only `name / description / license / compatibility / metadata / allowed-tools`; CI runs the official validator `agentskills validate` (skills-ref) on every skill, and `tests/package-manifest.test.mjs` enforces fields and versions. The topmind Desktop parser reads both the legacy top-level layout and `metadata.*`.
 
 ---
 
@@ -165,7 +169,7 @@ Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
 
 ## Install targets
 
-Packaged skill directories (7 core + 2 optional connectors + optional ledger + optional wechat sub-skill) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
+Packaged skill directories (7 core + 2 optional connectors + optional ledger; since 4.15.2 WeChat comes from `topmind-wechat-post` in the writing pack) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
 Prefer the pack-aware installer so `shared/` and `topmind-pack.json` stay intact — see [`INSTALL.md`](./INSTALL.md).
 
 Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`shared/capability-degradation.md`](./shared/capability-degradation.md).

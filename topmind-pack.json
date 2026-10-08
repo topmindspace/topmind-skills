@@ -2,9 +2,9 @@
   "schema_version": 1,
   "name": "topmind",
   "label": "topmind",
-  "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills open-standard aligned, capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账), optional write sub-skill topmind-wechat. None of the optional skills is an extra user concept. File-system-first content truth; UTR optional.",
+  "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills spec-valid frontmatter (custom fields under metadata, checked by agentskills validate), capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账). None of the optional skills is an extra user concept. WeChat (公众号) and other writing skills live in the external topmind-writing-skills pack (topmind-wechat-post etc.) and are routed only when installed. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
-  "version": "4.15.1",
+  "version": "4.15.2",
   "updated": "2026-10-08",
   "license": "MIT",
   "locales": {
@@ -31,7 +31,7 @@
     "file-system-truth",
     "agent-skills",
     "portable",
-    "markdown-only",
+    "markdown-skills",
     "anthropic-skills",
     "cursor-rules",
     "obsidian-friendly"
@@ -56,7 +56,7 @@
       "file-system-truth",
       "agent-skills",
       "portable",
-      "markdown-only",
+      "markdown-skills",
       "anthropic-skills",
       "cursor-rules",
       "obsidian-friendly"
@@ -70,29 +70,21 @@
         "mcp",
         "obsidian"
       ],
-      "runtime": "pure-markdown",
+      "runtime": "markdown-instructions",
       "optional_dependencies": {
         "utr": "node >= 20.11, optional deterministic CLI/MCP commands",
         "desktop": "Electron, optional GUI client (topmind-desktop/)"
-      }
+      },
+      "runtime_note": "Skill bodies are Markdown instructions with no bundled executable scripts. The npm package also ships a Node installer (bin/) and pack builder (scripts/); hosts never need to run them to use the skills."
     },
     "content_schema": {
-      "_disambiguation_note": "The frontmatter `action_category` key refers to the action-skill taxonomy (capture|organize|write|memory|maintain|loop|router|connector). User note frontmatter has a `category` field, but there it means the physical category directory name (e.g. template-defined name like research category). Different keys, different meanings — no collision.",
+      "_disambiguation_note": "The frontmatter `metadata.action_category` key refers to the action-skill taxonomy (capture|organize|write|memory|maintain|loop|router|connector). User note frontmatter has a `category` field, but there it means the physical category directory name (e.g. template-defined name like research category). Different keys, different meanings — no collision.",
       "frontmatter_required_fields": [
         "name",
-        "version",
-        "description",
-        "action_category",
-        "triggers"
+        "description"
       ],
       "frontmatter_optional_fields": [
-        "tags",
-        "entrypoint",
-        "degradation",
-        "author",
         "license",
-        "homepage",
-        "updated",
         "compatibility"
       ],
       "frontmatter_description_rules": [
@@ -120,6 +112,25 @@
         "loop",
         "router",
         "connector"
+      ],
+      "frontmatter_spec": "Agent Skills (agentskills.io): top level only name, description, license, compatibility, metadata, allowed-tools; validated with skills-ref `agentskills validate`.",
+      "frontmatter_metadata_required_fields": [
+        "version",
+        "action_category",
+        "triggers"
+      ],
+      "frontmatter_metadata_optional_fields": [
+        "tags",
+        "entrypoint",
+        "degradation",
+        "author",
+        "homepage",
+        "updated"
+      ],
+      "frontmatter_metadata_value_rules": [
+        "metadata values are strings (quoted)",
+        "triggers / tags are comma-separated strings",
+        "entrypoint is \"true\" only for the topmind router"
       ]
     }
   },
@@ -133,8 +144,7 @@
     "topmind-loop/SKILL.md",
     "topmind-weread/SKILL.md",
     "topmind-x/SKILL.md",
-    "topmind-ledger/SKILL.md",
-    "topmind-wechat/SKILL.md"
+    "topmind-ledger/SKILL.md"
   ],
   "skills": [
     {
@@ -199,15 +209,6 @@
       "role": "memory",
       "human_facing": false,
       "optional": true
-    },
-    {
-      "id": "topmind-wechat",
-      "path": "topmind-wechat",
-      "role": "write",
-      "human_facing": false,
-      "optional": true,
-      "parent_skill": "topmind-write",
-      "note": "write-family sub-skill for WeChat MP articles (not a daily front door)"
     }
   ],
   "product_contract": {
@@ -441,6 +442,25 @@
         "derived.rebuild",
         "contract.ensure"
       ]
+    }
+  },
+  "external_optional_skills": {
+    "_note": "Not bundled. Routed only when the host has them installed; fallback per shared/trigger-disambiguation.md. None of them publishes on the user's behalf.",
+    "topmind-writing-skills": [
+      "topmind-wechat-post",
+      "topmind-x-article",
+      "topmind-briefs",
+      "topmind-viral-posts",
+      "topmind-cover",
+      "topmind-poster"
+    ],
+    "standalone": [
+      "topmind-research",
+      "topmind-presentation",
+      "topmind-handoff"
+    ],
+    "retired": {
+      "topmind-wechat": "removed in 4.15.2; use topmind-wechat-post from topmind-writing-skills"
     }
   }
 }

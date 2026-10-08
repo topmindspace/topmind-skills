@@ -12,7 +12,7 @@ universal  tools that read .agents/skills need nothing else
 private    Claude Code / MiMoCode / Hermes …  ← relative symlink (or --copy)
 ```
 
-安装模型与开源生态 [`npx skills`](https://github.com/vercel-labs/skills) / [skills.sh](https://skills.sh) 对齐，与 `@topmindspace/tms-skills` 同一套机制。
+安装模型与开源生态 [`npx skills`](https://github.com/vercel-labs/skills) / [skills.sh](https://skills.sh) 对齐。旧包 `@topmindspace/tms-skills` 已不再维护，请改用 `@topmindspace/topmind-skills`。
 
 ---
 
@@ -120,12 +120,20 @@ npx skills update -g -y
 npx skills add topmindspace/topmind-skills -l
 ```
 
-**注意：社区 CLI 不会装 `shared/`。** topmind skill 有 `../shared/*.md` 链接，缺了会打不开子文档。装完后请再跑一次 pack-aware（或手动拷 `shared/`）：
+**注意：社区 CLI 不会装 `shared/`。** topmind skill 有 `../shared/*.md` 链接，缺了的后果：
+
+- 路由消歧表（`trigger-disambiguation.md`）、写回回执、能力降级、自动建议等子文档打不开，宿主只能按 SKILL.md 正文行事，碰撞词更容易路由错；
+- 用 `-s` 只装单个子技能时同样如此，且 router 不在场，多意图拆步不可用；
+- 宿主不会报错，看起来「装上了」，所以要主动补齐。
+
+补救：装完后再跑一次 pack-aware（或手动拷 `shared/`），然后用 `doctor` 检查：
 
 ```bash
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 # 或
 cp -R /path/to/topmind-skills/shared ~/.agents/skills/shared
+# 检查
+npx @topmindspace/topmind-skills doctor
 ```
 
 日志末尾若出现 `Failed to install 9` 且指向 **PromptScript**，是该 host 不支持 global 安装，可忽略；topmind 本身已装上。

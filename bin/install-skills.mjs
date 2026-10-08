@@ -624,14 +624,22 @@ async function listInstallEntries(skillsRoot, skillsFilter) {
   let version = "unknown";
   let name = "skills";
   let ids = [];
+  const topmindPack = await pathExists(packPath);
 
-  if (await pathExists(packPath)) {
+  if (topmindPack) {
     const pack = JSON.parse(await fs.readFile(packPath, "utf8"));
     version = pack.version || version;
     name = pack.name || name;
     ids = (pack.skills || []).map((s) => s.id || s.path).filter(Boolean);
   } else {
-    // bare Agent Skills layout
+    // bare Agent Skills layout (external pack, e.g. topmind-writing-skills)
+    try {
+      const pkg = JSON.parse(await fs.readFile(path.join(skillsRoot, "package.json"), "utf8"));
+      if (pkg.version) version = pkg.version;
+      if (pkg.name) name = String(pkg.name).replace(/^@[^/]+\//u, "");
+    } catch {
+      name = path.basename(skillsRoot) || name;
+    }
     const entries = await fs.readdir(skillsRoot, { withFileTypes: true });
     for (const e of entries) {
       if (e.isDirectory() && (await pathExists(path.join(skillsRoot, e.name, "SKILL.md")))) {
@@ -646,6 +654,21 @@ async function listInstallEntries(skillsRoot, skillsFilter) {
   }
 
   const entries = new Set(ids);
+  if (!topmindPack) {
+    // External single-skill packs: install only the skill dirs. Repo-level evals/,
+    // LICENSE, README, INSTALL, install-targets stay out of the host skills root
+    // (they would collide with other packs). shared/ only when a SKILL.md links it.
+    if (await pathExists(path.join(skillsRoot, "shared"))) {
+      for (const id of ids) {
+        const body = await fs.readFile(path.join(skillsRoot, id, "SKILL.md"), "utf8").catch(() => "");
+        if (body.includes("../shared/")) {
+          entries.add("shared");
+          break;
+        }
+      }
+    }
+    return { version, name, entries: [...entries], skillIds: ids, topmindPack };
+  }
   // Pack support files (needed for progressive disclosure)
   if (!skillsFilter) {
     for (const e of ["shared", "install-targets", "evals"]) {
@@ -660,7 +683,7 @@ async function listInstallEntries(skillsRoot, skillsFilter) {
     if (await pathExists(path.join(skillsRoot, "topmind-pack.json"))) entries.add("topmind-pack.json");
   }
 
-  return { version, name, entries: [...entries], skillIds: ids };
+  return { version, name, entries: [...entries], skillIds: ids, topmindPack };
 }
 
 async function applyLocaleOverlay(overlayDir, targetDir) {
@@ -724,6 +747,13 @@ async function installSymlink(skillsRoot, dest, entries, { force }) {
   }
 }
 
+/** topmind pack keeps RECEIPT_NAME; external packs get their own file so they never overwrite it. */
+function receiptFileName(meta) {
+  if (meta.topmindPack !== false) return RECEIPT_NAME;
+  const slug = String(meta.name || "external").replace(/[^A-Za-z0-9._-]+/gu, "-");
+  return RECEIPT_NAME.replace(/\.json$/u, `.${slug}.json`);
+}
+
 async function writeInstallReceipt(dest, meta) {
   const receipt = {
     schema: 2,
@@ -750,7 +780,7 @@ async function writeInstallReceipt(dest, meta) {
       agents: meta.agents || null,
     },
   };
-  await fs.writeFile(path.join(dest, RECEIPT_NAME), JSON.stringify(receipt, null, 2) + "\n", "utf8");
+  await fs.writeFile(path.join(dest, receiptFileName(meta)), JSON.stringify(receipt, null, 2) + "\n", "utf8");
 }
 
 /** Relative-symlink each pack entry from an agent root back to the canonical body. */
@@ -842,11 +872,16 @@ async function installViaMatrix(skillsRoot, plan, opts) {
     agents: targets.map((t) => t.agent.id),
     skillIds: plan.skillIds,
     locale: opts.locale,
+    topmindPack: plan.topmindPack,
   });
 
   log(`done → ${canonical}`);
-  log(`daily entry: ${path.join(canonical, "topmind", "SKILL.md")}`);
-  log(`update later: node bin/install-skills.mjs update -g`);
+  if (plan.topmindPack) {
+    log(`daily entry: ${path.join(canonical, "topmind", "SKILL.md")}`);
+    log(`update later: node bin/install-skills.mjs update -g`);
+  } else {
+    log(`update later: re-run add ${opts.source || "<source>"} (update only follows the topmind pack receipt)`);
+  }
   return { canonical, targets, plan };
 }
 
@@ -994,11 +1029,16 @@ async function cmdAdd(opts, sourceOverride) {
       agents: opts.agents,
       skillIds: plan.skillIds,
       locale: opts.locale,
+      topmindPack: plan.topmindPack,
     });
 
     log(`done → ${dest}`);
-    log(`daily entry: ${path.join(dest, "topmind", "SKILL.md")}`);
-    log(`update later: node bin/install-skills.mjs update --dest ${dest}`);
+    if (plan.topmindPack) {
+      log(`daily entry: ${path.join(dest, "topmind", "SKILL.md")}`);
+      log(`update later: node bin/install-skills.mjs update --dest ${dest}`);
+    } else {
+      log(`update later: re-run add ${sourceRaw} --dest ${dest} (update only follows the topmind pack receipt)`);
+    }
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true }).catch(() => {});
   }

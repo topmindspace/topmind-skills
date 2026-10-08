@@ -1,27 +1,20 @@
 ---
 name: topmind-x
-version: 4.15.1
 description: >-
   X/Twitter：归档/搜索（Bearer）、发帖（xurl）、Agent 可用官方 MCP。Use when 发推、推特、twitter、x.com。
   Do NOT use for 微信读书、非 X 捕获、doctor、长文交付.
-action_category: connector
-triggers:
-  - 发推
-  - 推特
-  - twitter
-  - x.com
-  - 发帖
-  - 推文
-  - post tweet
-  - x platform
-tags: [x, twitter, social, mcp, agent]
-entrypoint: false
-compatibility: Desktop needs Bearer (read) and/or xurl (post). Agent hosts use official X MCP + xurl bridge.
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-08-16
-degradation: ../shared/capability-degradation.md
+compatibility: Desktop needs Bearer (read) and/or xurl (post). Agent hosts use official X MCP + xurl bridge.
+metadata:
+  version: "4.15.2"
+  action_category: "connector"
+  entrypoint: "false"
+  triggers: "发推, 推特, twitter, x.com, 发帖, 推文, post tweet, x platform"
+  tags: "x, twitter, social, mcp, agent"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind X / Twitter
@@ -40,7 +33,8 @@ degradation: ../shared/capability-degradation.md
 
 - 微信读书 → `topmind-weread`  
 - 非 X 的剪藏 → `topmind-capture`  
-- 长文交付（非推文）→ `topmind-write`  
+- 长文交付（非推文）→ `topmind-write`；X 长文 → 外部可选 `topmind-x-article`（已安装时）  
+- 只写推文稿、不发 → 外部可选 `topmind-viral-posts` / `topmind-briefs`（已安装时；未安装 → `topmind-write`）  
 
 ## 认证
 

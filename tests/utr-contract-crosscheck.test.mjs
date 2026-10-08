@@ -105,8 +105,11 @@ test("pack.json command_exposure lists only known vocabulary commands", async ()
 test("capture skill triggers 记一下 not 记下 (Note it ≠ Log it)", async () => {
   const src = await fs.readFile(path.join(skillsRoot, "topmind-capture", "SKILL.md"), "utf8");
   const fm = src.split("---")[1] || "";
-  assert.match(fm, /-\s*记一下/u);
-  assert.doesNotMatch(fm, /-\s*记下\s*$/m);
+  // 4.15.2: triggers live in metadata.triggers as a comma-separated string
+  const raw = fm.match(/^\s+triggers:\s*"([^"]*)"/mu)?.[1] || "";
+  const triggers = raw.split(",").map((t) => t.trim());
+  assert.ok(triggers.includes("记一下"), "triggers include 记一下");
+  assert.ok(!triggers.includes("记下"), "记下 is not a frontmatter trigger");
 });
 
 test("topmind SKILL.md MCP primary+danger inventory covers pack exposure lists", async () => {

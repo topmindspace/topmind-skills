@@ -134,7 +134,8 @@ jobs:
 
       # Sync npm: @topmindspace/topmind-skills
       # Requires repo secret NPM_TOKEN (Automation token).
-      # Without it this step is a no-op so GitHub Release still succeeds.
+      # Missing token fails the job (same as the other topmind repos), so a green
+      # Release never hides an unpublished npm version.
       # Skip on workflow_dispatch (draft release) — publish only on real v* tags.
       - name: Publish to npm
         if: github.event_name != 'workflow_dispatch'
@@ -146,8 +147,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
-            echo "NPM_TOKEN not set — skip npm publish (GitHub Release only)"
-            exit 0
+            echo "::error::NPM_TOKEN secret is not set — cannot publish ${PKG_NAME}@${PKG_VERSION} to npm. Add the repo secret NPM_TOKEN (npm Automation token) and re-run this job."
+            exit 1
           fi
           if npm view "${PKG_NAME}@${PKG_VERSION}" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
             echo "${PKG_NAME}@${PKG_VERSION} already on npm — skip"

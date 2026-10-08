@@ -1,39 +1,20 @@
 ---
 name: topmind-write
-version: 4.15.1
 description: >-
   写作/润色/出稿到专题或交付层（role:delivery）。Use when 写、起草、续写、润色、出稿、交付、write、draft、deliver。
   Do NOT use for 仅捕获、仅结构整理、只写记忆、doctor/loop、社交连接器.
-action_category: write
-triggers:
-  - 写
-  - 写作
-  - 起草
-  - 续写
-  - 修订
-  - 润色
-  - 交付
-  - 改写
-  - de-AI
-  - 输出
-  - 出稿
-  - 定稿
-  - 发布
-  - 导出
-  - 排版
-  - write
-  - draft
-  - deliver
-  - publish
-  - export
-tags: [write, draft, revise, polish, deliver]
-entrypoint: false
-compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-28
-degradation: ../shared/capability-degradation.md
+compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
+metadata:
+  version: "4.15.2"
+  action_category: "write"
+  entrypoint: "false"
+  triggers: "写, 写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 输出, 出稿, 定稿, 发布, 导出, 排版, write, draft, deliver, publish, export"
+  tags: "write, draft, revise, polish, deliver"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Write
@@ -55,13 +36,15 @@ degradation: ../shared/capability-degradation.md
 - 只更新「我的情况」/ 周期反思 → `topmind-memory`  
 - 清理/体检/巡检 → maintain / loop  
 - 发推 / 微信读书 → connectors  
-- **公众号 / 微信排版 / 公众号定稿发布** → `topmind-wechat`（write 族子技能）
+- **公众号 / 微信排版 / 公众号定稿** → 外部可选 `topmind-wechat-post`（topmind-writing-skills，已安装时）；未安装时由本 skill 按通用写作流程出稿
+- X 长文 → 外部可选 `topmind-x-article`；干货短文 / 引流短帖 → `topmind-briefs` / `topmind-viral-posts`（均已安装时；未安装仍由本 skill 写）
+- 做成幻灯片 → 外部可选 `topmind-presentation`；发推 → `topmind-x`（须用户确认）
 
 ## Writing Entry Points
 
 Draft · Continue · Revise · Polish · Deliver — 按用户当前意图，不是固定流水线。
 
-公众号专用：选题包 · 审校改写 · 质量三关 · 定稿 · 微信排版 — 转入 [`../topmind-wechat/SKILL.md`](../topmind-wechat/SKILL.md)。
+公众号专用：选题包 · 审校改写 · 质量三关 · 定稿 · 微信排版 — 已安装写作包时转入外部 `topmind-wechat-post`（本包 4.15.2 起不再自带 `topmind-wechat`）；不代用户发布。
 
 ## Workflow
 

@@ -1,30 +1,23 @@
 ---
 name: topmind
-version: 4.15.1
 description: >-
   topmind 总入口与多意图路由（类别/专题/笔记/待办/交付）。Use when 用户说 topmind、意图模糊、
-  待办/有什么要做的/todo list、或需要收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger|wechat。
+  待办/有什么要做的/todo list、或需要收→整→写 分步。单意图明确时直接用 topmind-capture|organize|write|memory|maintain|loop|weread|x|ledger。
   Do NOT invent parallel front doors; do NOT skip a matching sub-skill.
-action_category: router
-triggers:
-  - topmind
-  - 知识库
-  - 工作区
-  - 待办
-  - 有什么要做的
-  - 要做的事
-  - todo
-  - todo list
-tags: [router, entrypoint, topmind]
-entrypoint: true
+license: MIT
 compatibility: >-
   topmind workspace with {NN-Name}/ categories. Host file tools primary; UTR optional.
   Install with shared/ sibling for progressive disclosure links.
-author: TopMindSpace
-license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-10-08
-degradation: ../shared/capability-degradation.md
+metadata:
+  version: "4.15.2"
+  action_category: "router"
+  entrypoint: "true"
+  triggers: "topmind, 知识库, 工作区, 待办, 有什么要做的, 要做的事, todo, todo list"
+  tags: "router, entrypoint, topmind"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Router
@@ -54,7 +47,8 @@ X 做完了 / 这条不用了    → 本 router           → 勾掉/归档对�
 整理/分析/研究/总结/对比 → topmind-organize    → 当前专题 / Inbox 路由 / 活动窗口（对象是已存材料）
 对外检索/论文/AI 动态    → topmind-research*   → 专题 / Inbox（*外部可选；未装 → organize）
 写/改/稿/交付/导出       → topmind-write       → delivery 或专题根
-公众号/微信排版/定稿发稿  → topmind-wechat      → 创作类 YYYY-公众号/ 交付包
+公众号/微信排版/定稿发稿  → topmind-wechat-post* → 公众号交付包（*外部可选；未装 → write）
+X 长文 / 短文 / 引流帖   → x-article / briefs / viral-posts* → 稿件（*外部可选；未装 → write）
 记住我/更新我的情况      → topmind-memory      → memory/profile.md（主 memory）
 周期反思                 → topmind-memory      → memory/periodic/{YYYY}/（周期反思）
 开/并专题（内容夹）      → topmind-organize    → {大类}/{YYYY-主题}/（非 memory/topics）
@@ -64,13 +58,14 @@ loop/整体体检/巡检       → topmind-loop        → .topmind/loop/ 可恢
 微信读书/同步划线        → topmind-weread      → connector 解析类别
 发推/推特/x.com          → topmind-x           → connector 解析类别
 记账/记一笔/花了/存入    → topmind-ledger      → memory/ledgers/（默认自己）
-公众号创作子技能细节      → topmind-wechat      → write 族；见 SKILL.md
+研究报告做成幻灯片       → topmind-presentation* → HTML/PPTX（*外部可选；未装 → write）
+跨工具交接/导出记忆包    → topmind-handoff*    → 交接包（*外部可选；未装 → 回执说明）
 不确定 / 多意图          → 本 router 拆步      → 先 capture 再建议
 ```
 
 待办是 `memory/todo.md` **卫星**（与 profile 同层），不是第六概念。提取/维护语义见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)。
 
-English: capture → capture · weekly review/organize (activity window) → organize · write → write · about me → memory/profile · period reflection → memory/periodic/{YYYY}/ · new topic folder → organize (content category) · doctor → maintain · loop → loop · bookkeeping/spent/deposited → ledger (`memory/ledgers/`, personal default) · external primary-source research / papers / official AI news → optional external `topmind-research` when installed, else organize.
+English: capture → capture · weekly review/organize (activity window) → organize · write → write · about me → memory/profile · period reflection → memory/periodic/{YYYY}/ · new topic folder → organize (content category) · doctor → maintain · loop → loop · bookkeeping/spent/deposited → ledger (`memory/ledgers/`, personal default) · external primary-source research / papers / official AI news → optional external `topmind-research` when installed, else organize · WeChat (公众号) package → optional external `topmind-wechat-post` (topmind-writing-skills) when installed, else write.
 
 读配置：`stream.packing`（默认 weekly）· `stream.year_dir`（默认 true）· `memory.layers.global.file`（`profile.md`）。  
 **活动窗口**（Desktop/Kernel 与 organize 共用）：近期周期本 ∪ 近期改动笔记 ∪ 增补锚定的原文——不只「最新周期文件名」。
@@ -126,7 +121,7 @@ Which category? Which topic (or loose note)? Which object? Which action? Which s
 
 真源：[`../shared/trigger-disambiguation.md`](../shared/trigger-disambiguation.md)。  
 多意图：[`references/multi-intent.md`](references/multi-intent.md)。  
-外部可选技能（`topmind-research` 等）：不随本包发布，已安装才路由，未安装按真源表回退；不是第二前台。  
+外部可选技能（`topmind-research`、写作包 `topmind-wechat-post` / `topmind-x-article` / `topmind-briefs` / `topmind-viral-posts` / `topmind-cover` / `topmind-poster`、`topmind-presentation`、`topmind-handoff`）：不随本包发布，已安装才路由，未安装按真源表回退；不是第二前台，也不代用户发布。  
 Connector：[`references/connector-resolution.md`](references/connector-resolution.md)。
 
 ## Sub-Skill Receipt Chaining

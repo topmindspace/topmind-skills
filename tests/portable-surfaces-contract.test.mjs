@@ -88,7 +88,8 @@ test("install target manifests share the portable host prohibitions", async () =
     assert.doesNotMatch(JSON.stringify(config), /\/Users\/|\/home\/|~\//u);
     assert.ok(config.skills.includes("topmind-loop"), `${target.id} should include topmind-loop`);
     assert.ok(config.skills.includes("topmind-ledger"), `${target.id} should include topmind-ledger`);
-    assert.ok(config.skills.includes("topmind-wechat"), `${target.id} should include topmind-wechat`);
+    assert.ok(!config.skills.includes("topmind-wechat"), `${target.id} must not list retired topmind-wechat`);
+    assert.deepEqual([...config.skills].sort(), pack.skills.map((s) => s.id).sort(), `${target.id} skills match pack.skills`);
   }
 });
 

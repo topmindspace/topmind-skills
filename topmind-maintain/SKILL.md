@@ -1,33 +1,20 @@
 ---
 name: topmind-maintain
-version: 4.15.1
 description: >-
   确定性体检/清理/结构修复/回执恢复。Use when 快速体检、诊断、doctor、清理、修复、workspace check。
   Do NOT use for 整体巡检 loop、内容整理、捕获、写作、记忆.
-action_category: maintain
-triggers:
-  - 快速体检
-  - 体检
-  - 诊断
-  - doctor
-  - 健康检查
-  - 清理
-  - 修复
-  - 快速检查
-  - 检查
-  - 状态
-  - workspace check
-  - scan
-  - fix
-  - maintain
-tags: [maintain, doctor, cleanup, audit, health-check]
-entrypoint: false
-compatibility: topmind engine and/or workspace. Prefer read-only diagnostics first.
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-16
-degradation: ../shared/capability-degradation.md
+compatibility: topmind engine and/or workspace. Prefer read-only diagnostics first.
+metadata:
+  version: "4.15.2"
+  action_category: "maintain"
+  entrypoint: "false"
+  triggers: "快速体检, 体检, 诊断, doctor, 健康检查, 清理, 修复, 快速检查, 检查, 状态, workspace check, scan, fix, maintain"
+  tags: "maintain, doctor, cleanup, audit, health-check"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Maintain

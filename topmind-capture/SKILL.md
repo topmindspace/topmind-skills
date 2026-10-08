@@ -1,45 +1,22 @@
 ---
 name: topmind-capture
-version: 4.15.1
 description: >-
   把链接、摘录、随手记收进动态周期本、Inbox 或专题；行动语自动提取/建议待办。Use when 记一下、
   收进、剪藏、保存链接、记一下要做/别忘了、capture、save URL/idea、Note it。
   记下/Log it 是动态主区「写入当前周期本」——路由仍进本 skill，但不作 frontmatter 触发词（见 shared/trigger-disambiguation.md）。
   Do NOT use for 整理本周、出稿、写我的情况、doctor/loop、微信读书、X.
-action_category: capture
-triggers:
-  - 收集
-  - 收进
-  - 保存
-  - 剪藏
-  - 记一下
-  - 临时存放
-  - 随手记
-  - 想法
-  - 灵感
-  - 暂存沉淀
-  - 记录
-  - 备忘
-  - 存一下
-  - 暂存
-  - 笔记
-  - 抄下来
-  - 摘录
-  - 记一下要做
-  - 别忘了
-  - 要做
-  - capture
-  - note
-  - save
-  - "Note it"
-tags: [capture, inbox, note, material]
-entrypoint: false
-compatibility: topmind workspace. Host file tools or optional UTR capture-note.
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-28
-degradation: ../shared/capability-degradation.md
+compatibility: topmind workspace. Host file tools or optional UTR capture-note.
+metadata:
+  version: "4.15.2"
+  action_category: "capture"
+  entrypoint: "false"
+  triggers: "收集, 收进, 保存, 剪藏, 记一下, 临时存放, 随手记, 想法, 灵感, 暂存沉淀, 记录, 备忘, 存一下, 暂存, 笔记, 抄下来, 摘录, 记一下要做, 别忘了, 要做, capture, note, save, Note it"
+  tags: "capture, inbox, note, material"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Capture

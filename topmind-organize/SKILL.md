@@ -1,44 +1,20 @@
 ---
 name: topmind-organize
-version: 4.15.1
 description: >-
   整理本周动态、专题内整理/研究/分析/路由 Inbox。Use when 整理本周、整理、分析、研究、对比、总结要点、organize、summarize。
   Do NOT use for 首次捕获、最终出稿、仅写我的情况、快速 doctor、全库 loop、对外检索一手资料与 AI 前沿深挖（已装外部 topmind-research 时）.
-action_category: organize
-triggers:
-  - 整理本周
-  - 理顺本周
-  - 周复盘
-  - 整理
-  - 组织
-  - 研究
-  - 分析
-  - 对比
-  - 提取
-  - 梳理
-  - 归纳
-  - 证据
-  - 实体
-  - 质量审查
-  - 总结
-  - 概括
-  - 汇总
-  - 提纲
-  - 分类整理
-  - 找关联
-  - 总结成笔记要点
-  - organize
-  - summarize
-  - analyze
-  - weekly review
-tags: [organize, research, analyze, stream, weekly-review]
-entrypoint: false
-compatibility: topmind workspace with stream period notes, topics, or Inbox.
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-10-08
-degradation: ../shared/capability-degradation.md
+compatibility: topmind workspace with stream period notes, topics, or Inbox.
+metadata:
+  version: "4.15.2"
+  action_category: "organize"
+  entrypoint: "false"
+  triggers: "整理本周, 理顺本周, 周复盘, 整理, 组织, 研究, 分析, 对比, 提取, 梳理, 归纳, 证据, 实体, 质量审查, 总结, 概括, 汇总, 提纲, 分类整理, 找关联, 总结成笔记要点, organize, summarize, analyze, weekly review"
+  tags: "organize, research, analyze, stream, weekly-review"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Organize

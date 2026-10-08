@@ -27,10 +27,10 @@ node bin/install-skills.mjs agents
 node bin/install-skills.mjs doctor --repair
 ```
 
-安装模型：**canonical `.agents/skills` 一份真身** + 私有目录（Claude Code / MiMoCode…）相对软链；与 [`npx skills`](https://github.com/vercel-labs/skills) / `@topmindspace/tms-skills` 一致。详见 [INSTALL.md](./INSTALL.md)。
+安装模型：**canonical `.agents/skills` 一份真身** + 私有目录（Claude Code / MiMoCode…）相对软链；与 [`npx skills`](https://github.com/vercel-labs/skills) 一致。详见 [INSTALL.md](./INSTALL.md)。
 
 **版本与清单真源：** [`topmind-pack.json`](./topmind-pack.json)（`npm run versions`）。  
-各 `SKILL.md` 的 `version` **必须**等于 pack 版本。
+各 `SKILL.md` 的 `metadata.version` **必须**等于 pack 版本。
 
 ---
 
@@ -42,7 +42,6 @@ topmind-skills/              # pack 根 = 仓库根
 ├── topmind-capture|organize|write|memory|maintain|loop/
 ├── topmind-weread|x/        # 可选连接器
 ├── topmind-ledger/          # 可选记账（记忆平面账本）
-├── topmind-wechat/          # 可选公众号 write 子技能（不是并列入口）
 ├── shared/                  # 写回回执 · 降级 · 自动建议 · 捕获 …
 ├── install-targets/         # Host 安装形状（claude-code / codex / mimocode / …）
 ├── evals/evals.json
@@ -56,7 +55,8 @@ topmind-skills/              # pack 根 = 仓库根
 | **入口** | `topmind` only |
 | **动作** | capture · organize · write · memory · maintain · loop |
 | **连接器** | weread · x（可选） |
-| **可选** | wechat（公众号 write 子技能）· ledger（记账 · 记忆平面账本） |
+| **可选** | ledger（记账 · 记忆平面账本） |
+| **外部可选（不随包）** | 公众号 `topmind-wechat-post` 等写作技能（topmind-writing-skills）· `topmind-research` · `topmind-presentation` · `topmind-handoff`；路由见 `shared/trigger-disambiguation.md` |
 
 > 子 skill 触发词只服务 Host 路由，**不是**第二前台入口。
 
@@ -88,21 +88,25 @@ Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — sha
 
 ```yaml
 ---
-name: <kebab-case-id>           # required; matches directory name
-version: <pack.version>         # required; = topmind-pack.json version
-description: >-                  # required; Use when + Do not use
+name: <kebab-case-id>           # 必填；与目录名一致
+description: >-                  # 必填；做什么 + Use when + Do NOT use
   …
-action_category: capture        # skill taxonomy (not user note category)
-triggers: [...]
-entrypoint: false               # only topmind router is true
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind-skills
-degradation: ../shared/capability-degradation.md
+compatibility: …                # 可选；运行环境说明（≤500 字符）
+metadata:                       # Agent Skills 规范：自定义字段一律放这里，值为字符串
+  version: "<pack.version>"     # 必填；= topmind-pack.json version
+  action_category: "capture"    # skill 分类（不是用户笔记的 category）
+  entrypoint: "false"           # 只有 topmind router 是 "true"
+  triggers: "记一下, 收进, capture"   # 逗号分隔
+  tags: "capture, inbox"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "YYYY-MM-DD"
+  degradation: "../shared/capability-degradation.md"
 ---
 ```
 
-由 `tests/package-manifest.test.mjs` 强制校验。一个 pack JSON（[`topmind-pack.json`](./topmind-pack.json)），无 per-skill 第二清单。
+顶层只允许 `name / description / license / compatibility / metadata / allowed-tools`，CI 用官方校验器 `agentskills validate`（skills-ref）逐个检查；字段与版本由 `tests/package-manifest.test.mjs` 强制校验。topmind Desktop 的解析器同时认顶层旧写法与 `metadata.*`。一个 pack JSON（[`topmind-pack.json`](./topmind-pack.json)），无 per-skill 第二清单。
 
 ---
 
@@ -166,7 +170,7 @@ degradation: ../shared/capability-degradation.md
 
 ## 安装目标
 
-已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账 + 可选公众号 `topmind-wechat`）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
+已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账；4.15.2 起公众号改由写作包的 `topmind-wechat-post` 提供）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
 优先使用 npm / pack-aware 安装器，保证 `shared/` 与 `topmind-pack.json` 完整 — 见 [`INSTALL.md`](./INSTALL.md)。
 
 ```bash

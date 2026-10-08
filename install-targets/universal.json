@@ -21,8 +21,7 @@
     "topmind-loop",
     "topmind-weread",
     "topmind-x",
-    "topmind-ledger",
-    "topmind-wechat"
+    "topmind-ledger"
   ],
   "install_strategy": "canonical-copy",
   "target_root_hint": "agents-skills-root",

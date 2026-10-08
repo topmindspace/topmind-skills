@@ -21,24 +21,23 @@ const EXPECTED_SKILLS = [
   "topmind-weread",
   "topmind-x",
   "topmind-ledger",
-  "topmind-wechat",
 ];
 
-const OPTIONAL_SKILLS = ["topmind-weread", "topmind-x", "topmind-ledger", "topmind-wechat"];
+const OPTIONAL_SKILLS = ["topmind-weread", "topmind-x", "topmind-ledger"];
+
+// 4.15.2: topmind-wechat 移出本包，改由 topmind-writing-skills 的 topmind-wechat-post 提供
+const RETIRED_SKILLS = ["topmind-wechat"];
 
 // Core skills (excluding optional connectors / ledger)
 const CORE_SKILLS = EXPECTED_SKILLS.filter(
   (s) => !OPTIONAL_SKILLS.includes(s),
 );
 
-// v4.1 frontmatter schema required fields
-const REQUIRED_FRONTMATTER_FIELDS = [
-  "name",
-  "version",
-  "description",
-  "action_category",
-  "triggers",
-];
+// Agent Skills spec: top-level keys allowed in SKILL.md frontmatter
+const SPEC_TOP_LEVEL_KEYS = ["name", "description", "license", "compatibility", "metadata", "allowed-tools"];
+// 4.15.2: topmind custom fields live under metadata (string values)
+const REQUIRED_TOP_LEVEL_FIELDS = ["name", "description"];
+const REQUIRED_METADATA_FIELDS = ["version", "action_category", "triggers"];
 
 // v4.1 action_category values
 const VALID_CATEGORIES = [
@@ -89,22 +88,33 @@ async function readJson(relativePath) {
   return JSON.parse(raw);
 }
 
-async function readFrontmatter(relativePath) {
-  const raw = await fs.readFile(path.join(repoRoot, relativePath), "utf8");
-  // Normalize \r\n → \n for cross-platform compatibility
-  const normalized = raw.replace(/\r\n/gu, "\n");
+/**
+ * Split SKILL.md frontmatter into top-level keys and the one-level `metadata:` map.
+ * Values are raw strings with surrounding quotes stripped.
+ */
+function parseSkillFrontmatter(raw) {
+  const normalized = String(raw).replace(/\r\n/gu, "\n");
   const match = normalized.match(/^---\n([\s\S]*?)\n---/u);
   if (!match) return null;
-  const frontmatterText = match[1];
-  const fields = {};
-  for (const line of frontmatterText.split("\n")) {
-    const kvMatch = line.match(/^(\w+):\s*(.*)$/u);
-    if (kvMatch) {
-      const [, key, value] = kvMatch;
-      fields[key] = value;
+  const top = {};
+  const metadata = {};
+  let inMetadata = false;
+  for (const line of match[1].split("\n")) {
+    const topMatch = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/u);
+    if (topMatch) {
+      top[topMatch[1]] = topMatch[2];
+      inMetadata = topMatch[1] === "metadata";
+      continue;
     }
+    const sub = inMetadata && line.match(/^\s+([A-Za-z0-9_.-]+):\s*(.*)$/u);
+    if (sub) metadata[sub[1]] = sub[2].trim().replace(/^"(.*)"$/u, "$1");
   }
-  return fields;
+  return { top, metadata, text: match[1] };
+}
+
+async function readSkillFrontmatter(skillDir) {
+  const raw = await fs.readFile(path.join(skillsRoot, skillDir, "SKILL.md"), "utf8");
+  return parseSkillFrontmatter(raw);
 }
 
 test("topmind skill pack declares pack-level metadata (license / authors / repository / homepage / keywords / compatibility)", async () => {
@@ -126,18 +136,26 @@ test("topmind skill pack declares pack-level metadata (license / authors / repos
   assert.ok(manifest.metadata.compatibility.hosts.includes("opencode"));
   assert.ok(manifest.metadata.compatibility.hosts.includes("hermes"));
   assert.ok(manifest.metadata.compatibility.hosts.includes("codex"));
-  assert.equal(manifest.metadata.compatibility.runtime, "pure-markdown", "runtime should be pure-markdown (v3.4 portability)");
+  // 4.15.2: skill bodies are Markdown instructions; the npm package also ships a Node installer
+  assert.equal(manifest.metadata.compatibility.runtime, "markdown-instructions");
+  assert.match(manifest.metadata.compatibility.runtime_note, /installer/u);
+  assert.ok(!manifest.keywords.includes("markdown-only"), "no markdown-only claim");
+  assert.ok(!manifest.metadata.keywords.includes("markdown-only"), "no markdown-only claim");
 
   // Content schema block (machine-readable frontmatter schema)
   assert.ok(manifest.metadata.content_schema, "should declare content_schema for frontmatter contract");
-  assert.deepEqual(
-    manifest.metadata.content_schema.frontmatter_required_fields,
-    ["name", "version", "description", "action_category", "triggers"],
-  );
-  assert.ok(manifest.metadata.content_schema.frontmatter_optional_fields.includes("author"));
-  assert.ok(manifest.metadata.content_schema.frontmatter_optional_fields.includes("license"));
-  assert.ok(manifest.metadata.content_schema.frontmatter_optional_fields.includes("homepage"));
-  assert.ok(manifest.metadata.content_schema.frontmatter_optional_fields.includes("updated"));
+  const schema = manifest.metadata.content_schema;
+  assert.deepEqual(schema.frontmatter_required_fields, REQUIRED_TOP_LEVEL_FIELDS);
+  assert.deepEqual(schema.frontmatter_metadata_required_fields, REQUIRED_METADATA_FIELDS);
+  assert.ok(schema.frontmatter_optional_fields.includes("license"));
+  assert.ok(schema.frontmatter_optional_fields.includes("compatibility"));
+  for (const key of ["author", "homepage", "updated", "entrypoint", "degradation", "tags"]) {
+    assert.ok(schema.frontmatter_metadata_optional_fields.includes(key), `metadata optional field ${key}`);
+  }
+  for (const key of [...schema.frontmatter_required_fields, ...schema.frontmatter_optional_fields]) {
+    assert.ok(SPEC_TOP_LEVEL_KEYS.includes(key), `${key} must be an Agent Skills top-level key`);
+  }
+  assert.match(schema.frontmatter_spec, /agentskills validate/u);
 });
 
 test("all declared SKILL.md files have recommended metadata frontmatter (author / license / homepage / updated)", async () => {
@@ -147,22 +165,13 @@ test("all declared SKILL.md files have recommended metadata frontmatter (author 
   for (const skill of manifest.skills) {
     const skillPath = path.join(skillsRoot, skill.path, "SKILL.md");
     const raw = await fs.readFile(skillPath, "utf8");
-    // Normalize \r\n → \n for cross-platform compatibility
-    const frontmatterText = raw.replace(/\r\n/gu, "\n").match(/^---\n([\s\S]*?)\n---/u)[1];
+    const { top, metadata } = parseSkillFrontmatter(raw);
 
-    // Each field is recommended (not enforced as required), but every shipped skill carries them.
-    assert.match(frontmatterText, /^author:\s*\S+/mu, `${skill.id} should have author field`);
-    assert.match(frontmatterText, /^license:\s*\S+/mu, `${skill.id} should have license field`);
-    assert.match(frontmatterText, /^homepage:\s*https?:\/\//mu, `${skill.id} should have homepage URL`);
-    assert.match(frontmatterText, /^updated:\s*\d{4}-\d{2}-\d{2}/mu, `${skill.id} should have ISO updated date`);
-
-    // License must be SPDX-compliant and match pack license
-    const licenseMatch = frontmatterText.match(/^license:\s*(\S+)/mu);
-    assert.equal(licenseMatch[1], packMeta.license, `${skill.id} license should match pack license`);
-
-    // Author should reference the pack author (by name)
-    const authorMatch = frontmatterText.match(/^author:\s*(.+)$/mu);
-    assert.match(authorMatch[1], new RegExp(packMeta.authors[0].name, "u"), `${skill.id} author should match pack primary author`);
+    // license is a spec top-level key; author / homepage / updated live under metadata
+    assert.equal(top.license, packMeta.license, `${skill.id} license should match pack license`);
+    assert.match(metadata.author || "", new RegExp(packMeta.authors[0].name, "u"), `${skill.id} metadata.author should match pack primary author`);
+    assert.equal(metadata.homepage, "https://github.com/topmindspace/topmind-skills", `${skill.id} metadata.homepage points at topmind-skills`);
+    assert.match(metadata.updated || "", /^\d{4}-\d{2}-\d{2}$/u, `${skill.id} should have ISO metadata.updated date`);
   }
 });
 
@@ -348,58 +357,55 @@ test("agent install target manifests include topmind-loop and use v3.4 content t
   }
 });
 
-test("all SKILL.md files have v4 frontmatter schema (name+version+description+action_category+triggers)", async () => {
+test("all SKILL.md files use Agent Skills spec frontmatter (custom fields under metadata, version = pack)", async () => {
   const manifest = await readJson("topmind-pack.json");
 
   for (const skill of manifest.skills) {
-    const skillPath = path.join(skillsRoot, skill.path, "SKILL.md");
-    const raw = await fs.readFile(skillPath, "utf8");
-    // Normalize \r\n → \n for cross-platform compatibility
-    const frontmatterMatch = raw.replace(/\r\n/gu, "\n").match(/^---\n([\s\S]*?)\n---/u);
-    assert.ok(frontmatterMatch, `${skill.id} should have frontmatter`);
+    const raw = await fs.readFile(path.join(skillsRoot, skill.path, "SKILL.md"), "utf8");
+    const fm = parseSkillFrontmatter(raw);
+    assert.ok(fm, `${skill.id} should have frontmatter`);
 
-    const frontmatterText = frontmatterMatch[1];
-    for (const field of REQUIRED_FRONTMATTER_FIELDS) {
-      assert.ok(
-        new RegExp(`^${field}:`, "mu").test(frontmatterText),
-        `${skill.id} frontmatter should have required field: ${field}`,
-      );
+    for (const key of Object.keys(fm.top)) {
+      assert.ok(SPEC_TOP_LEVEL_KEYS.includes(key), `${skill.id} top-level key "${key}" is not an Agent Skills field (move it under metadata)`);
+    }
+    for (const field of REQUIRED_TOP_LEVEL_FIELDS) {
+      assert.ok(fm.top[field], `${skill.id} frontmatter should have required field: ${field}`);
+    }
+    assert.equal(fm.top.name, skill.id, `${skill.id} name matches directory`);
+    for (const field of REQUIRED_METADATA_FIELDS) {
+      assert.ok(fm.metadata[field], `${skill.id} metadata should have required field: ${field}`);
+    }
+    // metadata values are quoted strings (spec: string → string map)
+    for (const line of fm.text.split("\n").filter((l) => /^\s+[A-Za-z0-9_.-]+:/u.test(l))) {
+      if (/^\s+(description|compatibility)/u.test(line)) continue;
+      assert.match(line, /^\s+[A-Za-z0-9_.-]+:\s*".*"\s*$/u, `${skill.id} metadata value should be a quoted string: ${line.trim()}`);
     }
 
     // version 跟随 pack 版本（非独立 semver）
-    const packVersion = manifest.version;
-    assert.match(
-      frontmatterText,
-      new RegExp(`^version:\\s*${packVersion.replace(/\./g, "\\.")}\\s*$`, "mu"),
-      `${skill.id} frontmatter version should equal pack version ${packVersion}`,
-    );
+    assert.equal(fm.metadata.version, manifest.version, `${skill.id} metadata.version should equal pack version ${manifest.version}`);
 
     // action_category 应是有效值
-    const categoryMatch = frontmatterText.match(/^action_category:\s*(\w+)/mu);
-    assert.ok(categoryMatch, `${skill.id} should have action_category field`);
     assert.ok(
-      VALID_CATEGORIES.includes(categoryMatch[1]),
-      `${skill.id} action_category "${categoryMatch[1]}" should be one of: ${VALID_CATEGORIES.join(", ")}`,
+      VALID_CATEGORIES.includes(fm.metadata.action_category),
+      `${skill.id} action_category "${fm.metadata.action_category}" should be one of: ${VALID_CATEGORIES.join(", ")}`,
     );
+    // triggers: comma-separated string, no empty items
+    const triggers = fm.metadata.triggers.split(",").map((t) => t.trim());
+    assert.ok(triggers.length >= 2 && triggers.every(Boolean), `${skill.id} metadata.triggers should be a comma-separated list`);
 
     // v4.0: 确保不再使用旧的 `category` 键（语义碰撞修复）
-    assert.doesNotMatch(
-      frontmatterText,
-      /^category:\s*\w+/mu,
-      `${skill.id} must not use legacy 'category' key (use 'action_category' instead)`,
-    );
+    assert.equal(fm.top.category, undefined, `${skill.id} must not use legacy 'category' key`);
+    assert.equal(fm.metadata.category, undefined, `${skill.id} must not use legacy 'category' key`);
   }
 });
 
 test("optional 记账 skill is not a daily entry and lists 记账/记一笔/花了/存入 triggers", async () => {
-  const skillPath = path.join(skillsRoot, "topmind-ledger", "SKILL.md");
-  const raw = await fs.readFile(skillPath, "utf8");
-  const frontmatterText = raw.replace(/\r\n/gu, "\n").match(/^---\n([\s\S]*?)\n---/u)[1];
-  assert.match(frontmatterText, /entrypoint:\s*false/u);
+  const raw = await fs.readFile(path.join(skillsRoot, "topmind-ledger", "SKILL.md"), "utf8");
+  const { metadata } = parseSkillFrontmatter(raw);
+  assert.equal(metadata.entrypoint, "false");
   for (const trig of ["记账", "记一笔", "花了", "存入"]) {
-    assert.match(frontmatterText, new RegExp(trig, "u"), `triggers should include ${trig}`);
+    assert.ok(metadata.triggers.split(",").map((t) => t.trim()).includes(trig), `triggers should include ${trig}`);
   }
-  assert.doesNotMatch(frontmatterText, /entrypoint:\s*true/u);
   assert.match(raw, /如何打开/);
   assert.match(raw, /账本路径/);
   assert.match(raw, /\{memory\.dir\}\/ledgers\//);
@@ -409,24 +415,57 @@ test("only topmind router has entrypoint: true (v3.4 single daily entry)", async
   const manifest = await readJson("topmind-pack.json");
 
   for (const skill of manifest.skills) {
-    const skillPath = path.join(skillsRoot, skill.path, "SKILL.md");
-    const raw = await fs.readFile(skillPath, "utf8");
-    // Normalize \r\n → \n for cross-platform compatibility
-    const frontmatterMatch = raw.replace(/\r\n/gu, "\n").match(/^---\n([\s\S]*?)\n---/u);
-    const frontmatterText = frontmatterMatch[1];
-
+    const { top, metadata } = await readSkillFrontmatter(skill.path);
+    assert.equal(top.entrypoint, undefined, `${skill.id} entrypoint lives under metadata`);
     if (skill.id === "topmind") {
-      assert.match(frontmatterText, /entrypoint:\s*true/u, "topmind router should have entrypoint: true");
-    } else {
-      // 其他 skill 要么显式 entrypoint: false，要么不写（默认 false）
-      const entrypointMatch = frontmatterText.match(/^entrypoint:\s*(\w+)/mu);
-      if (entrypointMatch) {
-        assert.equal(entrypointMatch[1], "false", `${skill.id} should have entrypoint: false (not true)`);
-      }
-      // 不强制要求显式 entrypoint: false，但绝不能是 true
-      assert.doesNotMatch(frontmatterText, /entrypoint:\s*true/u, `${skill.id} must not have entrypoint: true`);
+      assert.equal(metadata.entrypoint, "true", "topmind router should have metadata.entrypoint \"true\"");
+    } else if (metadata.entrypoint !== undefined) {
+      // 不强制要求显式 "false"，但绝不能是 "true"
+      assert.equal(metadata.entrypoint, "false", `${skill.id} should have entrypoint "false" (not true)`);
     }
   }
+});
+
+test("retired topmind-wechat is gone from the pack, package files, install targets and routing", async () => {
+  const manifest = await readJson("topmind-pack.json");
+  const pkg = await readJson("package.json");
+  for (const id of RETIRED_SKILLS) {
+    assert.ok(!manifest.skills.some((s) => s.id === id), `${id} not in pack.skills`);
+    assert.ok(!manifest.entry_files.some((f) => f.startsWith(`${id}/`)), `${id} not in entry_files`);
+    assert.ok(!pkg.files.includes(`${id}/`), `${id} not in package.json files`);
+    assert.equal(await fs.stat(path.join(skillsRoot, id)).catch(() => null), null, `${id}/ directory removed`);
+    assert.ok(manifest.external_optional_skills.retired[id], `${id} documented as retired`);
+  }
+  const disamb = await fs.readFile(path.join(skillsRoot, "shared", "trigger-disambiguation.md"), "utf8");
+  assert.match(disamb, /→ `topmind-wechat-post`/u);
+  assert.doesNotMatch(disamb, /→ `topmind-wechat`(?!-)/u);
+  for (const id of ["topmind-wechat-post", "topmind-x-article", "topmind-viral-posts", "topmind-cover", "topmind-poster", "topmind-presentation", "topmind-handoff"]) {
+    assert.match(disamb, new RegExp("\\|[^\\n]*`" + id + "`", "u"), `trigger-disambiguation has a routing row naming ${id}`);
+  }
+  for (const rel of ["topmind/SKILL.md", "topmind-write/SKILL.md"]) {
+    const text = await fs.readFile(path.join(skillsRoot, rel), "utf8");
+    assert.doesNotMatch(text, /\.\.\/topmind-wechat\/|→ topmind-wechat\s|`topmind-wechat`（write/u, `${rel} no longer routes to the bundled topmind-wechat`);
+    assert.match(text, /topmind-wechat-post/u, `${rel} routes 公众号 to topmind-wechat-post`);
+  }
+});
+
+test("external routing evals name only non-bundled skills that the disambiguation table routes", async () => {
+  const manifest = await readJson("topmind-pack.json");
+  const evals = await readJson("evals/evals.json");
+  const disamb = await fs.readFile(path.join(skillsRoot, "shared", "trigger-disambiguation.md"), "utf8");
+  const bundled = new Set(manifest.skills.map((skill) => skill.id));
+  const external = evals.evals.filter((evalCase) => Array.isArray(evalCase.external_skills) && evalCase.external_skills.length);
+  assert.ok(external.length >= 6, "at least 6 external routing evals");
+  for (const evalCase of external) {
+    for (const id of evalCase.external_skills) {
+      assert.ok(!bundled.has(id), `${evalCase.id}: ${id} must not be a bundled skill`);
+      assert.ok(disamb.includes(`\`${id}\``), `${evalCase.id}: ${id} must appear in trigger-disambiguation.md`);
+    }
+    assert.match(evalCase.expected_output, /not installed|missing/iu, `${evalCase.id} states the fallback`);
+  }
+  const wechat = external.filter((evalCase) => evalCase.external_skills.includes("topmind-wechat-post"));
+  assert.ok(wechat.length >= 2, "公众号 routing covered");
+  assert.ok(wechat.some((evalCase) => /does not publish|not performed|no auto-send/u.test(evalCase.expected_output)), "no publishing on the user's behalf");
 });
 
 test("all SKILL.md files point to shared capability-degradation.md (v3.4 single source)", async () => {
@@ -440,7 +479,7 @@ test("all SKILL.md files point to shared capability-degradation.md (v3.4 single 
     const raw = await fs.readFile(skillPath, "utf8");
     assert.match(
       raw,
-      /degradation:\s*\.\.\/shared\/capability-degradation\.md/u,
+      /degradation:\s*"?\.\.\/shared\/capability-degradation\.md"?/u,
       `${skill.id} frontmatter should point to shared/capability-degradation.md`,
     );
   }
@@ -799,12 +838,14 @@ test("pack UTR node floor matches package.json engines, not an older major", asy
   assert.doesNotMatch(utr, /node\s*>=\s*18\b/u);
 });
 
-test("README copies name shipped optional wechat, and evals use the current loop path and skill count", async () => {
+test("README copies point 公众号 to external topmind-wechat-post, and evals use the current loop path and skill count", async () => {
   const manifest = await readJson("topmind-pack.json");
   const zh = await fs.readFile(path.join(skillsRoot, "README.md"), "utf8");
   const en = await fs.readFile(path.join(skillsRoot, "README.en.md"), "utf8");
-  assert.match(zh, /wechat|公众号/u);
-  assert.match(en, /wechat/iu);
+  assert.match(zh, /topmind-wechat-post/u);
+  assert.match(en, /topmind-wechat-post/u);
+  assert.doesNotMatch(zh, /├── topmind-wechat\//u);
+  assert.doesNotMatch(en, /├── topmind-wechat\//u);
   const evals = await fs.readFile(path.join(skillsRoot, "evals", "evals.json"), "utf8");
   assert.doesNotMatch(evals, /\.loop\//u);
   assert.match(evals, /\.topmind\/loop\//u);

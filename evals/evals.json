@@ -1,7 +1,7 @@
 {
   "skill_name": "topmind",
   "daily_entry": "topmind",
-  "version": "4.15.1",
+  "version": "4.15.2",
   "evals": [
     {
       "id": 1,
@@ -130,10 +130,10 @@
     },
     {
       "id": 18,
-      "prompt": "[schema validation] Verify all SKILL.md files have required frontmatter fields: name, version, description, action_category, triggers. Verify action_category values are within the enum. Verify name matches directory name in kebab-case.",
+      "prompt": "[schema validation] Verify all SKILL.md files pass the Agent Skills spec: top level only name, description, license, compatibility, metadata (allowed-tools); topmind fields metadata.version, metadata.action_category, metadata.triggers present as strings. Verify action_category values are within the enum. Verify name matches directory name in kebab-case.",
       "primary_skill": "topmind-maintain",
       "extra_skills": [],
-      "expected_output": "Validates frontmatter schema across all SKILL.md files (11 total: 7 core + 2 connector + optional ledger + optional wechat). Reports any missing required fields, invalid action_category values, or name/directory mismatches."
+      "expected_output": "Validates frontmatter schema across all SKILL.md files (10 total: 7 core + 2 connector + optional ledger). Reports non-spec top-level keys, missing metadata fields, invalid action_category values, or name/directory mismatches; agentskills validate passes on every skill."
     },
     {
       "id": 19,
@@ -275,6 +275,88 @@
       "primary_skill": "topmind",
       "extra_skills": [],
       "expected_output": "Router splits into ordered steps per shared/trigger-disambiguation.md: official announcements, technical reports and papers → optional external topmind-research (collect); community discussion → optional external last30days. Does not route to topmind-organize 整理本周 (that phrase means the workspace stream category) and does not use TopStream每日精选 unless the user asks for the daily digest. Any skill that is not installed falls back to topmind-organize on saved workspace materials, and the receipt says so. Each step returns its own receipt; no auto chaining."
+    },
+    {
+      "id": 38,
+      "prompt": "帮我把这篇稿子排成公众号格式，定稿发公众号。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-wechat-post"
+      ],
+      "expected_output": "Router follows shared/trigger-disambiguation.md: 公众号 / 微信排版 / 定稿发公众号 → optional external topmind-wechat-post (topmind-writing-skills) when installed; it builds the delivery package, runs the quality gates and produces WeChat HTML, and does not publish on the user's behalf. If topmind-wechat-post is not installed → topmind-write with a receipt suggesting the optional install. Never routes to the retired bundled topmind-wechat."
+    },
+    {
+      "id": 39,
+      "prompt": "写一篇公众号文章，然后直接帮我发出去。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-wechat-post"
+      ],
+      "expected_output": "Writes via topmind-wechat-post when installed; if it is not installed → topmind-write. Publishing is not performed: the receipt says the skill only produces the draft and the user publishes in the WeChat backend; no auto-send."
+    },
+    {
+      "id": 40,
+      "prompt": "把这周的模型发布整理成一篇干货短文，数据要准。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-briefs"
+      ],
+      "expected_output": "Information-dense short post → optional external topmind-briefs; not topmind-viral-posts (that is for hook / engagement posts). Not installed → topmind-write. No posting without explicit user confirmation."
+    },
+    {
+      "id": 41,
+      "prompt": "帮我写几条引流的短帖，带钩子，想涨粉。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-viral-posts"
+      ],
+      "expected_output": "Engagement-style short posts → optional external topmind-viral-posts; not topmind-briefs. Not installed → topmind-write. Sending to X goes through topmind-x only after the user confirms each post."
+    },
+    {
+      "id": 42,
+      "prompt": "把这份笔记改写成一篇 X 长文，要能一键复制。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-x-article"
+      ],
+      "expected_output": "X Articles long-form → optional external topmind-x-article; short posts never go to x-article. Not installed → topmind-write. topmind-x is only used to post, and only with user confirmation."
+    },
+    {
+      "id": 43,
+      "prompt": "做一份大模型推理成本的研究报告，最后做成可以翻页的幻灯片。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-research",
+        "topmind-presentation"
+      ],
+      "expected_output": "Ordered steps per shared/trigger-disambiguation.md: evidence gathering and fact checking → optional external topmind-research first; the receipt suggests topmind-presentation for the HTML/PPTX deck. No auto chaining. If research is missing → topmind-organize on saved materials; if presentation is missing → topmind-write."
+    },
+    {
+      "id": 44,
+      "prompt": "把我的记忆和进行中的工作打包，换到另一个工具里接着用。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-handoff"
+      ],
+      "expected_output": "Cross-tool export → optional external topmind-handoff; not topmind-memory (which only updates this workspace's 我的情况) and not topmind-write export. If handoff is not installed, the receipt says so and nothing is packed automatically."
+    },
+    {
+      "id": 45,
+      "prompt": "给这篇文章做一张封面，再出一张长图海报。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "external_skills": [
+        "topmind-cover",
+        "topmind-poster"
+      ],
+      "expected_output": "Cover / header image → optional external topmind-cover; long vertical poster → optional external topmind-poster; a paged deck would be topmind-presentation. Each step returns its own receipt. Skills that are not installed are reported, not improvised."
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@topmindspace/topmind-skills",
-  "version": "4.15.1",
-  "description": "topmind Agent Skills pack — portable markdown skills for capture, organize, write, memory, maintain, loop.",
+  "version": "4.15.2",
+  "description": "topmind Agent Skills pack — spec-valid Markdown skills for capture, organize, write, memory, maintain, loop.",
   "type": "module",
   "license": "MIT",
   "author": "TopMindSpace",
@@ -31,7 +31,6 @@
     "topmind-maintain/",
     "topmind-memory/",
     "topmind-organize/",
-    "topmind-wechat/",
     "topmind-weread/",
     "topmind-write/",
     "topmind-x/",
@@ -41,6 +40,7 @@
     "README.md",
     "README.zh-CN.md",
     "README.en.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "engines": {

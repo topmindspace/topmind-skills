@@ -22,7 +22,7 @@
 | 8 | `topmind-weread` | Connector | 微信读书 / weread | **微信读书连接器**：同步划线、书评与阅读笔记 |
 | 9 | `topmind-x` | Connector | X / 推特 / twitter | **X (Twitter) 连接器**：归档推特帖子、书签与时间线 |
 | 10 | `topmind-ledger` | Memory（可选） | 记账 / 记一笔 / 花了 / 存入 | **记账**：默认个人账本，用户自建账本/分类，写入 `memory/ledgers/` |
-| 11 | `topmind-wechat` | Write 子技能（可选） | 公众号 / 微信排版 / 定稿 | **公众号创作**：交付包、质量三关、微信内联排版、发布清单（write 族子技能，非并列前台） |
+| — | ~~`topmind-wechat`~~ | 4.15.2 起移出 | 公众号 / 微信排版 / 定稿 | 改用写作包 topmind-writing-skills 的 `topmind-wechat-post`（外部可选，不随本包发布）；已装旧 `topmind-wechat` 的请删除 |
 
 ---
 

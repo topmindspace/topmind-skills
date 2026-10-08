@@ -25,7 +25,6 @@ jobs:
           repository: topmindspace/topmind
           ref: main
           path: .topmind-src
-        continue-on-error: true
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -36,6 +35,22 @@ jobs:
         env:
           TOPMIND_SRC: ${{ github.workspace }}/.topmind-src
         run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
+
+      - name: Setup Python (Agent Skills validator)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Agent Skills spec validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          pip install --quiet skills-ref==0.1.1
+          for d in */; do
+            if [[ -f "${d}SKILL.md" ]]; then
+              agentskills validate "${d%/}"
+            fi
+          done
 
       - name: Pack smoke
         run: node scripts/build-pack.mjs

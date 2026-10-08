@@ -1,30 +1,20 @@
 ---
 name: topmind-memory
-version: 4.15.1
 description: >-
   更新「我的情况」或周期反思。Use when 记住这个、更新我的情况、加到专题记忆、沉淀结论。
   Do NOT use for 捕获、仅总结（→organize）、整理本周正文、出稿、开/并专题、doctor/loop.
-action_category: memory
-triggers:
-  - 写入专题记忆
-  - 更新我的情况
-  - stable memory
-  - 追加确认结论
-  - 记住这个
-  - 记住我
-  - 加到专题记忆
-  - 沉淀结论
-  - 提炼到记忆
-  - update profile
-  - memory
-tags: [memory, stable, core-profile, 我的情况]
-entrypoint: false
-compatibility: workspace core profile (memory/profile.md) + periodic reflections.
-author: TopMindSpace
 license: MIT
-homepage: https://github.com/topmindspace/topmind
-updated: 2026-09-28
-degradation: ../shared/capability-degradation.md
+compatibility: workspace core profile (memory/profile.md) + periodic reflections.
+metadata:
+  version: "4.15.2"
+  action_category: "memory"
+  entrypoint: "false"
+  triggers: "写入专题记忆, 更新我的情况, stable memory, 追加确认结论, 记住这个, 记住我, 加到专题记忆, 沉淀结论, 提炼到记忆, update profile, memory"
+  tags: "memory, stable, core-profile, 我的情况"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Memory
