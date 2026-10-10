@@ -255,7 +255,7 @@ npm publish --access public
 
 ### skills.sh
 
-公开 GitHub 仓即可被 `npx skills` / [skills.sh](https://skills.sh/topmindspace/topmind-skills) 索引，无需额外注册：
+公开 GitHub 仓即可被 `npx skills` / [skills.sh](https://skills.sh) 索引，无需额外注册：
 
 ```bash
 npx skills add topmindspace/topmind-skills -g -y
