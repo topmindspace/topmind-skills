@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "write"
   entrypoint: "false"
   triggers: "写, 写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 输出, 出稿, 定稿, 发布, 导出, 排版, write, draft, deliver, publish, export"

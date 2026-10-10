@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: Host file tools or Kernel writeback. Desktop optional mini-app. Feishu/lark-cli is not required.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "memory"
   entrypoint: "false"
   triggers: "记账, 记一笔, 花了, 存入, 查看账单, 账户余额, bookkeeping, log expense"

@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: topmind workspace with stream period notes, topics, or Inbox.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "organize"
   entrypoint: "false"
   triggers: "整理本周, 理顺本周, 周复盘, 整理, 组织, 研究, 分析, 对比, 提取, 梳理, 归纳, 证据, 实体, 质量审查, 总结, 概括, 汇总, 提纲, 分类整理, 找关联, 总结成笔记要点, organize, summarize, analyze, weekly review"

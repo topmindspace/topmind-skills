@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: Requires WeRead Skill API key (wrk-*). Desktop WereadService preferred; host may call gateway manually.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "connector"
   entrypoint: "false"
   triggers: "微信读书, weread, 划线同步, 读书笔记, 阅读统计, 书架, weread sync, sync highlights"

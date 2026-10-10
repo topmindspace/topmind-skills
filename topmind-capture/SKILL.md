@@ -8,7 +8,7 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Host file tools or optional UTR capture-note.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "capture"
   entrypoint: "false"
   triggers: "收集, 收进, 保存, 剪藏, 记一下, 临时存放, 随手记, 想法, 灵感, 暂存沉淀, 记录, 备忘, 存一下, 暂存, 笔记, 抄下来, 摘录, 记一下要做, 别忘了, 要做, capture, note, save, Note it"

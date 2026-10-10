@@ -4,7 +4,7 @@
   "label": "topmind",
   "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills spec-valid frontmatter (custom fields under metadata, checked by agentskills validate), capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账). None of the optional skills is an extra user concept. WeChat (公众号) and other writing skills live in the external topmind-writing-skills pack (topmind-wechat-post etc.) and are routed only when installed. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
-  "version": "4.15.2",
+  "version": "4.15.3",
   "updated": "2026-10-08",
   "license": "MIT",
   "locales": {
