@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: workspace core profile (memory/profile.md) + periodic reflections.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "memory"
   entrypoint: "false"
   triggers: "写入专题记忆, 更新我的情况, stable memory, 追加确认结论, 记住这个, 记住我, 加到专题记忆, 沉淀结论, 提炼到记忆, update profile, memory"

@@ -6,7 +6,7 @@ description: >-
 license: MIT
 compatibility: topmind engine and/or workspace. Prefer read-only diagnostics first.
 metadata:
-  version: "4.15.2"
+  version: "4.15.3"
   action_category: "maintain"
   entrypoint: "false"
   triggers: "快速体检, 体检, 诊断, doctor, 健康检查, 清理, 修复, 快速检查, 检查, 状态, workspace check, scan, fix, maintain"
