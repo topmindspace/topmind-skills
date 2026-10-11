@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "package": "topmind",
+  "target": "hermes",
+  "daily_entry": "topmind",
+  "metadata": {
+    "license": "MIT",
+    "authors": [
+      "TopMindSpace"
+    ],
+    "repository": "https://github.com/topmindspace/topmind-skills",
+    "homepage": "https://github.com/topmindspace/topmind-skills#readme"
+  },
+  "skills": [
+    "topmind",
+    "topmind-capture",
+    "topmind-organize",
+    "topmind-write",
+    "topmind-memory",
+    "topmind-maintain",
+    "topmind-loop",
+    "topmind-weread",
+    "topmind-x",
+    "topmind-ledger"
+  ],
+  "install_strategy": "symlink-or-copy",
+  "target_root_hint": "hermes-skills-root",
+  "capabilities": [
+    "skills",
+    "cli",
+    "mcp"
+  ],
+  "content_truth": "topmind-workspace",
+  "host_must_not": [
+    "change-content-truth",
+    "add-daily-entrypoints",
+    "fork-skill-semantics",
+    "persist-content-in-agent-state",
+    "introduce-legacy-project-naming",
+    "introduce-project_type-field"
+  ],
+  "config_shape": {
+    "skills_root": "host-provided",
+    "workspace_root": "host-provided",
+    "utr": "optional"
+  },
+  "notes": [
+    "Keep topmind skills as portable Markdown bundles.",
+    "Hermes may call UTR through CLI or MCP, but the skill pack must still work with host file tools.",
+    "Categories use 10-60/88/99 spaced number prefix (dynamic discovery); topics use YYYY-主题 kebab-case; do not introduce YYYY-类型-项目名.",
+    "v4.3 progressive disclosure: name+description discovery; SKILL.md on activation; shared/ and references/ on demand. Single daily entry topmind.",
+    "Install model: canonical <base>/.agents/skills holds the pack; this host gets relative symlinks (or --copy). Universal agents that read .agents/skills need no private links at project scope."
+  ],
+  "install": {
+    "script": "bin/install-skills.mjs",
+    "docs": "INSTALL.md",
+    "model": "canonical-.agents-skills + agent-link",
+    "matrix": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a hermes",
+    "from_git": "node bin/install-skills.mjs add topmindspace/topmind-skills -g -a hermes",
+    "from_release": "node bin/install-skills.mjs add release:latest -g -a hermes",
+    "single_dir": "node bin/install-skills.mjs add topmindspace/topmind-skills --dest <host-skills-root>"
+  }
+}

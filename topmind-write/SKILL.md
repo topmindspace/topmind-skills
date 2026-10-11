@@ -1,0 +1,100 @@
+---
+name: topmind-write
+description: >-
+  写作/润色/出稿到专题或交付层（role:delivery）。Use when 写、起草、续写、润色、出稿、交付、write、draft、deliver。
+  Do NOT use for 仅捕获、仅结构整理、只写记忆、doctor/loop、社交连接器.
+license: MIT
+compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
+metadata:
+  version: "4.15.3"
+  action_category: "write"
+  entrypoint: "false"
+  triggers: "写, 写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 输出, 出稿, 定稿, 发布, 导出, 排版, write, draft, deliver, publish, export"
+  tags: "write, draft, revise, polish, deliver"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "2026-10-08"
+  degradation: "../shared/capability-degradation.md"
+---
+
+# topmind Write
+
+从起草到交付。输出最终内容到 **delivery 层**（role:delivery）或专题根。
+
+## Activation checklist
+
+1. 能定位专题时：**先读 `topic.md`（若有）**，再读焦点稿与必要笔记（不足再 organize/capture）  
+2. 起草或修订；去 AI 腔 / 适配格式  
+3. 落盘专题根或 `save-output` → delivery  
+4. 路径回执；交付勿塞进专题内 `outputs/`  
+5. 可选 L1：稿件里稳定结论/待办可在回执建议（不自动写 memory/todo）— [`../shared/auto-suggest.md`](../shared/auto-suggest.md)
+
+## When NOT to use
+
+- 记链接/想法 → `topmind-capture`  
+- 整理/综合证据 → `topmind-organize`  
+- 只更新「我的情况」/ 周期反思 → `topmind-memory`  
+- 清理/体检/巡检 → maintain / loop  
+- 发推 / 微信读书 → connectors  
+- **公众号 / 微信排版 / 公众号定稿** → 外部可选 `topmind-wechat-post`（topmind-writing-skills，已安装时）；未安装时由本 skill 按通用写作流程出稿
+- X 长文 → 外部可选 `topmind-x-article`；干货短文 / 引流短帖 → `topmind-briefs` / `topmind-viral-posts`（均已安装时；未安装仍由本 skill 写）
+- 做成幻灯片 → 外部可选 `topmind-presentation`；发推 → `topmind-x`（须用户确认）
+
+## Writing Entry Points
+
+Draft · Continue · Revise · Polish · Deliver — 按用户当前意图，不是固定流水线。
+
+公众号专用：选题包 · 审校改写 · 质量三关 · 定稿 · 微信排版 — 已安装写作包时转入外部 `topmind-wechat-post`（本包 4.15.2 起不再自带 `topmind-wechat`）；不代用户发布。
+
+## Workflow
+
+1. **读序（先首页再素材）**：`topic.md`（若有）→ 焦点对象 → 仅必要笔记。无 topic.md 不强制创建，照旧扫笔记。禁止一上来 dump 整专题  
+2. 对齐目标、稳定记忆、风格、受众  
+3. 产出可用正文，少过程旁白  
+4. 按保存设置写入；锁定文件：内容编辑允许（任务级首写快照），可恢复删/归档允许，永久删仅用户。宿主若提供唯一片段替换（Desktop / Obsidian `edit_file`），中段改稿优先用它：匹配阶梯（精确→换行/空白→行级宽松），多步编辑跟 postEditWindow + contentHash/expectedHash，不要为改一段而整文件覆盖。不要编造 shell / bash 工具。  
+5. Desktop 可选影子流式：`.shadow-*.tmp`，Commit 后再原子落盘  
+
+## source_type
+
+- AI 草稿默认 `ai-derived`  
+- 用户原文仅排版 → `user-original`  
+- 交付层文件 `source_type` 可选；专题内笔记建议必填  
+
+## Delivery Checklist
+
+```text
+□ 格式匹配目标
+□ 无内部标注 / TODO / 占位符
+□ 受众与语气匹配
+□ source_type 正确
+□ 路径正确（交付层 save-output；专题根 capture-note）
+□ 交付层文件名 YYYY-MM-DD-描述.ext
+□ 回执含路径与下一步
+```
+
+不满足则在回执标注。
+
+## Quality Bar
+
+具体、受众向；去 AI 套话；保用户声音。`topic.md` 风格锚点优先。
+
+改稿按场景选工具，别混用：
+
+| 场景 | 技能 |
+|---|---|
+| 中文改稿的保真边界（不新增事实、不把「可能」写成「确定」） | `humanizer-zh` |
+| 中文 AI 味体检 / 量化评分 / pan 个人风格 | `qu-aiwei-zh` |
+| 英文文本 | `humanizer` |
+
+默认组合是**先 `humanizer-zh` 立边界，再 `qu-aiwei-zh` 扫描定位**。分数不够时只能删套话改表达，不许补数字或硬塞「我」。
+
+## Capability Degradation
+
+[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。`inspect-topic` · `save-output` · `capture-note`。
+
+## 保存设置
+
+- **自动保存 (auto)**：直接写入并返回路径回执（path receipt）
+- **需要审阅 (confirm)**：分级——内容新建/更新/编辑直接落盘；仅删除/归档待确认
+- `writeback_mode: auto | confirm`。详见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。
+

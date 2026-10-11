@@ -1,0 +1,181 @@
+# Release topmind-skills pack on tag v*.
+# Version truth source: topmind-pack.json (must match tag).
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag for draft release (e.g. v4.9.0)"
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: skills-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER=$(node -p "require('./topmind-pack.json').version")
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == v* ]]; then
+            EXPECT="v$VER"
+            if [[ "$TAG" != "$EXPECT" && "$TAG" != skills-v* ]]; then
+              echo "ERROR: tag $TAG does not match pack version $VER"
+              exit 1
+            fi
+          fi
+
+      - name: Test
+        run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
+
+      - name: Pack
+        run: node scripts/build-pack.mjs
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="${{ steps.ver.outputs.version }}"
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == workflow_dispatch* || -z "$TAG" ]]; then
+            TAG="${{ inputs.release_tag }}"
+          fi
+          # workflow_dispatch: always draft
+          DRAFT=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DRAFT="--draft"
+          fi
+          NOTES="topmind-skills v${VER}
+
+          ## Install
+          \`\`\`bash
+          # npm (recommended · pack-aware · includes shared/)
+          npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+
+          # community CLI
+          npx skills add topmindspace/topmind-skills -g -y
+          \`\`\`
+
+          ## Upgrade
+          \`\`\`bash
+          npx @topmindspace/topmind-skills update -g
+          # or
+          npx skills update -g -y
+          \`\`\`
+          "
+          gh release create "$TAG" $DRAFT \
+            --title "topmind-skills v${VER}" \
+            --notes "$NOTES" \
+            dist/topmind-skills-*.tar.gz \
+            dist/topmind-skills-*.zip \
+            dist/topmind-skills-*-manifest.json \
+            dist/*.SHA256SUMS \
+            || gh release upload "$TAG" dist/topmind-skills-*.tar.gz dist/topmind-skills-*.zip dist/topmind-skills-*-manifest.json dist/*.SHA256SUMS --clobber
+
+      - name: Write latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.ver.outputs.version }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const ver = process.env.VER;
+            const tag = process.env.TAG;
+            const latest = {
+              surface: "skills",
+              version: ver,
+              tag,
+              published_at: new Date().toISOString(),
+              assets: [
+                `topmind-skills-${ver}.zip`,
+                `topmind-skills-${ver}.tar.gz`,
+                `topmind-skills-${ver}-manifest.json`,
+                `topmind-skills-${ver}.SHA256SUMS`,
+              ],
+              install: {
+                npm: "npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g",
+                npx_skills: "npx skills add topmindspace/topmind-skills -g -y",
+                pack_aware: "npx --yes github:topmindspace/topmind-skills install -g",
+              },
+            };
+            fs.writeFileSync("latest.json", JSON.stringify(latest, null, 2) + "\n");
+          '
+          gh release upload "$TAG" latest.json --clobber
+
+      # Sync npm: @topmindspace/topmind-skills
+      # Requires repo secret NPM_TOKEN (Automation token).
+      # Missing token fails the job (same as the other topmind repos), so a green
+      # Release never hides an unpublished npm version.
+      # Skip on workflow_dispatch (draft release) — publish only on real v* tags.
+      - name: Publish to npm
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PKG_NAME: "@topmindspace/topmind-skills"
+          PKG_VERSION: ${{ steps.ver.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
+            echo "::error::NPM_TOKEN secret is not set — cannot publish ${PKG_NAME}@${PKG_VERSION} to npm. Add the repo secret NPM_TOKEN (npm Automation token) and re-run this job."
+            exit 1
+          fi
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "${PKG_NAME}@${PKG_VERSION} already on npm — skip"
+            exit 0
+          fi
+          npm publish --access public
+
+      # Product policy: keep only the newest 2 GitHub Releases.
+      # Git tags stay (topmind docs/REPO-MAINTENANCE.md §5.1). Do not delete refs/tags.
+      - name: Prune old releases (keep 2)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEEP=2
+          mapfile -t ROWS < <(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
+            --jq '[.[] | {id, tag: .tag_name, at: (.published_at // .created_at)}] | sort_by(.at) | reverse | .[] | "\(.id)\t\(.tag)"')
+          echo "total releases: ${#ROWS[@]} keep=${KEEP}"
+          if (( ${#ROWS[@]} <= KEEP )); then
+            echo "nothing to prune"
+            exit 0
+          fi
+          for row in "${ROWS[@]:$KEEP}"; do
+            id="${row%%$'\t'*}"
+            tag="${row#*$'\t'}"
+            echo "deleting release id=${id} tag=${tag} (git tag kept)"
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${id}" || true
+          done

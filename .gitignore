@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+.DS_Store
+.topmind-src/
+*.log
+__pycache__/
+*.py[cod]
+release-assets/
+*.tgz
+# 安装器没有 npm 依赖，锁文件不提交
+package-lock.json

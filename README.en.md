@@ -1,0 +1,175 @@
+# topmind Skills
+
+Portable AI skill pack: the same content contract on Claude Code / Codex / OpenCode / Hermes and other hosts.
+
+[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+
+```bash
+# 1) npm (recommended · pack-aware · includes shared/ · canonical .agents + agents)
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
+# subset of agents
+npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
+# upgrade
+npx @topmindspace/topmind-skills update -g
+
+# 2) Community CLI (fast try; omits shared/ — see INSTALL.md)
+npx skills add topmindspace/topmind-skills -g -y
+
+# 3) Pack-aware installer (from a source checkout)
+npm run add -- topmindspace/topmind-skills -g
+npm run update -- -g
+
+# 4) From GitHub Release (pinned version / offline)
+node bin/install-skills.mjs add release:latest -g
+
+# Inspect matrix / repair broken roots
+node bin/install-skills.mjs agents
+node bin/install-skills.mjs doctor --repair
+```
+
+Install model: **one canonical body under `.agents/skills`** plus relative symlinks into private host roots (Claude Code, MiMoCode, …) — same as [`npx skills`](https://github.com/vercel-labs/skills). See [INSTALL.md](./INSTALL.md).
+
+**Version and manifest truth:** [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`).  
+Each `SKILL.md` `metadata.version` **must** equal the pack version.
+
+---
+
+## Layout
+
+```text
+topmind-skills/              # pack root = repo root
+├── topmind/                 # only daily entry (router)
+├── topmind-capture|organize|write|memory|maintain|loop/
+├── topmind-weread|x/        # optional connectors
+├── topmind-ledger/          # optional bookkeeping (memory-plane ledgers)
+├── shared/                  # write receipts · degradation · auto-suggest · capture …
+├── install-targets/         # host install shapes
+├── evals/evals.json
+├── bin/install-skills.mjs   # pack-aware installer (shared/ aware)
+├── scripts/build-pack.mjs
+└── topmind-pack.json        # version truth
+```
+
+| Kind | Modules |
+|------|---------|
+| **Entry** | `topmind` only |
+| **Actions** | capture · organize · write · memory · maintain · loop |
+| **Connectors** | weread · x (optional) |
+| **Optional** | ledger (记账 · memory-plane books) |
+| **External optional (not bundled)** | WeChat `topmind-wechat-post` and other writing skills (topmind-writing-skills) · `topmind-research` · `topmind-presentation` · `topmind-handoff`; routing in `shared/trigger-disambiguation.md` |
+
+> Sub-skill trigger words exist for host routing. They are **not** a second product front door.
+
+---
+
+## Product contract
+
+```text
+User experience:     capture-first
+Data organization:   category-first + topic-emerges
+Content truth:       topmind-workspace
+Capability model:    action-first
+Save settings:       auto | confirm
+Safety model:        reversible by default
+Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — shared/auto-suggest.md
+```
+
+Expose only `topmind` as the daily entry. Host session state must not become topmind content truth.  
+**Desktop is not required** for this pack. **UTR is optional** — use host file tools when UTR is absent.
+
+Workflow: `收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
+**Capture whenever / use whenever:** capture lands with zero questions; classification alternatives, todo extraction, and memory candidates are prepared as L1 suggestions for one-word accept ([`shared/auto-suggest.md`](./shared/auto-suggest.md)). `memory/todo.md` is a satellite — not a sixth concept.
+(If the user says “capture this”, “note it”, “organize”, “write it up”, or “run a loop”, the router infers category / topic / action.)
+
+---
+
+## SKILL.md frontmatter
+
+```yaml
+---
+name: <kebab-case-id>           # required; matches directory name
+description: >-                  # required; what + Use when + Do NOT use
+  …
+license: MIT
+compatibility: …                # optional; environment notes (≤500 chars)
+metadata:                       # Agent Skills spec: custom fields live here, string values
+  version: "<pack.version>"     # required; = topmind-pack.json version
+  action_category: "capture"    # skill taxonomy (not user note category)
+  entrypoint: "false"           # only the topmind router is "true"
+  triggers: "记一下, 收进, capture"   # comma-separated
+  tags: "capture, inbox"
+  author: "TopMindSpace"
+  homepage: "https://github.com/topmindspace/topmind-skills"
+  updated: "YYYY-MM-DD"
+  degradation: "../shared/capability-degradation.md"
+---
+```
+
+Top level allows only `name / description / license / compatibility / metadata / allowed-tools`; CI runs the official validator `agentskills validate` (skills-ref) on every skill, and `tests/package-manifest.test.mjs` enforces fields and versions. The topmind Desktop parser reads both the legacy top-level layout and `metadata.*`.
+
+---
+
+## Workspace contract
+
+```text
+{workspace-root}/
+├── topmind.yaml                # contract v4
+├── memory/                     # profile.md · periodic/ · topics/ · todo.md · optional ledgers/
+├── .topmind/                   # rebuildable machine state
+├── 00-Inbox/                   # role: buffer (live dir name)
+├── 10-Stream/ …                # categories (template-driven)
+├── 88-Delivery/ or 88-交付/     # role: delivery
+└── 99-Archive/ or 99-归档/     # role: system
+```
+
+Topic:
+
+```text
+{category}/{YYYY-theme}/
+├── topic.md                 # optional
+├── *.md                     # notes at topic root
+└── images/                  # optional
+```
+
+Loose note: `{category}/{note}.md` when no topic yet.
+
+**Do not create (deprecated):** default `outline.md` / `setting.md` / `style.md`; `project_type` frontmatter; nested topic `notes/` or `outputs/`; top-level `projects/`; `YYYY-类型-项目名` naming.
+
+**Categories:** discover `{NN-Name}/` at runtime + `topmind.yaml` v4 (`categories.extensions` / `categories.overrides` with `hidden`). Shared resolver: engine `lib/workspace-model.mjs`. Prefer role-based routing over hardcoded `10-`/`20-` numbers.
+
+Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
+
+### 6 core rules
+
+1. **Categories never overlap**  
+2. **Topics emerge** (do not force-create)  
+3. **Dynamic/stream category is special** (flat-default)  
+4. **Catch-all cleanup** (~30 days)  
+5. **Reference materials stay reference-only**  
+6. **Category names stay stable** (rename via migration)  
+
+Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
+
+---
+
+## Rules (skills behavior)
+
+- Capture first; don’t block simple saves on perfect classification  
+- Auto-route when signal is strong; otherwise **role:buffer** (live inbox dir, not hardcoded-only `00-Inbox/`)  
+- Loose notes at category root when topic is unclear  
+- Every write returns a receipt (path, route reason when available, next step)  
+- `source_type`: `user-original` | `external-capture` | `ai-derived`  
+- UTR is optional — host file tools preserve the same contract  
+- Save settings protocol: `writeback_mode: auto | confirm`  
+- Locked: editable under auto (task-level first-write snapshot); permanent delete of locked/core is user-only  
+- Desktop is not required for this pack  
+- **Compound discipline (no structure change):** organize leaves synthesis on disk; write reads optional `topic.md` first; memory only on explicit confirm; capture never edits `topic.md`; **no** hard `INDEX.md` / parallel wiki trees (see `shared/project-model-brief.md`)  
+
+---
+
+## Install targets
+
+Packaged skill directories (7 core + 2 optional connectors + optional ledger; since 4.15.2 WeChat comes from `topmind-wechat-post` in the writing pack) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
+Prefer the pack-aware installer so `shared/` and `topmind-pack.json` stay intact — see [`INSTALL.md`](./INSTALL.md).
+
+Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`shared/capability-degradation.md`](./shared/capability-degradation.md).
