@@ -36,7 +36,7 @@
 | X 长文 / 推特长文 | topmind-x-article（外部可选）vs write vs x | 写 X Articles 长文与一键复制 → `topmind-x-article`；未安装 → `topmind-write`。短帖不走 x-article |
 | 研究报告 / 调研报告 | organize vs topmind-research vs topmind-presentation | 要找证据、核事实 → `topmind-research`；对工作区已有材料做分析 → `topmind-organize`；要做成可翻页 HTML / PPTX → `topmind-presentation`。「做一份 X 的研究报告」先 research，回执建议 presentation，不自动链式；对应技能未安装 → organize / write |
 | 复盘 / 汇报材料 | loop vs organize vs topmind-presentation | 工作区巡检 → loop；本周动态 → organize「整理本周」；要出汇报幻灯片 → `topmind-presentation`（未安装 → `topmind-write`） |
-| 交接 / 导出记忆 / 记忆同步 | topmind-handoff（外部可选）vs memory vs write | 跨工具打包或接收交接包 → `topmind-handoff`；更新本工作区「我的情况」→ `topmind-memory`；导出稿件 → `topmind-write`。handoff 未安装 → 回执说明，不自动打包 |
+| 交接 / Handoff / 做个交接 / 工作交接 / 导出记忆 / 记忆同步 | topmind-handoff（外部可选）vs memory vs write | 只说做个handoff、做个交接、工作交接、Handoff、交接、记忆同步 → `topmind-handoff` 的一轮（先整合再写回）。点名导出或接收仍只做那一件。更新本工作区「我的情况」→ `topmind-memory`；导出稿件 → `topmind-write`。handoff 未安装 → 回执说明，不自动打包 |
 | 配图 / 封面 / 长图 / 海报 | topmind-cover vs topmind-poster vs topmind-presentation（均外部可选） | 文章头图、封面、单张配图 → `topmind-cover`；长图、信息海报、多段竖版 → `topmind-poster`；可翻页演示 → `topmind-presentation`；均未安装 → 回执说明，不硬生成 |
 
 **原则**：动作动词定 action；修饰词定 confidence。无法判定 → capture（先存后整）。
