@@ -9,7 +9,7 @@ Portable AI skill pack: the same content contract on Claude Code / Codex / OpenC
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 # subset of agents
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
-# upgrade
+# upgrade (default: a newer packaged skill overwrites in place, no backup, "Upgraded <skill> <old> -> <new>"; same version is skipped "Already up to date"; a newer installed version is refused unless --force)
 npx @topmindspace/topmind-skills update -g
 
 # 2) Community CLI (fast try; omits shared/ — see INSTALL.md)

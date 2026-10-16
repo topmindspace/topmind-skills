@@ -4,6 +4,14 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.5 — 2026-10-16
+
+### 安装器
+
+- 默认升级：包里版本更新（或已装版本缺失）就直接覆盖，不备份，打印 `Upgraded <skill> <旧> -> <新>`；同版本跳过，打印 `Already up to date`（`--force` 重装）；已装版本比包里新时拒绝降级，需 `--force`。
+- symlink 模式：之前装过的同名 skill 普通目录（SKILL.md name 一致）直接换成软链；无关目录才需要 `--force`，并给一行提示。
+- 新增 `tests/installer-upgrade.test.mjs`；README 中英文、INSTALL.md、帮助文本同步。
+
 ## 4.15.4 — 2026-10-16
 
 ### 优化

@@ -9,7 +9,7 @@
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 # 只装给部分智能体
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
-# 升级
+# 升级（默认：包里更新就直接覆盖，不备份，打印 Upgraded <skill> <旧> -> <新>；同版本跳过 Already up to date；已装更新拒绝降级，需 --force）
 npx @topmindspace/topmind-skills update -g
 
 # 2) 社区 CLI（快速试用；不含 shared/ — 见 INSTALL.md）

@@ -92,7 +92,7 @@ npx @topmindspace/topmind-skills add topmindspace/topmind-skills -p
 # 单目录（旧 --dest 仍可用）
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest ~/.claude/skills
 
-# 升级（读 receipt）
+# 升级（读 receipt）：包里更新 → 直接覆盖，不备份，打印 Upgraded <skill> <旧> -> <新>；同版本 → Already up to date；已装更新 → 拒绝降级，需 --force
 npx @topmindspace/topmind-skills update -g
 
 # 查看
@@ -162,7 +162,7 @@ npx @topmindspace/topmind-skills doctor
 | `--skill <id>` | 只装列出的 skill id |
 | `--locale en-US` | locale overlay（当前未提供 overlay，回退中文正文） |
 | `-n` / `--dry-run` | 只打印计划 |
-| `--force` | symlink 模式下替换非软链目标 |
+| `--force` | 允许降级（已装版本比包里新）、同版本重装、symlink 模式下替换无关目录。之前装过的同名 skill 普通目录（SKILL.md name 一致）在 symlink 模式下会直接换成软链，不需要 --force |
 
 ### Agents
 

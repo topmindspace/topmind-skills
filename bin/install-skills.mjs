@@ -32,7 +32,7 @@
  *   --skill <id>        Only install these skill ids (repeatable / comma-separated)
  *   --global / -g       Alias: --host claude-code (user-level ~/.claude/skills)
  *   --dry-run           Print plan only
- *   --force             Replace non-symlink destinations when using symlink mode
+ *   --force             Downgrade / reinstall same version / replace unrelated folder in symlink mode
  *
  * Examples:
  *   # Like `npx skills add topmindspace/topmind-skills -g`
@@ -250,7 +250,12 @@ Options:
   --skill <id>         Only install these skill ids (repeatable / comma-separated)
   --locale <code>      Install locale overlay (e.g. en-US); falls back to topmind_LOCALE env
   -n, --dry-run        Print plan only
-  --force              Replace non-symlink destinations when using symlink mode
+  --force              Allow downgrading a newer installed skill, reinstall an up-to-date one,
+                       or replace an unrelated folder in symlink mode
+Upgrade behaviour: a newer packaged skill overwrites the installed copy in place
+  (no backup, "Upgraded <skill> <old> -> <new>"); the same version is skipped
+  ("Already up to date"); a newer installed version is refused unless --force.
+  In symlink mode a previous plain-folder install of the same skill is replaced.
 
 Examples:
   node bin/install-skills.mjs add topmindspace/topmind-skills -g
@@ -701,12 +706,75 @@ async function applyLocaleOverlay(overlayDir, targetDir) {
   }
 }
 
-async function installCopy(skillsRoot, dest, entries, locale) {
+/** Read name + version from <dir>/SKILL.md frontmatter (metadata.version or top-level version). */
+async function readSkillMeta(dir) {
+  try {
+    const t = await fs.readFile(path.join(dir, "SKILL.md"), "utf8");
+    const fm = (t.match(/^---\r?\n([\s\S]*?)\r?\n---/) || [])[1] || "";
+    const name = ((fm.match(/^name:\s*(.+?)\s*$/m) || [])[1] || "").replace(/^["']|["']$/g, "");
+    const v =
+      fm.match(/^metadata:\s*\n(?:[ \t]+.*\n)*?[ \t]+version:\s*(.+?)\s*$/m) || fm.match(/^version:\s*(.+?)\s*$/m);
+    return { name, version: v ? v[1].replace(/^["']|["']$/g, "") : "" };
+  } catch {
+    return null;
+  }
+}
+
+function parseVer(v) {
+  const m = String(v || "").trim().replace(/^v/, "").match(/^(\d+)\.(\d+)\.(\d+)/);
+  return m ? m.slice(1, 4).map(Number) : null;
+}
+
+/** a vs b: 1 / 0 / -1. Missing or unparseable b counts as oldest (upgrade). */
+function compareVersions(a, b) {
+  const pa = parseVer(a);
+  const pb = parseVer(b);
+  if (!pb) return 1;
+  if (!pa) return -1;
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] > pb[i] ? 1 : -1;
+  return 0;
+}
+
+/** Existing non-symlink dst is a previous install of this skill (same SKILL.md name) or an installer-owned file. */
+async function isPreviousInstall(src, dst) {
+  const st = await fs.lstat(dst).catch(() => null);
+  if (!st) return false;
+  const sst = await fs.lstat(src).catch(() => null);
+  if (sst && sst.isFile() && st.isFile()) return true;
+  if (!st.isDirectory()) return false;
+  const a = await readSkillMeta(src);
+  const b = await readSkillMeta(dst);
+  return !!(a && b && a.name && a.name === b.name);
+}
+
+async function installCopy(skillsRoot, dest, entries, locale, { force = false } = {}) {
   await fs.mkdir(dest, { recursive: true });
+  // Pre-pass: never silently downgrade a skill that is newer than the packaged one.
+  const plan = new Map();
+  const newer = [];
+  for (const name of entries) {
+    const src = path.join(skillsRoot, name);
+    const dst = path.join(dest, name);
+    const sm = await readSkillMeta(src);
+    if (!sm) continue;
+    const dm = (await fs.lstat(dst).catch(() => null))?.isSymbolicLink() ? null : await readSkillMeta(dst);
+    if (!dm) continue;
+    const cmp = compareVersions(sm.version, dm.version);
+    plan.set(name, { cmp, old: dm.version || "unknown", now: sm.version || "unknown" });
+    if (cmp < 0) newer.push(`${name} ${dm.version} > ${sm.version}`);
+  }
+  if (newer.length && !force) {
+    fail(`installed version is newer than packaged (${newer.join(", ")}); not downgrading — pass --force to downgrade`);
+  }
   for (const name of entries) {
     const src = path.join(skillsRoot, name);
     const dst = path.join(dest, name);
     if (!(await pathExists(src))) continue;
+    const pv = plan.get(name);
+    if (pv && pv.cmp === 0 && !force) {
+      log(`  = Already up to date: ${name} ${pv.now}`);
+      continue;
+    }
     const st = await fs.lstat(src);
     if (await pathExists(dst)) await fs.rm(dst, { recursive: true, force: true });
     if (st.isDirectory()) {
@@ -727,7 +795,9 @@ async function installCopy(skillsRoot, dest, entries, locale) {
     } else {
       await fs.copyFile(src, dst);
     }
-    log(`  + ${name}`);
+    if (pv && pv.cmp > 0) log(`  ↑ Upgraded ${name} ${pv.old} -> ${pv.now}`);
+    else if (pv) log(`  + Reinstalled ${name} ${pv.now} (--force)`);
+    else log(`  + ${name}`);
   }
 }
 
@@ -739,8 +809,8 @@ async function installSymlink(skillsRoot, dest, entries, { force }) {
     if (!(await pathExists(src))) continue;
     if (await pathExists(dst)) {
       const st = await fs.lstat(dst);
-      if (st.isSymbolicLink() || force) await fs.rm(dst, { recursive: true, force: true });
-      else fail(`${dst} exists and is not a symlink (pass --force)`);
+      if (st.isSymbolicLink() || force || (await isPreviousInstall(src, dst))) await fs.rm(dst, { recursive: true, force: true });
+      else fail(`${dst} is an unrelated folder (no matching SKILL.md name) — pass --force to replace it`);
     }
     await fs.symlink(src, dst, "junction");
     log(`  ~ ${name} → ${src}`);
@@ -794,9 +864,9 @@ async function linkPackEntries(canonicalRoot, agentRoot, entryNames, { force }) 
     if ((await pathExists(dst)) || (await isBrokenSymlink(dst))) {
       const st = await fs.lstat(dst).catch(() => null);
       if (st && st.isSymbolicLink()) await fs.rm(dst, { recursive: true, force: true });
-      else if (force) await fs.rm(dst, { recursive: true, force: true });
+      else if (force || (await isPreviousInstall(src, dst))) await fs.rm(dst, { recursive: true, force: true });
       else {
-        log(`  ! ${dst} exists (not symlink) — skip (pass --force to replace)`);
+        log(`  ! ${dst} is an unrelated folder (no matching SKILL.md name) — skipped; pass --force to replace it`);
         continue;
       }
     }
@@ -845,7 +915,7 @@ async function installViaMatrix(skillsRoot, plan, opts) {
   }
 
   // 1) Full pack body → canonical
-  await installCopy(skillsRoot, canonical, plan.entries, opts.locale);
+  await installCopy(skillsRoot, canonical, plan.entries, opts.locale, opts);
 
   // 2) Private agent dirs: symlink entries (default) or copy
   for (const t of targets) {
@@ -854,7 +924,7 @@ async function installViaMatrix(skillsRoot, plan, opts) {
       continue;
     }
     if (linkMode === "copy") {
-      await installCopy(skillsRoot, t.root, plan.entries, opts.locale);
+      await installCopy(skillsRoot, t.root, plan.entries, opts.locale, opts);
     } else {
       await linkPackEntries(canonical, t.root, plan.entries, opts);
     }
@@ -1014,7 +1084,7 @@ async function cmdAdd(opts, sourceOverride) {
       }
       await installSymlink(skillsRoot, dest, plan.entries, opts);
     } else {
-      await installCopy(skillsRoot, dest, plan.entries, opts.locale);
+      await installCopy(skillsRoot, dest, plan.entries, opts.locale, opts);
     }
 
     await writeInstallReceipt(dest, {
