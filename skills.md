@@ -1,7 +1,7 @@
 # topmind Skills Package Index (包索引)
 
 > [!NOTE]
-> **每日唯一入口**：`topmind` (router)。其余 6 个 action、2 个 optional connector、1 个 optional 记账模块、1 个 optional 公众号 write 子技能（共 11）均由 router 调度。  
+> **每日唯一入口**：`topmind` (router)。包内还有 6 个 action、2 个 optional connector、1 个 optional 记账（连 router 共 10 个目录）。公众号 `topmind-wechat-post` 在外部写作包，不计入本包。  
 > **通用与可移植**：兼容 Claude Code / OpenCode / Codex / Hermes 等 Agent Host。  
 > **版本真源**：`topmind-pack.json`（可执行 `npm run versions` 查看完整版本号）。  
 > 详见权威说明：[Skills README](./README.md)（简体中文） · [English](./README.en.md) · [安装与部署指南 (INSTALL.md)](./INSTALL.md)。
@@ -32,7 +32,7 @@
 2. **渐进式披露 (Progressive Disclosure)**：Discovery (`name+description`) → Activation (`SKILL.md`) → Deep Procedures (`shared/` / `references/`)。
 3. **文件系统即真源**：不引入独立的数据库或 Agent state 依赖。
 4. **遵从 6 条核心规约**：见 [`shared/project-model-brief.md`](./shared/project-model-brief.md)。
-5. **自动建议阶梯**：L0 零提问落盘 · L1 默认准备建议（分类/待办/记忆/专题）· L2 确认后写。见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。待办是 `memory/todo.md` 卫星，不是第六概念。
+5. **自动建议阶梯**：真源 [`shared/auto-suggest.md`](./shared/auto-suggest.md)（材料 L0 落盘；显式行动语待办在 auto 下同轮写入；其余建议点头再落；L2 才动记忆/删档/建专题）。待办是 `memory/todo.md` 卫星，不是第六概念。
 
 👉 **详细架构、Frontmatter Schema 与安装方法请参阅**：
 - [Skills README](./README.md)（简体中文） · [English](./README.en.md)

@@ -8,6 +8,8 @@
 
 ## 分层策略
 
+本节的 L1 / L2 / L3 / L3+ 是**抓取档**（怎么把网页变成 Markdown）。它们不是 [`auto-suggest.md`](./auto-suggest.md) 的建议阶梯 L0 / L1 / L2。
+
 ```text
 L1  静态 HTTP fetch + Readability / 启发式 / GitHub raw   ← 默认
 L2  Desktop 增强渲染（隐藏 Chromium offscreen） ← SPA 空壳 / 「增强渲染」

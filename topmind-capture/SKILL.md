@@ -8,21 +8,21 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Host file tools or optional UTR capture-note.
 metadata:
-  version: "4.15.3"
+  version: "4.15.4"
   action_category: "capture"
   entrypoint: "false"
   triggers: "收集, 收进, 保存, 剪藏, 记一下, 临时存放, 随手记, 想法, 灵感, 暂存沉淀, 记录, 备忘, 存一下, 暂存, 笔记, 抄下来, 摘录, 记一下要做, 别忘了, 要做, capture, note, save, Note it"
   tags: "capture, inbox, note, material"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-08"
+  updated: "2026-10-16"
   degradation: "../shared/capability-degradation.md"
 ---
 
 # topmind Capture
 
 先存材料（用户动词：**记一下**）。不负责重塑、交付、诊断或外部连接。  
-**想记就记 / 随用随记**：默认零提问落盘；分类、待办、记忆一律走 [`../shared/auto-suggest.md`](../shared/auto-suggest.md) 的 L1 建议，不弹多选。
+**想记就记 / 随用随记**：材料默认零提问落盘。分类、待办、记忆的写入或建议只按 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)，本文件不另写一套阶梯，也不弹多选。
 
 ## Activation checklist
 
@@ -31,7 +31,7 @@ metadata:
 3. 按内容性质选 **真实目录名**（role；禁止写死编号）  
 4. **日常/动态** → 追加到当前周期本；专题明确 → 专题根；不清 → Inbox  
 5. 写 frontmatter；白话回执（如「已记到每周一本」）；**不**自动 organize/write  
-6. **同轮 L1**：扫描行动语 / 稳定个人信息 / 低信心分类 → 回执附最多 3 条建议（见下）  
+6. **同轮建议阶梯**：行动语 / 稳定个人信息 / 低信心分类只按 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)（不在这里复述）  
 
 ## When NOT to use
 
@@ -71,18 +71,11 @@ low cat                   → role:buffer（Inbox）
 
 **低信心时不要只丢 Inbox 就完事**：仍落 buffer，回执附分类备选（最多 3 个，真实目录名），如「更像 ① 20-研究 ② 10-动态，说一声即可移」。详见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)。
 
-### 待办与记忆（L1，不打断捕获）
+### 待办与记忆（不打断捕获）
 
-捕获正文只写材料；下列副作用走建议阶梯，**不**为分类/待办向用户提问：
+捕获正文只写材料。待办、记忆、分类备选的 L0/L1/L2 只以 [`../shared/auto-suggest.md`](../shared/auto-suggest.md) 为准，**不**为分类/待办向用户提问。
 
-| 信号 | L0 | L1 |
-|------|----|----|
-| 显式行动语（要做 / 记得 / 别忘 / 待办 / 截止 / todo） | 材料照常落盘 | 同轮提取到 `memory/todo.md`（auto 可直接写+回执；confirm 则建议） |
-| 隐含行动语（「周三截止」「下周要交」） | 材料照常落盘 | 建议提取 1–N 条待办，点头再写 |
-| 稳定个人信息（偏好 / 目标 / 进行中） | 材料照常落盘 | 建议进「我的情况」（写入仍须确认） |
-| 低信心类别 | Inbox | 分类备选 |
-
-清单是语义平面卫星（`memory/todo.md`），**不是**新概念、**不**新建顶层 `todo/`。去重按文本；拒绝过的条目不要反复再提。
+清单是语义平面卫星（`memory/todo.md`），**不是**新概念、**不**新建顶层 `todo/`。去重按文本；拒绝过的条目不要反复再提。**禁止**静默写 `memory/profile.md` 或 `memory/topics/`。
 
 UTR：`capture-note`（自动识别周期本）。Desktop：`ingestInbox` dest.mode=`stream`（默认）。
 
@@ -101,17 +94,9 @@ route_reason: …
 status: todo
 ```
 
-长 URL / 网页：[`../shared/long-url-capture.md`](../shared/long-url-capture.md)。
+长 URL / 网页：[`../shared/long-url-capture.md`](../shared/long-url-capture.md)。那里的 L1/L2/L3 是**抓取档**，不是建议阶梯。
 
-| 层 | 谁 | 能力 |
-|----|----|------|
-| L1 | Desktop `fetchUrl` / host fetch | Mozilla Readability + 启发式 |
-| L1-GH | 同上 · GitHub md/README | raw 直取 + 相对图改写（`lib/github-md.mjs`） |
-| L2 | Desktop 增强渲染 | SPA 空壳（ephemeral Chromium） |
-| L3 | 手动粘贴 | 永远可用 |
-| L3+ | 浏览器扩展 Clip Bridge | 活 DOM Readability → Desktop 清洗落盘 |
-
-Agent host 能 fetch 则提取正文，否则保留 URL + 摘录；推荐日常剪藏走 L3+。GitHub 仓库 / Markdown 文件优先走 raw/README，不 HTML scrape。
+Agent host 能 fetch 则提取正文，否则保留 URL + 摘录。GitHub 仓库 / Markdown 文件优先走 raw/README，不 HTML scrape。
 
 ### 本地文档 / Office / 邮件 / 统一捕获
 
@@ -132,7 +117,7 @@ Agent host 能 fetch 则提取正文，否则保留 URL + 摘录；推荐日常�
 3. 保留 provenance；长文标注截断  
 4. 按保存设置写入（见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)）  
 5. 回执：路径、目标、信心、下一步（不自动触发其他 skill）  
-6. L1 建议：待办提取 / 记忆候选 / 分类备选（见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）
+6. 待办 / 记忆 / 分类备选：只按 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)，不在回执外再写一套阶梯
 
 **边界**：只写材料笔记。**禁止**改 `topic.md`、禁止自动 organize、禁止静默写 memory/profile 或 memory/topics。存完可在回执**建议**「需要时整理 / 记入待办 / 更新我的情况」——仅用户面，不自动链式。
 

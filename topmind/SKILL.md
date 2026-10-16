@@ -9,14 +9,14 @@ compatibility: >-
   topmind workspace with {NN-Name}/ categories. Host file tools primary; UTR optional.
   Install with shared/ sibling for progressive disclosure links.
 metadata:
-  version: "4.15.3"
+  version: "4.15.4"
   action_category: "router"
   entrypoint: "true"
   triggers: "topmind, 知识库, 工作区, 待办, 有什么要做的, 要做的事, todo, todo list"
   tags: "router, entrypoint, topmind"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-08"
+  updated: "2026-10-16"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -100,7 +100,7 @@ Which category? Which topic (or loose note)? Which object? Which action? Which s
 - 高信心类别、无专题 → `{大类}/*.md`，建议是否升级专题  
 - 低信心类别 → **role:buffer**（常为 `00-Inbox/`）+ L1 分类备选（最多 3）  
 - 跳过 `hidden` 类别  
-- 行动语 / 稳定个人信息 → L1 待办提取、记忆候选（不打断落盘）
+- 行动语 / 稳定个人信息 → 不打断落盘；写入或建议只按 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)
 
 ### Minimum Context
 
@@ -149,11 +149,7 @@ UTR 可选（MCP primary+danger 共 29；注册表 38 = 8 域 / 38 命令，见 
 
 ## Error Handling
 
-写入失败时：
-- 磁盘满 / 权限不足 → 报错 + 已备回复制位置；不静默丢数据
-- 路径过长 / 非法字符 → 提示用户缩短专题名
-- protection:locked → 内容编辑允许（任务级首写快照）；可恢复删/归档允许；永久删 locked 仅用户
-- 工作区不存在 topmind.yaml → 按默认契约解释 + 回执标注「默认契约」
+写入失败不得静默丢数据。优先级与 locked 语义见 [`../shared/writeback-receipt.md`](../shared/writeback-receipt.md)。工作区没有 `topmind.yaml` 时按默认契约解释，回执标注「默认契约」。
 
 
 

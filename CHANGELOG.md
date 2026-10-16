@@ -4,6 +4,15 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.4 — 2026-10-16
+
+### 优化
+
+- 捕获说明不再写「待办一律 L1」。建议阶梯只留 `shared/auto-suggest.md`：材料 L0 落盘，显式行动语待办在 auto 下同轮写入，其余建议点头再落。
+- `topmind-capture` 不再复制一套抓取 L1/L2/L3 表。`shared/long-url-capture.md` 标明那些是抓取档，不是建议阶梯。
+- `skills.md` 的包内计数改回 10。公众号 `topmind-wechat-post` 仍在外部写作包，退役的 `topmind-wechat` 不进包。
+- Router 的错误处理改指向 `shared/writeback-receipt.md`，不再留第二份清单。
+
 ## 4.15.3 — 2026-10-10
 
 ### 优化

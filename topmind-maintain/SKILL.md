@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: topmind engine and/or workspace. Prefer read-only diagnostics first.
 metadata:
-  version: "4.15.3"
+  version: "4.15.4"
   action_category: "maintain"
   entrypoint: "false"
   triggers: "快速体检, 体检, 诊断, doctor, 健康检查, 清理, 修复, 快速检查, 检查, 状态, workspace check, scan, fix, maintain"
   tags: "maintain, doctor, cleanup, audit, health-check"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-08"
+  updated: "2026-10-16"
   degradation: "../shared/capability-degradation.md"
 ---
 

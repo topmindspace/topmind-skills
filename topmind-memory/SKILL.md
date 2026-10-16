@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: workspace core profile (memory/profile.md) + periodic reflections.
 metadata:
-  version: "4.15.3"
+  version: "4.15.4"
   action_category: "memory"
   entrypoint: "false"
   triggers: "写入专题记忆, 更新我的情况, stable memory, 追加确认结论, 记住这个, 记住我, 加到专题记忆, 沉淀结论, 提炼到记忆, update profile, memory"
   tags: "memory, stable, core-profile, 我的情况"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-08"
+  updated: "2026-10-16"
   degradation: "../shared/capability-degradation.md"
 ---
 
