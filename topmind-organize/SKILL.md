@@ -13,7 +13,7 @@ metadata:
   tags: "organize, research, analyze, stream, weekly-review"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-19"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -103,7 +103,7 @@ metadata:
 
 ## 通用流程：读 → 做 → 报
 
-1. **读** `topic.md`（若有）+ 当前对象；不预加载整专题  
+1. **读** `topic.md`（若有）+ 当前对象；不预加载整专题。扫描跳过库外符号链接、应用包 / 依赖目录，并认 Obsidian `userIgnoreFilters`  
 2. **做** 标记 `source_type`；原始与 AI 分析用分隔线 + `[AI整理]`  
 3. **报** 结果 + 路径回执 + 下一步；**综合默认落专题根**（auto 直接写 / confirm 先审阅）；不自动 write/memory  
    - 入口先确认类别表（`list-categories` / 扫盘）；跳过 hidden；不硬编码编号
@@ -112,7 +112,7 @@ metadata:
 
 ## 目录偏好
 
-专题根扁平；分类靠 frontmatter 与文件名，不硬建子目录树。**禁止**维护 `INDEX.md` 硬索引、禁止为「像 wiki」新建平行目录；`state.json` 非内容真源。位置靠类别+专题树 + 搜索即可。
+专题根扁平；分类靠 frontmatter 与文件名，不硬建子目录树。**禁止**维护 `INDEX.md` 硬索引、禁止为「像 wiki」新建平行目录；`state.json` 非内容真源。位置靠类别+专题树 + 搜索即可。扫描不进入库外链接、`.app` / `.framework` / `node_modules` / `dist`，并跳过 Obsidian `userIgnoreFilters` 排除的路径。
 
 ## Capability Degradation
 

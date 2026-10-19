@@ -13,7 +13,7 @@ metadata:
   tags: "maintain, doctor, cleanup, audit, health-check"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-19"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -78,6 +78,7 @@ metadata:
 - `project_type:`  
 - 废弃命令名 `create-project` 等（现行 `workspace-*`）  
 - ensure 时复活用户已删的可选模板类  
+- 跟随指向库外的符号链接，或递归 `.app` / `.framework` / `node_modules` / `dist` 等包与依赖目录  
 
 ## Capability Degradation
 
