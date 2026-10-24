@@ -4,6 +4,16 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.6 — 2026-10-24
+
+### 优化
+
+- README（中文、英文）、`INSTALL.md`、`skills.md` 按用户视角重写：先讲安装和怎么用，去掉契约块和弃用名单，标题统一用中文。
+- `README.zh-CN.md` 改为跳转页，中文说明只维护 `README.md` 一份。
+- `topmind-loop/DESIGN.md` 的 UTR 命令数按 topmind 仓库 `TOOLS.md` 更新为 8 域 / 38 条。
+- `topmind-memory` 周期反思的说明改写得更直白，语义不变。
+- CHANGELOG 里只涉及发布流程与 CI 的条目压成一行。
+
 ## 4.15.5 — 2026-10-16
 
 ### 安装器
@@ -26,10 +36,7 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 ### 优化
 
 - 安装文档 `INSTALL.md` 的技能目录站点链接指向通用页面。
-- GitHub Actions 改用 Node 24 运行时的版本：`actions/checkout` v5 → v7、`actions/setup-node` v5 → v7、`actions/setup-python` v5 → v7、`actions/upload-artifact` v5 → v7；CI 与 Release 的 `node-version` 已是 24，不变。
-- `runs-on` 由 `ubuntu-latest` 固定为 `ubuntu-24.04`：GitHub 在 2026-10-19 至 11-19 期间把 `ubuntu-latest` 逐步切到 Ubuntu 26.04，先停在当前已验证的镜像，切 26.04 另行验证后再改。
-- `.gitignore` 补充 Release 附件、npm pack 输出等再生成产物。
-- 技能内容不变，仅版本号随包同步。
+- 其余为发布流程与 CI 调整，技能内容不变。
 
 ## 4.15.2 — 2026-10-08
 
@@ -51,8 +58,7 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 - 安装器：安装外部技能仓库（没有 `topmind-pack.json` 的普通 Agent Skills 布局，例如写作包）时只装技能目录，不再把仓库根的 `evals/`、`LICENSE`、`README.md`、`INSTALL.md`、`install-targets/` 铺进宿主技能目录；只有 SKILL.md 链接了 `../shared/` 才带上 `shared/`；回执写到单独的 `.topmind-skills-install.<包名>.json`，不再覆盖 topmind 本包的回执。
 - `INSTALL.md`：去掉旧包 `@topmindspace/tms-skills` 的提法；写明 `npx skills` 不装 `shared/` 的后果（子文档打不开、路由消歧表缺席、宿主不报错）与补救步骤。
 - `evals/evals.json`：新增 8 条外部技能路由用例（公众号 2 条，含「不代发」；干货短文、引流短帖、X 长文、研究报告转幻灯片、交接、封面与长图各 1 条），字段 `external_skills` 由测试校验必须出现在消歧表里且不属于本包。
-- CI：引擎交叉校验的 checkout 不再 `continue-on-error`，3 项交叉校验每次都跑；新增官方校验器 `agentskills validate`（skills-ref 0.1.1）逐个检查技能。
-- Release：缺少 `NPM_TOKEN` 时「Publish to npm」步骤直接失败并给出提示，与其他 topmind 仓库一致，避免 Release 成功而 npm 未发布。
+- 发布流程与 CI 调整（新增官方校验器检查每个技能）。
 - 新增本 CHANGELOG，并加入 npm 包。
 
 ### 包体积

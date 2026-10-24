@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: Desktop needs Bearer (read) and/or xurl (post). Agent hosts use official X MCP + xurl bridge.
 metadata:
-  version: "4.15.5"
+  version: "4.15.6"
   action_category: "connector"
   entrypoint: "false"
   triggers: "发推, 推特, twitter, x.com, 发帖, 推文, post tweet, x platform"
   tags: "x, twitter, social, mcp, agent"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-24"
   degradation: "../shared/capability-degradation.md"
 ---
 

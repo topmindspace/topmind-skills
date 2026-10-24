@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: Requires WeRead Skill API key (wrk-*). Desktop WereadService preferred; host may call gateway manually.
 metadata:
-  version: "4.15.5"
+  version: "4.15.6"
   action_category: "connector"
   entrypoint: "false"
   triggers: "微信读书, weread, 划线同步, 读书笔记, 阅读统计, 书架, weread sync, sync highlights"
   tags: "weread, reading, highlights, sync, capture"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-24"
   degradation: "../shared/capability-degradation.md"
 ---
 

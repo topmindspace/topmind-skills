@@ -105,7 +105,7 @@ npx @topmindspace/topmind-skills doctor
 | 来源 | 含义 |
 |---|---|
 | `topmindspace/topmind-skills` | GitHub 仓库默认分支 |
-| `topmindspace/topmind-skills@v4.15.5` | 指定 tag 或分支 |
+| `topmindspace/topmind-skills@v4.15.6` | 指定 tag 或分支 |
 | `https://github.com/topmindspace/topmind-skills.git` | 任意 git 地址 |
 | `.` 或绝对路径 | 本地检出 |
 | `release:latest` | GitHub Release 里的 `topmind-skills-*.zip` |

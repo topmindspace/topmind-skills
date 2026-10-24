@@ -9,14 +9,14 @@ compatibility: >-
   topmind workspace with {NN-Name}/ categories. Host file tools primary; UTR optional.
   Install with shared/ sibling for progressive disclosure links.
 metadata:
-  version: "4.15.5"
+  version: "4.15.6"
   action_category: "router"
   entrypoint: "true"
   triggers: "topmind, 知识库, 工作区, 待办, 有什么要做的, 要做的事, todo, todo list"
   tags: "router, entrypoint, topmind"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-24"
   degradation: "../shared/capability-degradation.md"
 ---
 

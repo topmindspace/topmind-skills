@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Progress under .topmind/loop/*. Host LLM runs the walk; UTR optional.
 metadata:
-  version: "4.15.5"
+  version: "4.15.6"
   action_category: "loop"
   entrypoint: "false"
   triggers: "跑一遍 loop, loop 一下, 整体体检, 工作区复盘, 把工作区跑一遍, 巡检, 继续 loop, 从断点继续, 全面检查, 复盘, review, audit, walk"
   tags: "loop, audit, walk, resumable, cyclic"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-24"
   degradation: "../shared/capability-degradation.md"
 ---
 

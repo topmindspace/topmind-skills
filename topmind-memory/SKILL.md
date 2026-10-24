@@ -6,14 +6,14 @@ description: >-
 license: MIT
 compatibility: workspace core profile (memory/profile.md) + periodic reflections.
 metadata:
-  version: "4.15.5"
+  version: "4.15.6"
   action_category: "memory"
   entrypoint: "false"
   triggers: "写入专题记忆, 更新我的情况, stable memory, 追加确认结论, 记住这个, 记住我, 加到专题记忆, 沉淀结论, 提炼到记忆, update profile, memory"
   tags: "memory, stable, core-profile, 我的情况"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-16"
+  updated: "2026-10-24"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -72,7 +72,7 @@ Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史�
 
 - 路径：`memory/periodic/{YYYY}/{YYYY-Www}.md` 等  
 - 来源：活动窗口 AI 建议（`stream_digest` / `ai_summary`）**确认后**写入  
-- **反思非摘要**：不是「本周发生了什么」，而是「本周揭示了什么」——关注焦点、知识与见解、行为信号、偏好变化、线索  
+- **反思非摘要**：写「本周揭示了什么」，不罗列「本周发生了什么」。重点是关注焦点、知识与见解、行为信号、偏好变化、线索  
 - 与 profile 同属记忆平面；**不是**专题目录  
 
 ## 可选：专题语义记忆（非默认）
