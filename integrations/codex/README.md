@@ -16,5 +16,5 @@ Codex consumes topmind through the same portable skill pack as other hosts.
 - Content truth is `topmind-workspace`.  
 - Daily entry is `topmind`; no parallel daily entrypoints.  
 - **Desktop is not required** for the skill pack.  
-- Naming and frontmatter follow `PROJECT-MODEL.md` / `TOOLS.md`.  
+- Naming and frontmatter follow `PROJECT-MODEL.md` / `TOOLS.md` in the [topmind](https://github.com/topmindspace/topmind) repo.  
 - Bulk structure fixes may use `workspace-transform.migrate-v4` (UTR advanced).  

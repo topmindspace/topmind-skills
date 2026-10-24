@@ -28,6 +28,6 @@ Repo root `opencode.json` is machine-local (gitignored); share shapes via this e
 ## Must not
 
 - Change content truth or add parallel daily entrypoints  
-- Introduce naming/command surfaces outside `PROJECT-MODEL.md` / `TOOLS.md`  
+- Introduce naming/command surfaces outside `PROJECT-MODEL.md` / `TOOLS.md` (in the [topmind](https://github.com/topmindspace/topmind) repo)  
 - Treat `topmind-loop` as a `topmind-maintain` sub-action (loop is independent)  
 - Treat OpenCode state as workspace content truth  

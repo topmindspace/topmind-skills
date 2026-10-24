@@ -1,175 +1,106 @@
 # topmind Skills
 
-Portable AI skill pack: the same content contract on Claude Code / Codex / OpenCode / Hermes and other hosts.
+Bring the topmind personal-knowledge workflow to your AI assistant (Claude Code, Codex, Cursor, OpenCode, Hermes and others). Say "save this", "organize this week" or "turn it into a draft", and the assistant stores everything in your own `topmind-workspace` folder under one shared set of conventions. Skill text is written in Chinese.
 
-[简体中文](README.md) · [English](README.en.md) · [Product](https://github.com/topmindspace/topmind) · [Install](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+[简体中文](README.md) · [English](README.en.md) · [Install guide](./INSTALL.md) · [Changelog](./CHANGELOG.md) · [Product](https://github.com/topmindspace/topmind) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+
+## Install
 
 ```bash
-# 1) npm (recommended · pack-aware · includes shared/ · canonical .agents + agents)
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
-# subset of agents
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
-# upgrade (default: a newer packaged skill overwrites in place, no backup, "Upgraded <skill> <old> -> <new>"; same version is skipped "Already up to date"; a newer installed version is refused unless --force)
+```
+
+Then say "topmind" or just ask for what you need. To upgrade:
+
+```bash
 npx @topmindspace/topmind-skills update -g
-
-# 2) Community CLI (fast try; omits shared/ — see INSTALL.md)
-npx skills add topmindspace/topmind-skills -g -y
-
-# 3) Pack-aware installer (from a source checkout)
-npm run add -- topmindspace/topmind-skills -g
-npm run update -- -g
-
-# 4) From GitHub Release (pinned version / offline)
-node bin/install-skills.mjs add release:latest -g
-
-# Inspect matrix / repair broken roots
-node bin/install-skills.mjs agents
-node bin/install-skills.mjs doctor --repair
 ```
 
-Install model: **one canonical body under `.agents/skills`** plus relative symlinks into private host roots (Claude Code, MiMoCode, …) — same as [`npx skills`](https://github.com/vercel-labs/skills). See [INSTALL.md](./INSTALL.md).
+- A newer packaged skill overwrites the installed copy and prints `Upgraded <skill> <old> -> <new>`; the same version prints `Already up to date`; a newer installed version is kept unless you pass `--force`.
+- To install for some assistants only, add `-a claude-code -a codex` to `add`.
+- The community CLI `npx skills add topmindspace/topmind-skills -g -y` also works, but it leaves out the `shared/` folder, so some rules cannot be read. See [INSTALL.md](./INSTALL.md#社区-cli-npx-skills) for the extra step.
+- Pinned or offline installs, project scope and per-assistant folders are covered in [INSTALL.md](./INSTALL.md).
 
-**Version and manifest truth:** [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`).  
-Each `SKILL.md` `metadata.version` **must** equal the pack version.
+## Usage
 
----
+Expose only `topmind` as the daily entry. It decides which skill handles your request, so you never need to remember sub-skill names.
 
-## Layout
+| You say | Handled by | Result |
+|---|---|---|
+| "Save this link" | `topmind-capture` | Stored in the weekly stream, a topic or the Inbox; the receipt says where |
+| "Remind me to do X" | `topmind-capture` | Material saved, to-do written to `memory/todo.md` |
+| "What's on my list?" | `topmind` | Open items from `memory/todo.md` |
+| "Organize this week", "summarize this topic" | `topmind-organize` | Tidies the week's stream or organizes, compares and distills a topic |
+| "Write it up", "polish this" | `topmind-write` | Drafts or revises into the delivery folder or the topic |
+| "Remember that I…", "update my profile" | `topmind-memory` | Updates `memory/profile.md` or a periodic reflection |
+| "Run a health check", "doctor" | `topmind-maintain` | Checks folder structure and config, with reversible cleanup |
+| "Run the loop" | `topmind-loop` | Walks every topic and can resume after an interruption |
+| "Sync WeRead" | `topmind-weread` | Optional: syncs WeRead highlights and notes into topics |
+| "Post to X", "archive my posts" | `topmind-x` | Optional: X archive, search and posting |
+| "Log 35 for lunch" | `topmind-ledger` | Optional: bookkeeping in `memory/ledgers/` |
+
+The pack has 10 skills: the `topmind` entry, 6 actions, 2 optional connectors and 1 optional ledger. See [skills.md](./skills.md).
+
+### Companion skills (installed separately)
+
+These are not part of this pack. When installed, `topmind` hands matching requests to them; otherwise it falls back to `topmind-write` or explains in the receipt.
+
+| Need | Skill | Repository |
+|---|---|---|
+| WeChat articles, X articles, short posts, covers, long images | `topmind-wechat-post` and 7 other writing skills | [topmind-writing-skills](https://github.com/topmindspace/topmind-writing-skills) |
+| AI industry news, papers, number checks | `topmind-research` | [topmind-research](https://github.com/topmindspace/topmind-research) |
+| Turn material into paged HTML and PPTX | `topmind-presentation` | [topmind-presentation](https://github.com/topmindspace/topmind-presentation) |
+| Hand memory over between tools | `topmind-handoff` | [topmind-handoff](https://github.com/topmindspace/topmind-handoff) |
+
+Routing between them is defined in [`shared/trigger-disambiguation.md`](./shared/trigger-disambiguation.md).
+
+## Where content lives
+
+Everything is plain Markdown in your local `topmind-workspace`, readable in Obsidian or any editor.
 
 ```text
-topmind-skills/              # pack root = repo root
-├── topmind/                 # only daily entry (router)
-├── topmind-capture|organize|write|memory|maintain|loop/
-├── topmind-weread|x/        # optional connectors
-├── topmind-ledger/          # optional bookkeeping (memory-plane ledgers)
-├── shared/                  # write receipts · degradation · auto-suggest · capture …
-├── install-targets/         # host install shapes
-├── evals/evals.json
-├── bin/install-skills.mjs   # pack-aware installer (shared/ aware)
-├── scripts/build-pack.mjs
-└── topmind-pack.json        # version truth
+topmind-workspace/
+├── topmind.yaml          # workspace config
+├── memory/               # profile, reflections, to-dos, ledgers
+├── 00-Inbox/             # anything not yet classified
+├── 10-动态/              # weekly stream notebooks
+├── …                     # other categories from your template; rename, hide or add
+├── 88-交付/              # finished drafts
+└── 99-归档/
 ```
 
-| Kind | Modules |
-|------|---------|
-| **Entry** | `topmind` only |
-| **Actions** | capture · organize · write · memory · maintain · loop |
-| **Connectors** | weread · x (optional) |
-| **Optional** | ledger (记账 · memory-plane books) |
-| **External optional (not bundled)** | WeChat `topmind-wechat-post` and other writing skills (topmind-writing-skills) · `topmind-research` · `topmind-presentation` · `topmind-handoff`; routing in `shared/trigger-disambiguation.md` |
+- When enough notes share a theme, they gather into a topic folder `{category}/{YYYY-theme}/`; until then notes sit at the category root.
+- Categories do not overlap, topics emerge, the stream stays flat, the Inbox is cleared about every 30 days, references live apart, and category names stay stable. Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
 
-> Sub-skill trigger words exist for host routing. They are **not** a second product front door.
+## Conventions
 
----
+- **Save first**: unclear items go to the Inbox; imperfect classification never blocks a save.
+- **Every write has a receipt**: which file, why there, and what you can do next.
+- **Save settings**: `writeback_mode: auto | confirm`. auto writes and returns a receipt; confirm lets you review first. High-impact changes such as deleting memory or creating topics always need your OK; see [`shared/auto-suggest.md`](./shared/auto-suggest.md).
+- **Files are the only source of truth**: assistant session state must not become topmind content truth.
+- **Desktop is not required, UTR is optional**: without topmind Desktop or the UTR CLI, the assistant uses its own file tools under the same conventions.
+- **Nothing is posted for you**: skills only draft; you publish.
 
-## Product contract
+## For maintainers
+
+- Version and skill list come from [`topmind-pack.json`](./topmind-pack.json) (`npm run versions`); every `SKILL.md` `metadata.version` must match.
+- `SKILL.md` frontmatter uses only Agent Skills spec fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`); custom fields go under `metadata` as strings. CI checks each skill with `agentskills validate`.
+- Run tests with `npm test`. Release steps are in [INSTALL.md](./INSTALL.md#发布维护者).
 
 ```text
-User experience:     capture-first
-Data organization:   category-first + topic-emerges
-Content truth:       topmind-workspace
-Capability model:    action-first
-Save settings:       auto | confirm
-Safety model:        reversible by default
-Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — shared/auto-suggest.md
+topmind-skills/
+├── topmind/              # daily entry (router)
+├── topmind-capture/ … topmind-loop/   # 6 action skills
+├── topmind-weread/  topmind-x/        # optional connectors
+├── topmind-ledger/       # optional ledger
+├── shared/               # rules shared by all skills
+├── install-targets/      # install shapes per assistant
+├── integrations/         # Codex, Hermes, OpenCode notes
+├── evals/                # routing evals
+├── bin/install-skills.mjs
+└── topmind-pack.json
 ```
 
-Expose only `topmind` as the daily entry. Host session state must not become topmind content truth.  
-**Desktop is not required** for this pack. **UTR is optional** — use host file tools when UTR is absent.
+## License
 
-Workflow: `收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
-**Capture whenever / use whenever:** capture lands with zero questions; classification alternatives, todo extraction, and memory candidates are prepared as L1 suggestions for one-word accept ([`shared/auto-suggest.md`](./shared/auto-suggest.md)). `memory/todo.md` is a satellite — not a sixth concept.
-(If the user says “capture this”, “note it”, “organize”, “write it up”, or “run a loop”, the router infers category / topic / action.)
-
----
-
-## SKILL.md frontmatter
-
-```yaml
----
-name: <kebab-case-id>           # required; matches directory name
-description: >-                  # required; what + Use when + Do NOT use
-  …
-license: MIT
-compatibility: …                # optional; environment notes (≤500 chars)
-metadata:                       # Agent Skills spec: custom fields live here, string values
-  version: "<pack.version>"     # required; = topmind-pack.json version
-  action_category: "capture"    # skill taxonomy (not user note category)
-  entrypoint: "false"           # only the topmind router is "true"
-  triggers: "记一下, 收进, capture"   # comma-separated
-  tags: "capture, inbox"
-  author: "TopMindSpace"
-  homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "YYYY-MM-DD"
-  degradation: "../shared/capability-degradation.md"
----
-```
-
-Top level allows only `name / description / license / compatibility / metadata / allowed-tools`; CI runs the official validator `agentskills validate` (skills-ref) on every skill, and `tests/package-manifest.test.mjs` enforces fields and versions. The topmind Desktop parser reads both the legacy top-level layout and `metadata.*`.
-
----
-
-## Workspace contract
-
-```text
-{workspace-root}/
-├── topmind.yaml                # contract v4
-├── memory/                     # profile.md · periodic/ · topics/ · todo.md · optional ledgers/
-├── .topmind/                   # rebuildable machine state
-├── 00-Inbox/                   # role: buffer (live dir name)
-├── 10-Stream/ …                # categories (template-driven)
-├── 88-Delivery/ or 88-交付/     # role: delivery
-└── 99-Archive/ or 99-归档/     # role: system
-```
-
-Topic:
-
-```text
-{category}/{YYYY-theme}/
-├── topic.md                 # optional
-├── *.md                     # notes at topic root
-└── images/                  # optional
-```
-
-Loose note: `{category}/{note}.md` when no topic yet.
-
-**Do not create (deprecated):** default `outline.md` / `setting.md` / `style.md`; `project_type` frontmatter; nested topic `notes/` or `outputs/`; top-level `projects/`; `YYYY-类型-项目名` naming.
-
-**Categories:** discover `{NN-Name}/` at runtime + `topmind.yaml` v4 (`categories.extensions` / `categories.overrides` with `hidden`). Shared resolver: engine `lib/workspace-model.mjs`. Prefer role-based routing over hardcoded `10-`/`20-` numbers.
-
-Do not hardcode absolute paths — infer `workspace_root` from the host or ask.
-
-### 6 core rules
-
-1. **Categories never overlap**  
-2. **Topics emerge** (do not force-create)  
-3. **Dynamic/stream category is special** (flat-default)  
-4. **Catch-all cleanup** (~30 days)  
-5. **Reference materials stay reference-only**  
-6. **Category names stay stable** (rename via migration)  
-
-Full rules: [`shared/project-model-brief.md`](./shared/project-model-brief.md).
-
----
-
-## Rules (skills behavior)
-
-- Capture first; don’t block simple saves on perfect classification  
-- Auto-route when signal is strong; otherwise **role:buffer** (live inbox dir, not hardcoded-only `00-Inbox/`)  
-- Loose notes at category root when topic is unclear  
-- Every write returns a receipt (path, route reason when available, next step)  
-- `source_type`: `user-original` | `external-capture` | `ai-derived`  
-- UTR is optional — host file tools preserve the same contract  
-- Save settings protocol: `writeback_mode: auto | confirm`  
-- Locked: editable under auto (task-level first-write snapshot); permanent delete of locked/core is user-only  
-- Desktop is not required for this pack  
-- **Compound discipline (no structure change):** organize leaves synthesis on disk; write reads optional `topic.md` first; memory only on explicit confirm; capture never edits `topic.md`; **no** hard `INDEX.md` / parallel wiki trees (see `shared/project-model-brief.md`)  
-
----
-
-## Install targets
-
-Packaged skill directories (7 core + 2 optional connectors + optional ledger; since 4.15.2 WeChat comes from `topmind-wechat-post` in the writing pack) can be symlinked/copied into Claude Code, Codex, OpenCode, Hermes, and similar hosts.  
-Prefer the pack-aware installer so `shared/` and `topmind-pack.json` stay intact — see [`INSTALL.md`](./INSTALL.md).
-
-Host adapters must **not** change content truth, add parallel daily entries, or store content in agent runtime state. See [`shared/capability-degradation.md`](./shared/capability-degradation.md).
+MIT

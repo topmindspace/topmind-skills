@@ -1,7 +1,7 @@
 {
   "name": "@topmindspace/topmind-skills",
   "version": "4.15.5",
-  "description": "topmind Agent Skills pack — spec-valid Markdown skills for capture, organize, write, memory, maintain, loop.",
+  "description": "topmind Agent Skills pack: one daily entry (topmind) routing to capture, organize, write, memory, maintain and loop, plus optional WeRead, X and ledger skills.",
   "type": "module",
   "license": "MIT",
   "author": "TopMindSpace",

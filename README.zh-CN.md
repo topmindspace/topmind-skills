@@ -1,180 +1,106 @@
 # topmind Skills
 
-可移植 AI 技能包：在 Claude Code / Codex / OpenCode / Hermes 等 Host 上使用同一套内容约定。
+把 topmind 的个人知识工作流装进你的 AI 助手（Claude Code、Codex、Cursor、OpenCode、Hermes 等）。你只管说「记一下」「整理本周」「写成稿」，助手按同一套约定把内容存进你自己的 `topmind-workspace` 文件夹。
 
-[简体中文](README.md) · [English](README.en.md) · [产品总览](https://github.com/topmindspace/topmind) · [安装与发布](./INSTALL.md) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+[简体中文](README.md) · [English](README.en.md) · [安装说明](./INSTALL.md) · [更新记录](./CHANGELOG.md) · [产品总览](https://github.com/topmindspace/topmind) · [npm](https://www.npmjs.com/package/@topmindspace/topmind-skills)
+
+## 安装
 
 ```bash
-# 1) npm（推荐 · pack-aware · 含 shared/ · canonical .agents + 多智能体）
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
-# 只装给部分智能体
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g -a claude-code -a mimocode
-# 升级（默认：包里更新就直接覆盖，不备份，打印 Upgraded <skill> <旧> -> <新>；同版本跳过 Already up to date；已装更新拒绝降级，需 --force）
+```
+
+装好后对助手说「topmind」或直接说要做的事即可。升级用：
+
+```bash
 npx @topmindspace/topmind-skills update -g
-
-# 2) 社区 CLI（快速试用；不含 shared/ — 见 INSTALL.md）
-npx skills add topmindspace/topmind-skills -g -y
-
-# 3) Pack-aware 安装器（源码仓内）
-npm run add -- topmindspace/topmind-skills -g
-npm run update -- -g
-
-# 4) 从 GitHub Release 装（离线/固定版本）
-node bin/install-skills.mjs add release:latest -g
-
-# 查看矩阵 / 修断链
-node bin/install-skills.mjs agents
-node bin/install-skills.mjs doctor --repair
 ```
 
-安装模型：**canonical `.agents/skills` 一份真身** + 私有目录（Claude Code / MiMoCode…）相对软链；与 [`npx skills`](https://github.com/vercel-labs/skills) 一致。详见 [INSTALL.md](./INSTALL.md)。
+- 包里版本更新时直接覆盖，打印 `Upgraded <技能> <旧> -> <新>`；版本相同打印 `Already up to date`；已装版本更新时不降级，要降级加 `--force`。
+- 只装给部分助手：在 `add` 后面加 `-a claude-code -a codex`。
+- 社区 CLI `npx skills add topmindspace/topmind-skills -g -y` 也能装，但不带 `shared/` 目录，部分规则会读不到，装完要补一步，见 [INSTALL.md](./INSTALL.md#社区-cli-npx-skills)。
+- 固定版本或离线安装、项目级安装、各助手的目录位置，都在 [INSTALL.md](./INSTALL.md)。
 
-**版本与清单真源：** [`topmind-pack.json`](./topmind-pack.json)（`npm run versions`）。  
-各 `SKILL.md` 的 `metadata.version` **必须**等于 pack 版本。
+## 怎么用
 
----
+日常入口只暴露 `topmind` 一个。你说的话由它判断交给哪个技能，你不用记子技能的名字。
 
-## 结构
+| 你说 | 交给 | 结果 |
+|---|---|---|
+| 「记一下这个链接」「收进来」 | `topmind-capture` | 存进动态周期本、专题或 Inbox，回执告诉你放在哪 |
+| 「记一下要做 X」「别忘了 X」 | `topmind-capture` | 材料落盘，待办写进 `memory/todo.md` |
+| 「有什么要做的」 | `topmind` | 列出 `memory/todo.md` 里没做完的事 |
+| 「整理本周」「总结一下这个专题」 | `topmind-organize` | 理顺本周动态，或在专题里整理、对比、提炼 |
+| 「写成稿」「润色一下」 | `topmind-write` | 起草或改稿，放到交付目录或专题里 |
+| 「记住我…」「更新我的情况」 | `topmind-memory` | 更新 `memory/profile.md` 或周期反思 |
+| 「体检一下」「doctor」 | `topmind-maintain` | 检查目录结构和配置，做可回退的清理 |
+| 「跑一遍 loop」 | `topmind-loop` | 逐个专题巡检，中断后能接着跑 |
+| 「同步微信读书」 | `topmind-weread` | 可选：把划线和想法同步到专题 |
+| 「发推」「归档我的推文」 | `topmind-x` | 可选：X 归档、搜索与发帖 |
+| 「记一笔，午饭 35」 | `topmind-ledger` | 可选：记账到 `memory/ledgers/` |
+
+本包共 10 个技能：入口 `topmind`、6 个动作技能、2 个可选连接器、1 个可选记账。清单见 [skills.md](./skills.md)。
+
+### 配套技能（单独安装）
+
+下面这些不随本包发布，装了以后 `topmind` 会把对应请求转过去，没装时退回 `topmind-write` 或在回执里说明。
+
+| 需求 | 技能 | 仓库 |
+|---|---|---|
+| 公众号、X 长文、短文、段子、封面、长图 | `topmind-wechat-post` 等 8 个写作技能 | [topmind-writing-skills](https://github.com/topmindspace/topmind-writing-skills) |
+| AI 行业动态、读论文、核实数字 | `topmind-research` | [topmind-research](https://github.com/topmindspace/topmind-research) |
+| 把材料做成可翻页 HTML 和 PPTX | `topmind-presentation` | [topmind-presentation](https://github.com/topmindspace/topmind-presentation) |
+| 跨工具交接记忆 | `topmind-handoff` | [topmind-handoff](https://github.com/topmindspace/topmind-handoff) |
+
+各技能怎么分工，见 [`shared/trigger-disambiguation.md`](./shared/trigger-disambiguation.md)。
+
+## 内容存在哪
+
+所有内容都是你本机 `topmind-workspace` 里的 Markdown 文件，用 Obsidian 或任何编辑器都能打开。
 
 ```text
-topmind-skills/              # pack 根 = 仓库根
-├── topmind/                 # 唯一日常入口（router）
-├── topmind-capture|organize|write|memory|maintain|loop/
-├── topmind-weread|x/        # 可选连接器
-├── topmind-ledger/          # 可选记账（记忆平面账本）
-├── shared/                  # 写回回执 · 降级 · 自动建议 · 捕获 …
-├── install-targets/         # Host 安装形状（claude-code / codex / mimocode / …）
-├── evals/evals.json
-├── bin/install-skills.mjs   # pack-aware + agent matrix 安装器
-├── scripts/build-pack.mjs
-└── topmind-pack.json        # 版本真源
+topmind-workspace/
+├── topmind.yaml          # 工作区配置
+├── memory/               # 我的情况、周期反思、待办、账本
+├── 00-Inbox/             # 一时分不了类的先放这里
+├── 10-动态/              # 按周的动态周期本
+├── …                     # 其他大类，按模板生成，可以改名、隐藏、新增
+├── 88-交付/              # 写好的稿件
+└── 99-归档/
 ```
 
-| 类型 | 模块 |
-|------|------|
-| **入口** | `topmind` only |
-| **动作** | capture · organize · write · memory · maintain · loop |
-| **连接器** | weread · x（可选） |
-| **可选** | ledger（记账 · 记忆平面账本） |
-| **外部可选（不随包）** | 公众号 `topmind-wechat-post` 等写作技能（topmind-writing-skills）· `topmind-research` · `topmind-presentation` · `topmind-handoff`；路由见 `shared/trigger-disambiguation.md` |
+- 一个大类下面，同一主题的笔记多了会自然聚成专题文件夹 `{大类}/{YYYY-主题}/`；没有专题时笔记直接放在大类根。
+- 大类不重叠、专题自然形成、动态平铺、Inbox 约 30 天清一次、参考资料单独放、大类名称保持稳定。完整规则见 [`shared/project-model-brief.md`](./shared/project-model-brief.md)。
 
-> 子 skill 触发词只服务 Host 路由，**不是**第二前台入口。
+## 几条约定
 
----
+- **先存下来再说**：分类不确定时先放 Inbox，不因为分类拦住保存。
+- **每次写入都有回执**：写了哪个文件、为什么放这里、下一步可以做什么。
+- **保存设置**：`writeback_mode: auto | confirm`。auto 直接写并给回执；confirm 先给你审阅。删除记忆、建专题这类高影响操作总要你点头，规则见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。
+- **文件是唯一的数据来源**：助手自己的会话状态不得成为 topmind 内容真源。
+- **不要求 Desktop，UTR 可选**：topmind Desktop 和 UTR 命令行都不是必需的，没有时用助手自带的文件工具，遵守同一套约定。
+- **不代发**：任何技能都只起草，发布由你操作。
 
-## 产品契约
+## 给维护者
+
+- 版本和技能清单以 [`topmind-pack.json`](./topmind-pack.json) 为准（`npm run versions` 查看），各 `SKILL.md` 的 `metadata.version` 必须一致。
+- `SKILL.md` frontmatter 只用 Agent Skills 规范字段（`name`、`description`、`license`、`compatibility`、`metadata`、`allowed-tools`），自定义字段放在 `metadata` 下、值为字符串。CI 用 `agentskills validate` 逐个检查。
+- 本地测试：`npm test`。发布流程见 [INSTALL.md](./INSTALL.md#发布维护者)。
 
 ```text
-User experience:     capture-first
-Data organization:   category-first + topic-emerges
-Content truth:       topmind-workspace
-Capability model:    action-first
-Save settings:       auto | confirm
-Safety model:        reversible by default
-Suggestions:         L0 auto-land · L1 auto-prepare · L2 confirm-apply — shared/auto-suggest.md
+topmind-skills/
+├── topmind/              # 日常入口（路由）
+├── topmind-capture/ … topmind-loop/   # 6 个动作技能
+├── topmind-weread/  topmind-x/        # 可选连接器
+├── topmind-ledger/       # 可选记账
+├── shared/               # 各技能共用的规则文档
+├── install-targets/      # 各助手的安装形状
+├── integrations/         # Codex、Hermes、OpenCode 接入说明
+├── evals/                # 路由评测
+├── bin/install-skills.mjs
+└── topmind-pack.json
 ```
 
-日常入口只暴露 `topmind`。Host 会话状态不得成为 topmind 内容真源。  
-本 pack **不要求 Desktop**。**UTR 可选** — 没有 UTR 时用 Host 文件工具。
+## 许可证
 
-工作流：`收进来 -> 继续做 -> 交付/沉淀 -> 找回/调整`  
-（用户说「收一下」「记一下」「整理」「写成稿」「跑一遍 loop」— router 推断类别 / 专题 / 动作。）
-
-**想记就记 / 随用随记**：捕获零提问落盘（L0）；分类备选 / 待办 / 记忆候选默认 L1 准备——显式行动语待办在 auto 下同轮写入 `memory/todo.md`，其余建议点头再落（[`shared/auto-suggest.md`](./shared/auto-suggest.md)）。
-
----
-
-## SKILL.md frontmatter
-
-```yaml
----
-name: <kebab-case-id>           # 必填；与目录名一致
-description: >-                  # 必填；做什么 + Use when + Do NOT use
-  …
-license: MIT
-compatibility: …                # 可选；运行环境说明（≤500 字符）
-metadata:                       # Agent Skills 规范：自定义字段一律放这里，值为字符串
-  version: "<pack.version>"     # 必填；= topmind-pack.json version
-  action_category: "capture"    # skill 分类（不是用户笔记的 category）
-  entrypoint: "false"           # 只有 topmind router 是 "true"
-  triggers: "记一下, 收进, capture"   # 逗号分隔
-  tags: "capture, inbox"
-  author: "TopMindSpace"
-  homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "YYYY-MM-DD"
-  degradation: "../shared/capability-degradation.md"
----
-```
-
-顶层只允许 `name / description / license / compatibility / metadata / allowed-tools`，CI 用官方校验器 `agentskills validate`（skills-ref）逐个检查；字段与版本由 `tests/package-manifest.test.mjs` 强制校验。topmind Desktop 的解析器同时认顶层旧写法与 `metadata.*`。一个 pack JSON（[`topmind-pack.json`](./topmind-pack.json)），无 per-skill 第二清单。
-
----
-
-## 工作区契约
-
-```text
-{workspace-root}/
-├── topmind.yaml                # contract v4
-├── memory/                     # profile.md · periodic/ · topics/ · todo.md · 可选 ledgers/
-├── .topmind/                   # rebuildable machine state
-├── 00-Inbox/                   # role: buffer (live dir name)
-├── 10-动态/ …                  # categories (template-driven)
-├── 88-交付/ or 88-Delivery/     # role: delivery
-└── 99-归档/ or 99-Archive/     # role: system
-```
-
-专题：
-
-```text
-{category}/{YYYY-theme}/
-├── topic.md                 # optional
-├── *.md                     # notes at topic root
-└── images/                  # optional
-```
-
-尚无专题时，散篇放在 `{category}/{note}.md`。
-
-**不要创建（已废弃）：** 默认 `outline.md` / `setting.md` / `style.md`；`project_type` frontmatter；专题内嵌套 `notes/` 或 `outputs/`；顶层 `projects/`；`YYYY-类型-项目名` 命名。
-
-**类别：** 运行时发现 `{NN-Name}/` + `topmind.yaml` v4（`categories.extensions` / `categories.overrides` 含 `hidden`）。共享解析器：引擎 `lib/workspace-model.mjs`。优先按角色路由，不要写死 `10-` / `20-` 编号。
-
-不要硬编码绝对路径 — 从 Host 推断 `workspace_root`，或向用户询问。
-
-### 6 条核心规约
-
-1. **大类不重叠**  
-2. **专题自然涌现**  
-3. **动态类特殊**（默认平铺）  
-4. **兜底类清理**（约 30 天）  
-5. **参考资料定位**  
-6. **大类命名稳定**（rename via migration）  
-
-完整规则：[`shared/project-model-brief.md`](./shared/project-model-brief.md)。
-
----
-
-## 行为规则
-
-- 先捕获；不要因为分类不完美而挡住简单保存  
-- 信号足够强时自动路由；否则走 **role:buffer**（现场 Inbox 目录，不要只写死 `00-Inbox/`）  
-- 专题不清时，散篇放在大类根  
-- 每次写入返回回执（路径、路由原因、下一步）  
-- `source_type`: `user-original` | `external-capture` | `ai-derived`  
-- UTR 可选 — Host 文件工具遵守同一契约  
-- 保存设置协议：`writeback_mode: auto | confirm`  
-- locked：auto 下可编辑（任务级首写快照）；永久删 locked/core 仅用户  
-- 本 pack 不要求 Desktop  
-- **复合纪律（不改结构）：** organize 把综合写回磁盘；write 先读可选 `topic.md`；memory 仅在明确确认后写；capture 从不改 `topic.md`；**不要**硬造 `INDEX.md` / 平行 wiki 树（见 `shared/project-model-brief.md`）  
-
----
-
-## 安装目标
-
-已打包的 skill 目录（7 个核心 + 2 个可选连接器 + 可选记账；4.15.2 起公众号改由写作包的 `topmind-wechat-post` 提供）可以符号链接或复制到 Claude Code、Codex、OpenCode、Hermes 等。  
-优先使用 npm / pack-aware 安装器，保证 `shared/` 与 `topmind-pack.json` 完整 — 见 [`INSTALL.md`](./INSTALL.md)。
-
-```bash
-npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
-```
-
-Host 适配器**不得**改变内容真源、新增并列日常入口，或把内容存进 agent 运行态。见 [`shared/capability-degradation.md`](./shared/capability-degradation.md)。
+MIT
