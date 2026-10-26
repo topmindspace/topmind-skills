@@ -76,7 +76,7 @@ topmind-workspace/
 
 - **Save first**: unclear items go to the Inbox; imperfect classification never blocks a save.
 - **Every write has a receipt**: which file, why there, and what you can do next.
-- **Save settings**: `writeback_mode: auto | confirm`. auto writes and returns a receipt; confirm lets you review first. High-impact changes such as deleting memory or creating topics always need your OK; see [`shared/auto-suggest.md`](./shared/auto-suggest.md).
+- **Save settings**: `writeback_mode: auto | confirm`. auto writes and returns a receipt; confirm also saves content edits directly and queues deletion/archive for review. Explicitly requested topic or memory changes reuse your authorization; inferred suggestions need acceptance; see [`shared/auto-suggest.md`](./shared/auto-suggest.md).
 - **Files are the only source of truth**: assistant session state must not become topmind content truth.
 - **Desktop is not required, UTR is optional**: without topmind Desktop or the UTR CLI, the assistant uses its own file tools under the same conventions.
 - **Nothing is posted for you**: skills only draft; you publish.

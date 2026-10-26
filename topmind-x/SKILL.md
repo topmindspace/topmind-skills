@@ -1,19 +1,18 @@
 ---
 name: topmind-x
 description: >-
-  X/Twitter：归档/搜索（Bearer）、发帖（xurl）、Agent 可用官方 MCP。Use when 发推、推特、twitter、x.com。
-  Do NOT use for 微信读书、非 X 捕获、doctor、长文交付.
+  搜索 X、归档推文，或经明确确认发布短帖。Use when 发推、归档我的推文、X search。Do NOT use for writing-only requests, X Articles, or automatic posting.
 license: MIT
 compatibility: Desktop needs Bearer (read) and/or xurl (post). Agent hosts use official X MCP + xurl bridge.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "connector"
   entrypoint: "false"
   triggers: "发推, 推特, twitter, x.com, 发帖, 推文, post tweet, x platform"
   tags: "x, twitter, social, mcp, agent"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 

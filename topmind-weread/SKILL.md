@@ -1,19 +1,18 @@
 ---
 name: topmind-weread
 description: >-
-  同步微信读书划线/想法/统计到专题。Use when 微信读书、划线同步、weread、读书笔记。
-  Do NOT use for 普通 URL 捕获、仅整理、出稿、X.
+  同步微信读书划线、想法和阅读统计到 topmind。Use when 微信读书、同步划线、WeRead sync。Do NOT use for arbitrary URL capture or general note organization.
 license: MIT
 compatibility: Requires WeRead Skill API key (wrk-*). Desktop WereadService preferred; host may call gateway manually.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "connector"
   entrypoint: "false"
   triggers: "微信读书, weread, 划线同步, 读书笔记, 阅读统计, 书架, weread sync, sync highlights"
   tags: "weread, reading, highlights, sync, capture"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 

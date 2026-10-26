@@ -1,7 +1,7 @@
 {
   "skill_name": "topmind",
   "daily_entry": "topmind",
-  "version": "4.15.6",
+  "version": "4.15.7",
   "evals": [
     {
       "id": 1,
@@ -237,7 +237,7 @@
       "prompt": "记一下：明天要交季度报告，别忘了附上数据表。",
       "primary_skill": "topmind-capture",
       "extra_skills": [],
-      "expected_output": "Capture-first: material lands in the stream period note (or topic/Inbox) with provenance + path receipt. Explicit action language also extracts todo item(s) into memory/todo.md (write under writeback auto, or one-word suggest under confirm) per shared/auto-suggest.md. Does not ask the user to choose category/todo/memory modules. Does not write profile.md."
+      "expected_output": "Capture-first: material lands in the stream period note (or topic/Inbox) with provenance + path receipt. Explicit action language also extracts todo item(s) into memory/todo.md (direct content write under auto or graded confirm) per shared/auto-suggest.md. Does not ask the user to choose category/todo/memory modules. Does not write profile.md."
     },
     {
       "id": 33,
@@ -274,7 +274,7 @@
       "prompt": "这周 AI 大厂有什么新的官方动态？顺便看看社区怎么评价。",
       "primary_skill": "topmind",
       "extra_skills": [],
-      "expected_output": "Router splits into ordered steps per shared/trigger-disambiguation.md: official announcements, technical reports and papers → optional external topmind-research (collect); community discussion → optional external last30days. Does not route to topmind-organize 整理本周 (that phrase means the workspace stream category) and does not use TopStream每日精选 unless the user asks for the daily digest. Any skill that is not installed falls back to topmind-organize on saved workspace materials, and the receipt says so. Each step returns its own receipt; no auto chaining."
+      "expected_output": "Router splits into ordered steps per shared/trigger-disambiguation.md: official announcements, technical reports and papers → optional external topmind-research (collect); community discussion → optional external last30days. Does not route to topmind-organize 整理本周 (that phrase means the workspace stream category) and does not use TopStream每日精选 unless the user asks for the daily digest. Any skill that is not installed falls back to topmind-organize on saved workspace materials, and the receipt says so. Complete both requested research steps and give their actual sources; do not invent unrequested follow-ups."
     },
     {
       "id": 38,
@@ -335,7 +335,7 @@
         "topmind-research",
         "topmind-presentation"
       ],
-      "expected_output": "Ordered steps per shared/trigger-disambiguation.md: evidence gathering and fact checking → optional external topmind-research first; the receipt suggests topmind-presentation for the HTML/PPTX deck. No auto chaining. If research is missing → topmind-organize on saved materials; if presentation is missing → topmind-write."
+      "expected_output": "Research and verify sources with optional topmind-research, then complete the requested HTML/PPTX deck with optional topmind-presentation in the same authorized task. Do not stop at a suggestion to make slides. If either skill is not installed, complete the feasible research or outline with available host tools, report the missing deliverable honestly, and do not fabricate an exported file."
     },
     {
       "id": 44,
@@ -357,6 +357,54 @@
         "topmind-poster"
       ],
       "expected_output": "Cover / header image → optional external topmind-cover; long vertical poster → optional external topmind-poster; a paged deck would be topmind-presentation. Each step returns its own receipt. Skills that are not installed are reported, not improvised."
+    },
+    {
+      "id": 46,
+      "prompt": "收下这个链接，整理重点，再写成一篇稿子。",
+      "primary_skill": "topmind",
+      "extra_skills": [
+        "topmind-capture",
+        "topmind-organize",
+        "topmind-write"
+      ],
+      "expected_output": "Save the material, extract relevant points and finish the draft in the same authorized task. Do not stop at a receipt suggesting organize/write. No unsolicited profile mutation."
+    },
+    {
+      "id": 47,
+      "prompt": "记住我现在负责产品设计。",
+      "primary_skill": "topmind-memory",
+      "extra_skills": [],
+      "expected_output": "Update the durable profile fact with a real path receipt. The explicit request is authorization; do not ask again whether to remember it. Preserve the workspace write gate."
+    },
+    {
+      "id": 48,
+      "prompt": "建一个专题，把这两篇笔记放进去。",
+      "primary_skill": "topmind-organize",
+      "extra_skills": [],
+      "expected_output": "Create the requested content topic and move the specified notes under the real category, subject to the actual write gate. Do not request duplicate authorization or write memory/topics."
+    },
+    {
+      "id": 49,
+      "prompt": "只在聊天里总结这段，不要存文件。",
+      "primary_skill": "topmind-organize",
+      "extra_skills": [],
+      "expected_output": "Return a concise summary without writing any file, creating a topic or updating memory."
+    },
+    {
+      "id": 50,
+      "prompt": "Write a report from these notes, then export the draft.",
+      "primary_skill": "topmind",
+      "extra_skills": [
+        "topmind-write"
+      ],
+      "expected_output": "Treat as a task with enough tool budget, finish the requested draft and export if supported, or report the unsupported export. Never classify as light or terminate after routing."
+    },
+    {
+      "id": 51,
+      "prompt": "有什么待办？",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "expected_output": "Read the actual checklist and answer without creating a note or requiring a write receipt. Empty tool data means no current items, not invented tasks."
     }
   ]
 }

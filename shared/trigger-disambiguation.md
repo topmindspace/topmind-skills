@@ -1,7 +1,7 @@
 # Trigger Disambiguation（路由消歧真源）
 
-> Router（`topmind`）与各子 skill 的「When NOT」必须与本表一致。  
-> 子 skill **不得**自动链式 dispatch 下一 skill；「下一步」仅用户面建议。  
+> Router（`topmind`）与各子 skill 的「When NOT」必须与本表一致。
+> 用户已要求的多意图按依赖连续完成；未请求的延伸仅建议。授权以 [auto-suggest](auto-suggest.md) 为准。
 > 外部可选技能不随本包发布：仅在宿主已安装时按表路由；未安装按该行写明的回退处理，回执可提示可选安装，不报错。当前清单：
 > - 写作包 topmind-writing-skills：`topmind-wechat-post`（公众号）、`topmind-x-article`（X 长文）、`topmind-briefs`（干货短文）、`topmind-viral-posts`（引流短帖）、`topmind-cover`（封面 / 配图）、`topmind-poster`（长图 / 海报）
 > - 独立技能：`topmind-research`（对外检索与研究报告）、`topmind-presentation`（HTML / PPTX 演示稿）、`topmind-handoff`（跨工具交接包）
@@ -45,39 +45,27 @@
 
 | 动作 | 默认写什么 | 禁止 |
 |------|------------|------|
-| capture | 材料笔记；显式行动语可写/建议 `memory/todo.md` | 改 `topic.md`；自动 organize；静默写 memory/profile 或 memory/topics |
+| capture | 材料笔记；显式行动语可写/建议 `memory/todo.md` | 改 `topic.md`；未请求的 organize；静默写 memory/profile 或 memory/topics |
 | organize | 专题根综合/结构笔记（留痕）；L1 待办/记忆/专题建议 | 自动写稳定记忆；建 `INDEX.md` / entities 树 |
 | memory | 仅 confirmed stable → `memory/profile.md` 或 `memory/periodic/`（用户明说才写 `memory/topics/`） | 因 capture/整理顺手刷写；把 `topic.md` 当记忆默认落点 |
 | todo（卫星） | `memory/todo.md` checklist | 新建顶层 `todo/`；当第六用户概念 |
 | write | 稿件 / delivery | 为「补结构」空建 `topic.md` |
 | loop | 状态 / 可逆修复 | 代写记忆；建硬索引 |
 | ledger | `{memory.dir}/ledgers/` 追加一行 | 改 `topic.md`；发明 ClassFund/Giggs/Mom；当第六用户概念 |
-| topmind-research（外部可选） | 研究报告、周报、已核验事实表，按 `writeback-receipt.md` 落专题或 Inbox（frontmatter `source_type: ai-derived`） | 自动写记忆；自动改它自带的 `config/sources.yaml`；未经用户点名自动深挖；自动链式 briefs / write |
+| topmind-research（外部可选） | 研究报告、周报、已核验事实表，按 `writeback-receipt.md` 落专题或 Inbox（frontmatter `source_type: ai-derived`） | 自动写记忆；自动改它自带的 `config/sources.yaml`；未经用户点名自动深挖；未请求的 briefs / write |
 
 ## 多意图顺序
 
-| 意图组合 | 裁决 |
-|---------|------|
-| capture + organize | 先 capture，回执建议 organize（不自动链式） |
-| capture + memory | 先 capture，回执建议 memory（须用户再确认才写 profile / periodic） |
-| organize + write | 先 organize（落盘综合），再 write |
-| organize + memory | 先 organize 候选与综合笔记，**用户接受建议后再** memory |
-| write + memory | 先 write，回执建议 memory |
-| research + write | 先 research 出报告与事实表，回执建议 briefs / write（不自动链式） |
-| research + memory | 先 research 落盘，回执建议 memory（须用户再确认才写） |
-| 整理 inbox | organize + plan-inbox-routing（不是 maintain/loop） |
-| 清理工作区 | maintain |
-
-三个以上意图：拆成顺序步骤，每步回执。
+按 [multi-intent](../topmind/references/multi-intent.md) 连续完成用户已授权的整项任务，不再复制第二份裁决矩阵。明确任务的跨技能执行与主动追加工作分开；研究+写稿应交付稿件，不能只建议去写。
 
 ## Action unsure
 
-- 记账 / 记一笔 / 花了 / 存入 / 查看账单 / 账户余额 → ledger  
-- 内容动词（写/存/记一下）且无修复/巡检 → capture  
-- 修复 / 清理 / 重建 → maintain  
-- 巡检 / 整体 / 断点 → loop  
-- 整理 / 分析 / 总结 → organize  
-- 写 / 发布 / 出稿 → write  
-- 记忆 / 更新我的情况 / 周期反思 → memory  
-- 仅类别名 → capture 到该类别根  
-- 全不像 → capture 到 Inbox（buffer）  
+- 记账 / 记一笔 / 花了 / 存入 / 查看账单 / 账户余额 → ledger
+- 内容动词（写/存/记一下）且无修复/巡检 → capture
+- 修复 / 清理 / 重建 → maintain
+- 巡检 / 整体 / 断点 → loop
+- 整理 / 分析 / 总结 → organize
+- 写 / 发布 / 出稿 → write
+- 记忆 / 更新我的情况 / 周期反思 → memory
+- 仅类别名 → capture 到该类别根
+- 全不像 → capture 到 Inbox（buffer）

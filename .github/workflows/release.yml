@@ -36,19 +36,9 @@ jobs:
 
       - name: Resolve version
         id: ver
-        shell: bash
-        run: |
-          set -euo pipefail
-          VER=$(node -p "require('./topmind-pack.json').version")
-          echo "version=$VER" >> "$GITHUB_OUTPUT"
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == v* ]]; then
-            EXPECT="v$VER"
-            if [[ "$TAG" != "$EXPECT" && "$TAG" != skills-v* ]]; then
-              echo "ERROR: tag $TAG does not match pack version $VER"
-              exit 1
-            fi
-          fi
+        env:
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: node scripts/resolve-release.mjs
 
       - name: Test
         run: node --test tests/*.test.mjs integrations/opencode/tests/*.test.mjs
@@ -59,19 +49,17 @@ jobs:
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
           VER="${{ steps.ver.outputs.version }}"
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == workflow_dispatch* || -z "$TAG" ]]; then
-            TAG="${{ inputs.release_tag }}"
-          fi
           # workflow_dispatch: always draft
           DRAFT=""
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             DRAFT="--draft"
           fi
+          CHANGELOG_SECTION=$(awk 'BEGIN{p=0} /^## /{if(p) exit; p=1} p' CHANGELOG.md)
           NOTES="topmind-skills v${VER}
 
           ## Install
@@ -89,6 +77,8 @@ jobs:
           # or
           npx skills update -g -y
           \`\`\`
+
+          ${CHANGELOG_SECTION}
           "
           gh release create "$TAG" $DRAFT \
             --title "topmind-skills v${VER}" \
@@ -103,7 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VER: ${{ steps.ver.outputs.version }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ steps.ver.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -159,6 +149,7 @@ jobs:
       # Product policy: keep only the newest 2 GitHub Releases.
       # Git tags stay (topmind docs/REPO-MAINTENANCE.md §5.1). Do not delete refs/tags.
       - name: Prune old releases (keep 2)
+        if: github.event_name != 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}

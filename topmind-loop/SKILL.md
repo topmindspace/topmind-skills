@@ -1,19 +1,18 @@
 ---
 name: topmind-loop
 description: >-
-  可中断的工作区语义巡检（走专题/Inbox，.loop 断点续跑）。Use when 跑一遍 loop、巡检、整体体检、复盘、
-  继续 loop、audit。Do NOT use for 快速 doctor（→maintain）、单专题整理、捕获、写作、仅记忆.
+  对 topmind 多专题或全工作区做语义巡检，长任务可断点续跑。Use when 整体巡检、全面复盘、跑一遍 loop、继续 loop。Do NOT use for a quick doctor check or organizing one topic.
 license: MIT
 compatibility: topmind workspace. Progress under .topmind/loop/*. Host LLM runs the walk; UTR optional.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "loop"
   entrypoint: "false"
   triggers: "跑一遍 loop, loop 一下, 整体体检, 工作区复盘, 把工作区跑一遍, 巡检, 继续 loop, 从断点继续, 全面检查, 复盘, review, audit, walk"
   tags: "loop, audit, walk, resumable, cyclic"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -27,19 +26,19 @@ topmind-loop = SKILL.md + agent host LLM + .topmind/loop/*.md
 
 ## Activation checklist
 
-1. 确认是**整体/可恢复**巡检（非快速 doctor）  
-2. 读/建 `.topmind/loop/*.md` 进度；可中断续跑  
-3. 步内可调用 capture/organize/… **语义**，不改类别名  
-4. 结束写摘要回执  
+1. 确认是**整体/可恢复**巡检（非快速 doctor）
+2. 范围长、需跨会话或用户要续跑时读/建 `.topmind/loop/*.md`；小范围单轮检查可直接完成
+3. 步内可调用 capture/organize/… **语义**，不改类别名
+4. 结束写摘要回执
 
 ## When NOT to use
 
-- 快速体检 / doctor / 修复索引 → `topmind-maintain`  
-- 整理当前专题笔记 → `topmind-organize`  
-- 存新材料 → `topmind-capture`  
-- 出稿 → `topmind-write`  
-- 沉淀「我的情况」/ 周期反思 → `topmind-memory`  
-- 发推 / 微信读书 → connectors  
+- 快速体检 / doctor / 修复索引 → `topmind-maintain`
+- 整理当前专题笔记 → `topmind-organize`
+- 存新材料 → `topmind-capture`
+- 出稿 → `topmind-write`
+- 沉淀「我的情况」/ 周期反思 → `topmind-memory`
+- 发推 / 微信读书 → connectors
 
 ## When to Invoke
 
@@ -53,29 +52,29 @@ loop 一下 {类别名}          → 该大类专题
 
 ## Three Pieces
 
-1. **本 skill** — 规约  
-2. **Agent host** — 执行与语义判断（无第二套 LLM 配置）  
-3. **`.topmind/loop/*.md`** — 进度真账  
+1. **本 skill** — 规约
+2. **Agent host** — 执行与语义判断（无第二套 LLM 配置）
+3. **`.topmind/loop/*.md`** — 进度真账
 
-Scopes、walk、guardrails 细节：[`references/scopes-and-walk.md`](references/scopes-and-walk.md)。  
-状态文件格式与 resume：[`references/state-file.md`](references/state-file.md)。  
+Scopes、walk、guardrails 细节：[`references/scopes-and-walk.md`](references/scopes-and-walk.md)。
+状态文件格式与 resume：[`references/state-file.md`](references/state-file.md)。
 设计取舍：[`DESIGN.md`](DESIGN.md)。
 
 ## Minimal Workflow
 
-1. 解析 scope（默认全跑）  
-2. 读或创建 `.topmind/loop/{scope}.md`（缺失则首次运行，不报错）  
-3. 从 `cursor` 起逐项：Read → Decide → Apply/Preserve/Escalate → Record  
-4. 更新 `last_run` / `done/total` / `cursor` / Receipts  
+1. 解析 scope（默认全跑）
+2. 需断点时读或创建 `.topmind/loop/{scope}.md`（缺失则首次运行，不报错）；单轮短检查不强制建台账
+3. 从 `cursor` 起逐项：Read → Decide → Apply/Preserve/Escalate → Record
+4. 更新 `last_run` / `done/total` / `cursor` / Receipts
 
 ## What Loop Does NOT Do
 
-- 不写交付正文（write）  
-- 不改专题目标/记忆（memory）  
-- 不 capture 新材料  
-- 不重复 maintain 的确定性检查（可调用其结果作证据，再加语义层）  
-- 不擅自改类别名、不自动升专题  
-- **不**为「补知识结构」自动写 topic.md / 建 INDEX.md / 建实体目录  
+- 不写交付正文（write）
+- 不改专题目标/记忆（memory）
+- 不 capture 新材料
+- 不重复 maintain 的确定性检查（可调用其结果作证据，再加语义层）
+- 不擅自改类别名、不自动升专题
+- **不**为「补知识结构」自动写 topic.md / 建 INDEX.md / 建实体目录
 
 材料多而首页空时：只在日志/回执**建议** organize 或 memory（见 scopes-and-walk），不代写。
 

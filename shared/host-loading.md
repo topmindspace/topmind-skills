@@ -1,6 +1,6 @@
 # Host Loading & Progressive Disclosure
 
-> 给 **Agent Host / 安装器** 的加载契约。人类安装见 [`../INSTALL.md`](../INSTALL.md)。  
+> 给 **Agent Host / 安装器** 的加载契约。人类安装见 [`../INSTALL.md`](../INSTALL.md)。
 > 对齐 [Agent Skills Open Standard](https://agentskills.io/specification) 三级披露。
 
 ## 三级加载（必须遵守）
@@ -56,10 +56,10 @@ topmind-skills-<ver>/          ← Release zip 顶层
 
 ### 错误形状
 
-- 只拷了 skill 目录、**没有** `shared/` → 渐进链接 404  
-- 把 monorepo 整仓当 skill 根 → host 扫到无关目录  
-- 只装 `topmind` 却期望 weread/x 触发 → connector 未装  
-- Host 报 `SKILL.md not found`：请用 `topmind-skills-*.zip`（含根 `SKILL.md`），或装到 `{skillsRoot}/topmind/SKILL.md`  
+- 只拷了 skill 目录、**没有** `shared/` → 渐进链接 404
+- 把 monorepo 整仓当 skill 根 → host 扫到无关目录
+- 只装 `topmind` 却期望 weread/x 触发 → connector 未装
+- Host 报 `SKILL.md not found`：请用 `topmind-skills-*.zip`（含根 `SKILL.md`），或装到 `{skillsRoot}/topmind/SKILL.md`
 
 
 ## 两套安装器
@@ -92,28 +92,28 @@ cp -R shared ~/.agents/skills/shared
 
 ## description 写作规范（本 pack 已遵循）
 
-1. **What** — 做什么（含 topmind / category·topic 心智）  
-2. **Use when** — 用户真实中英短语  
-3. **Do NOT use** — 负向边界（降误触发）  
-4. ≤ **1024** 字符（Agent Skills 硬限）  
-5. Router 不得写「any knowledge task」一类过宽句，以免淹没子 skill  
+1. **What** — 做什么（含 topmind / category·topic 心智）
+2. **Use when** — 用户真实中英短语
+3. 相邻技能容易误选时简述负向边界；不必在正文重复完整 When NOT 清单
+4. ≤ **1024** 字符（Agent Skills 硬限）
+5. Router 不得写「any knowledge task」一类过宽句，以免淹没子 skill
 
 ## 工作区前提（Host 须满足）
 
-- 用户数据在 **workspace root**（含 `{NN-Name}/`），不是 engine 仓  
-- Skills **不**写 engine 代码  
-- 可选 UTR：有则加速，无则 Host 文件工具（见 capability-degradation）  
-- 类别解析语义：`list-categories` 或扫盘 + `topmind.yaml` v4  
+- 用户数据在 **workspace root**（含 `{NN-Name}/`），不是 engine 仓
+- Skills **不**写 engine 代码
+- 可选 UTR：有则加速，无则 Host 文件工具（见 capability-degradation）
+- 类别解析语义：`list-categories` 或扫盘 + `topmind.yaml` v4
 
 ## Desktop 内置
 
 topmind Desktop 从 engine `skills/` 加载同一 pack（`skills-runtime.mjs`），默认 **skill-first**：
 
-- Discovery 注入 system prompt  
-- `list_skills` / `load_skill` / `load_skill_resource`  
-- 设置 → Skills：总开关 · 清单勾选 · 扩展目录 · 安装回执；AI 面板可钉选  
+- Discovery 注入 system prompt
+- `list_skills` / `load_skill` / `load_skill_resource`
+- 设置 → Skills：总开关 · 清单勾选 · 扩展目录 · 安装回执；AI 面板可钉选
 
-**扩展 roots 合并顺序**：`ai.extraSkillsRoots`（设置）→ 已同步的配置缓存 → 环境变量 `topmind_SKILLS_EXTRA`（`:` / Windows `;`）。同名 skill 以后加载的 external 覆盖 bundled。
+**扩展 roots 合并顺序**：`ai.extraSkillsRoots`（设置）→ 已同步的配置缓存 → 环境变量 `topmind_SKILLS_EXTRA`（`:` / Windows `;`）。同名 skill 以后加载的 external 覆盖 bundled。激活与资源必须沿用选中来源；`load_skill_resource` 推荐传 skillId，再以技能目录解析 references/* 或 ../shared/*，缺资源不能静默换包。
 
 ```bash
 export topmind_SKILLS_EXTRA="$HOME/my-extra-skills:$HOME/other-skills"

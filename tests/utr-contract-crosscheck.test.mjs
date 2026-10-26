@@ -112,21 +112,12 @@ test("capture skill triggers 记一下 not 记下 (Note it ≠ Log it)", async (
   assert.ok(!triggers.includes("记下"), "记下 is not a frontmatter trigger");
 });
 
-test("topmind SKILL.md MCP primary+danger inventory covers pack exposure lists", async () => {
-  const manifest = await readPack();
+test("router links capability guidance rather than duplicating the UTR inventory", async () => {
   const skill = await fs.readFile(path.join(skillsRoot, "topmind", "SKILL.md"), "utf8");
-  const block = skill.match(/UTR 可选（MCP primary\+danger[\s\S]*?。/u);
-  assert.ok(block, "SKILL.md must list MCP primary+danger commands");
-  const listed = new Set(
-    (block[0].match(/`([^`]+)`/gu) || []).map((token) => token.slice(1, -1)),
-  );
-  const missing = [];
-  const exposure = manifest.utr.command_exposure;
-  for (const id of [...(exposure.primary || []), ...(exposure.danger || [])]) {
-    const [domain, name] = id.split(".");
-    if (!listed.has(name) && !listed.has(id)) missing.push(id);
-  }
-  assert.deepEqual(missing, [], `SKILL.md MCP inventory missing: ${missing.join(", ")}`);
+  const reference = skill.match(/\]\((\.\.\/shared\/capability-degradation\.md)\)/u);
+  assert.ok(reference, "capability guidance is discoverable from the router");
+  const resource = path.resolve(skillsRoot, "topmind", reference[1]);
+  assert.match(await fs.readFile(resource, "utf8"), /UTR/);
 });
 
 test("cross-repo: pack.json utr vocabulary matches engine contracts (when engine available)", async (t) => {

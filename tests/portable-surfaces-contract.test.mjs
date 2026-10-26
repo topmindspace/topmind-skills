@@ -111,7 +111,7 @@ test("pack docs describe save settings instead of the old preview-confirm lifecy
 test("write skill presents flexible entry points instead of workflow stages", async () => {
   const source = await readText("topmind-write/SKILL.md");
 
-  assert.match(source, /## Writing Entry Points/u);
+  assert.match(source, /Draft[\s\S]*Continue[\s\S]*Revise[\s\S]*Polish[\s\S]*Deliver/u);
   assert.doesNotMatch(source, /## Writing Stages|whichever stage|Stages are not rigid|skip stages|loop back|workflow stages/iu);
 });
 

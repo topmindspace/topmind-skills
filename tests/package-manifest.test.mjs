@@ -445,7 +445,7 @@ test("retired topmind-wechat is gone from the pack, package files, install targe
   for (const rel of ["topmind/SKILL.md", "topmind-write/SKILL.md"]) {
     const text = await fs.readFile(path.join(skillsRoot, rel), "utf8");
     assert.doesNotMatch(text, /\.\.\/topmind-wechat\/|→ topmind-wechat\s|`topmind-wechat`（write/u, `${rel} no longer routes to the bundled topmind-wechat`);
-    assert.match(text, /topmind-wechat-post/u, `${rel} routes 公众号 to topmind-wechat-post`);
+    assert.ok(text.includes("topmind-wechat-post") || /\]\(\.\.\/shared\/trigger-disambiguation\.md\)/u.test(text), `${rel} directly names or links the maintained 公众号 route`);
   }
 });
 
@@ -738,15 +738,15 @@ test("v1.0 description quality: non-empty, under 1024 chars, includes use-when s
   }
 });
 
-test("v1.0 each skill has When NOT / When NOT to use section", async () => {
+test("skill discovery states a boundary without requiring a duplicate body section", async () => {
   const manifest = await readJson("topmind-pack.json");
   for (const skill of manifest.skills) {
     if (skill.id === "topmind") continue; // router is always-on entry
     const raw = await fs.readFile(path.join(skillsRoot, skill.path, "SKILL.md"), "utf8");
     assert.match(
       raw,
-      /When NOT|When not to use|不要用|不得用于/iu,
-      `${skill.id} should document when NOT to use`,
+      /Do NOT use|Do NOT|When NOT|When not to use|不要用|不得用于/iu,
+      `${skill.id} should expose a discovery boundary`,
     );
   }
 });

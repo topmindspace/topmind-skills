@@ -1,19 +1,18 @@
 ---
 name: topmind-ledger
 description: >-
-  通用记账到记忆平面（默认个人/自己账本，用户自建账本与分类）。Use when 记账、记一笔、花了、存入、查看账单、账户余额。
-  Do NOT use for 记一下到动态、待办、微信读书、发推、Feishu/lark-cli.
+  在 topmind 记账、查账和更新账本，默认个人账本。Use when 记一笔、花了、存入、余额、bookkeeping。Do NOT use for generic reminders, note capture, or financial recommendations.
 license: MIT
 compatibility: Host file tools or Kernel writeback. Desktop optional mini-app. Feishu/lark-cli is not required.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "memory"
   entrypoint: "false"
   triggers: "记账, 记一笔, 花了, 存入, 查看账单, 账户余额, bookkeeping, log expense"
   tags: "ledger, bookkeeping, memory, optional"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 

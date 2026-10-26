@@ -1,7 +1,7 @@
 # Writeback & Receipt（Skills 共享）
 
 > 完整契约：`TOOLS.md` §Writeback Contract。耐久主写统一 `lib/writeback-engine`（Desktop WorkspaceService / UTR / AI → Kernel 写闸 **Done**，见 `docs/ARCHITECTURE-RESET.md` §2.2）。  
-> **2026-09-17 授权模型**：工作区围栏绝对；围栏内 agent 会话即授权；`locked` = 重要内容需**任务级首写快照**，不是 AI 禁区。
+> **2026-09-17 授权模型**：工作区围栏绝对；围栏内按用户请求范围授权；`locked` = 重要内容需**任务级首写快照**，不是 AI 禁区。
 
 ## 保存设置
 
@@ -24,16 +24,9 @@ writeback:
 
 **locked 语义（2026-09-17c）**：`auto` 下 AI **可以**写 locked —— 本任务对该文件的**首次**覆盖做一次快照+YAML 回执，同任务后续编辑原地更新。**删除/归档 locked 也可在 auto 进行**（走 trash/归档目的地，可恢复+回执）；**永久删除** locked/core 仍须用户。`confirm` 为分级：内容编辑直接落盘；删/归档待确认。用户写 locked 始终可以（同样任务级快照）。
 
-## 回执最小字段
+## 回执
 
-```text
-已收进/已更新：大类 → 专题（或单篇 / Inbox）
-位置：relative/path.md
-操作：create | update | delete | archive | restore
-保存模式：auto | confirm
-判断：信心与理由（如有）
-下一步：继续写 / 整理 / 写入专题记忆 / 手动移动
-```
+面向用户只需结果与真实路径；影响多个文件时列实际变更。理由、模式、信心、下一步仅在有用时补充，不固定填模板。
 
 写入必须返回 **target path + affected files**（UTR 时见 WritebackEvidence）。
 

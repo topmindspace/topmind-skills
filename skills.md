@@ -27,4 +27,4 @@
 2. 按需加载：先读技能名和描述，触发后读 `SKILL.md`，需要细节时再读 `shared/` 和 `references/`。
 3. 文件就是数据来源，不依赖数据库或助手会话状态。
 4. 遵守 6 条工作区规约，见 [`shared/project-model-brief.md`](./shared/project-model-brief.md)。
-5. 自动建议分级见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)：材料直接落盘；明确说了要做的事，auto 模式下同轮写入待办；其余建议等你点头；动记忆、删档、建专题要确认。待办放在 `memory/todo.md`。
+5. 自动建议分级见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)：材料直接落盘；明确说了要做的事，auto 模式下同轮写入待办；其余建议等你点头；明确请求沿用授权，额外记忆/专题建议需接受，删档按写闸确认。待办放在 `memory/todo.md`。

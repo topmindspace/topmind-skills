@@ -1,21 +1,15 @@
-# Multi-Intent Resolution
+# 多意图：按用户最终目标执行
 
-当用户请求包含多个意图时，按以下矩阵裁决（与 `../../shared/trigger-disambiguation.md` 一致）：
+一次请求中的多个动作按依赖连续完成；只读出“下一步建议”不能替代用户已要求的交付。共享授权规则见 [auto-suggest](../../shared/auto-suggest.md)，路由边界见 [trigger-disambiguation](../../shared/trigger-disambiguation.md)。
 
-| 意图组合 | 裁决 | 说明 |
-|---------|------|------|
-| capture + organize | 先 capture，回执中建议 organize | 先确保材料落地 |
-| capture + memory | 先 capture，回执中建议 memory | 先存笔记再更新我的情况 / 周期反思 |
-| capture + todo | 先 capture；显式行动语同轮写 `memory/todo.md`，隐含则 L1 建议 | 见 `../../shared/auto-suggest.md` |
-| organize + write | 先 organize 提炼，再 write 输出 | 分两步 |
-| organize + memory | 先 organize 候选，再 memory 落盘 | organize 产出列表 |
-| organize + todo | 整理本周后 L1 待办 diff 建议 | 不自动批量改清单 |
-| write + memory | 先 write，回执中建议 memory | 写作不改 memory/profile |
-| research + write | 先 research 出报告与已核验事实表，回执中建议 briefs / write | `topmind-research`、`topmind-briefs` 为外部可选；未装 research → organize「研究分析」，未装 briefs → write |
-| research + memory | 先 research 落盘专题或 Inbox，回执中建议 memory | research 不自动写记忆；用户确认后才走 memory |
-| 整理 inbox | `topmind-organize` + `plan-inbox-routing` | 不是 maintain/loop |
-| 清理工作区 | `topmind-maintain` | 系统健康 |
+| 用户已要求的组合 | 执行 |
+|---|---|
+| capture + organize / write | 先保存材料，再整理或成稿 |
+| capture + memory | 保存原材料，再把明确要求记住的稳定事实更新到记忆 |
+| organize + write | 提炼证据后直接交付稿件；不强制额外建综合笔记 |
+| research + write / presentation | 研究并核验来源，再完成文章或幻灯片；专用技能未装时完成可行部分并说明限制 |
+| organize + memory | 只有明确要求沉淀记忆的事实才写；推测候选先提案 |
+| organize + todo | “看看”给差异；“同步/更新”执行明确变化，保持真实写闸 |
+| write + memory | 先成稿，再写用户明确指定的稳定事实 |
 
-**三个以上意图**：分解为顺序步骤，逐步执行，每步返回回执。
-
-子 skill 回执里的「下一步」**不构成**自动链式触发。  
+三步以上同样按依赖执行。单个技能结束不是整项任务结束；未请求的附加工作留为建议。外部发布和不可逆动作仍遵守各自权限。

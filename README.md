@@ -76,7 +76,7 @@ topmind-workspace/
 
 - **先存下来再说**：分类不确定时先放 Inbox，不因为分类拦住保存。
 - **每次写入都有回执**：写了哪个文件、为什么放这里、下一步可以做什么。
-- **保存设置**：`writeback_mode: auto | confirm`。auto 直接写并给回执；confirm 先给你审阅。删除记忆、建专题这类高影响操作总要你点头，规则见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。
+- **保存设置**：`writeback_mode: auto | confirm`。auto 直接写并给回执；confirm 内容编辑也直接写，仅删除/归档进入审阅。明确要求的建专题、记忆更新直接执行；推测的建议需接受，规则见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。
 - **文件是唯一的数据来源**：助手自己的会话状态不得成为 topmind 内容真源。
 - **不要求 Desktop，UTR 可选**：topmind Desktop 和 UTR 命令行都不是必需的，没有时用助手自带的文件工具，遵守同一套约定。
 - **不代发**：任何技能都只起草，发布由你操作。

@@ -1,19 +1,18 @@
 ---
 name: topmind-memory
 description: >-
-  更新「我的情况」或周期反思。Use when 记住这个、更新我的情况、加到专题记忆、沉淀结论。
-  Do NOT use for 捕获、仅总结（→organize）、整理本周正文、出稿、开/并专题、doctor/loop.
+  维护 topmind 的稳定个人事实与周期反思。Use when 记住我、更新我的情况、沉淀到记忆、update profile。Do NOT use for ordinary capture, content-topic creation, or a summary without a memory request.
 license: MIT
 compatibility: workspace core profile (memory/profile.md) + periodic reflections.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "memory"
   entrypoint: "false"
   triggers: "写入专题记忆, 更新我的情况, stable memory, 追加确认结论, 记住这个, 记住我, 加到专题记忆, 沉淀结论, 提炼到记忆, update profile, memory"
   tags: "memory, stable, core-profile, 我的情况"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -26,8 +25,8 @@ metadata:
 | **主 memory** | `memory/profile.md` | 「我的情况」— 偏好 / 目标 / 关系 / 进行中 |
 | **周期子 memory** | `memory/periodic/{YYYY}/{period}.md` | 周期反思（stream_digest / ai_summary 确认后） |
 
-**建立/归入专题**（内容大类夹）→ **organize / topic_classify**，路径 `{大类}/{YYYY-主题}/topic.md`。  
-**不是**默认写入 `memory/topics/`。  
+**建立/归入专题**（内容大类夹）→ **organize / topic_classify**，路径 `{大类}/{YYYY-主题}/topic.md`。
+**不是**默认写入 `memory/topics/`。
 **待办清单** → 卫星 `memory/todo.md`（UTR `memory.*-todo`；capture/organize 提取，见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）。本 skill 不主写待办，只在周期反思里引用。
 
 | 用户意图 | 写哪里 |
@@ -40,17 +39,17 @@ metadata:
 
 ## Activation checklist
 
-1. 判目标：关于我 → profile；周期反思 → periodic；开专题 → **交 organize / 内容大类**（勿默认 memory/topics）  
-2. 筛 **confirmed · stable · reusable · scoped**  
-3. Core：`memory.append-profile`；周期反思：digest 路径；仅用户明说专题语义记忆时才 `memory.append-topic`  
-4. 整文替换需可逆备份  
+1. 判目标：关于我 → profile；周期反思 → periodic；开专题 → **交 organize / 内容大类**（勿默认 memory/topics）
+2. 筛 **confirmed · stable · reusable · scoped**
+3. Core：`memory.append-profile`；周期反思：digest 路径；仅用户明说专题语义记忆时才 `memory.append-topic`
+4. 整文替换需可逆备份
 
 ## 核心画像（Core Profile）
 
-- 路径：`memory/profile.md`（语义平面；原 `我的情况.md`）  
-- `topmind.yaml` → `memory.layers.global.file`（默认 `profile.md`）  
-- 推荐段落：`## 偏好` · `## 当前目标` · `## 关键的人与协作` · `## 进行中的事`；完成/过期条目归档到 `## 历史记录`（加 `（YYYY-MM-DD 归档）` 前缀，不删内容）  
-- 缺失时创建模板后追加  
+- 路径：`memory/profile.md`（语义平面；原 `我的情况.md`）
+- `topmind.yaml` → `memory.layers.global.file`（默认 `profile.md`）
+- 推荐段落：`## 偏好` · `## 当前目标` · `## 关键的人与协作` · `## 进行中的事`；完成/过期条目归档到 `## 历史记录`（加 `（YYYY-MM-DD 归档）` 前缀，不删内容）
+- 缺失时创建模板后追加
 
 ```text
 UTR: memory.append-profile · memory.update-profile · memory.retire-profile · memory.restore-profile · memory.compact-history
@@ -70,40 +69,40 @@ Host: 读 profile（活跃段）→ ADD / UPDATE 原位 / RETIRE 到 ## 历史�
 
 ## 周期反思（Periodic）
 
-- 路径：`memory/periodic/{YYYY}/{YYYY-Www}.md` 等  
-- 来源：活动窗口 AI 建议（`stream_digest` / `ai_summary`）**确认后**写入  
-- **反思非摘要**：写「本周揭示了什么」，不罗列「本周发生了什么」。重点是关注焦点、知识与见解、行为信号、偏好变化、线索  
-- 与 profile 同属记忆平面；**不是**专题目录  
+- 路径：`memory/periodic/{YYYY}/{YYYY-Www}.md` 等
+- 来源：活动窗口 AI 建议（`stream_digest` / `ai_summary`）**确认后**写入
+- **反思非摘要**：写「本周揭示了什么」，不罗列「本周发生了什么」。重点是关注焦点、知识与见解、行为信号、偏好变化、线索
+- 与 profile 同属记忆平面；**不是**专题目录
 
 ## 可选：专题语义记忆（非默认）
 
-仅当用户**明确**要求「写到专题记忆 / memory topics」时，才写入 `memory/topics/{topic-slug}.md`。  
+仅当用户**明确**要求「写到专题记忆 / memory topics」时，才写入 `memory/topics/{topic-slug}.md`。
 日常「这个值得开个专题」→ 内容大类下 `{YYYY-主题}/`，不是 memory 平面。
 
 ## When NOT to use
 
-- 存材料 → capture  
-- 理顺本周流水 / 建议开专题 → organize「整理本周」（活动窗口）  
-- 分析/整理笔记（不写记忆）→ organize  
-- 起草/交付 → write  
-- 体检/巡检 → maintain / loop  
+- 存材料 → capture
+- 理顺本周流水 / 建议开专题 → organize「整理本周」（活动窗口）
+- 分析/整理笔记（不写记忆）→ organize
+- 起草/交付 → write
+- 体检/巡检 → maintain / loop
 
 ## 守门
 
-- **禁止**因 capture / 剪藏 / 导入 自动改 profile 或 `memory/topics/`  
-- **禁止**整理过程中顺手狂写（organize 只可**建议**候选；topic 建议进**内容大类**）  
-- **写入**仅用户明确「记住 / 更新我的情况 / 写进专题记忆」或当轮确认（L2）  
-- **准备候选**是默认行为（L1）：capture / organize 看到稳定事实就附建议，用户点头再写——不必让用户先学会说「记住」  
+- **禁止**因 capture / 剪藏 / 导入 自动改 profile 或 `memory/topics/`
+- **禁止**整理过程中顺手狂写（organize 只可**建议**候选；topic 建议进**内容大类**）
+- **写入**仅用户明确「记住 / 更新我的情况 / 写进专题记忆」或接受该项提案；明确请求不重复确认
+- **准备候选**是默认行为（L1）：capture / organize 看到有价值的稳定事实可附建议，用户明确要求或接受后写——不必让用户先学会说「记住」
 
 ## Role-aware density
 
-- 日常事实 → 周期本或「我的情况」  
-- 反复主题 → 建议内容大类专题，不默认 memory/topics  
-- buffer / delivery / system 通常不适用  
+- 日常事实 → 周期本或「我的情况」
+- 反复主题 → 建议内容大类专题，不默认 memory/topics
+- buffer / delivery / system 通常不适用
 
 ## Capability Degradation
 
-[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。  
+[`../shared/capability-degradation.md`](../shared/capability-degradation.md)。
 `memory.append-profile` · `memory.append-topic` · `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `inspect-topic`。
 
 ## 保存设置

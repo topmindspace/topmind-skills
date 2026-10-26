@@ -1,19 +1,18 @@
 ---
 name: topmind-organize
 description: >-
-  整理本周动态、专题内整理/研究/分析/路由 Inbox。Use when 整理本周、整理、分析、研究、对比、总结要点、organize、summarize。
-  Do NOT use for 首次捕获、最终出稿、仅写我的情况、快速 doctor、全库 loop、对外检索一手资料与 AI 前沿深挖（已装外部 topmind-research 时）.
+  整理 topmind 已存笔记、动态和 Inbox，做总结、对比或专题归类。Use when 整理本周、整理笔记、organize、summarize saved notes。Do NOT use for final drafting, profile changes, or external research with an installed specialist.
 license: MIT
 compatibility: topmind workspace with stream period notes, topics, or Inbox.
 metadata:
-  version: "4.15.6"
+  version: "4.15.7"
   action_category: "organize"
   entrypoint: "false"
   triggers: "整理本周, 理顺本周, 周复盘, 整理, 组织, 研究, 分析, 对比, 提取, 梳理, 归纳, 证据, 实体, 质量审查, 总结, 概括, 汇总, 提纲, 分类整理, 找关联, 总结成笔记要点, organize, summarize, analyze, weekly review"
   tags: "organize, research, analyze, stream, weekly-review"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-24"
+  updated: "2026-10-26"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -23,19 +22,19 @@ metadata:
 
 ## Activation checklist
 
-1. 若用户说「整理本周 / 理顺流水」→ **整理本周**流程  
-2. 否则确认已有笔记 / Inbox（无材料则先 capture）  
-3. `list-categories` / 读周期本或专题 `.md`  
-4. 按 writeback 写回（默认 auto；整篇替换先备份）  
-5. 回执；L1 建议待办/记忆/专题候选，不自动写 memory（见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）  
+1. 若用户说「整理本周 / 理顺流水」→ **整理本周**流程
+2. 否则确认已有笔记 / Inbox（无材料则先 capture）
+3. `list-categories` / 读周期本或专题 `.md`
+4. 按 writeback 写回（默认 auto；整篇替换先读全文，保护按写闸执行）
+5. 回执；L1 建议待办/记忆/专题候选，不自动写 memory（见 [`../shared/auto-suggest.md`](../shared/auto-suggest.md)）
 
 ## When NOT to use
 
-- 存新材料 → `topmind-capture`  
-- 交付最终报告/文章 → `topmind-write`  
-- 只写「我的情况」/ 周期反思 → `topmind-memory`  
-- doctor / 全库巡检 → `topmind-maintain` / `topmind-loop`  
-- 对外检索一手资料（论文、技术报告、官方公告、模型或产品横向对比）、AI 前沿深挖、周度官方动态 → 外部可选 `topmind-research`（已安装时）；未安装仍由本 skill「研究分析」接手，回执注明来源范围（见 [`../shared/trigger-disambiguation.md`](../shared/trigger-disambiguation.md)）  
+- 存新材料 → `topmind-capture`
+- 交付最终报告/文章 → `topmind-write`
+- 只写「我的情况」/ 周期反思 → `topmind-memory`
+- doctor / 全库巡检 → `topmind-maintain` / `topmind-loop`
+- 对外检索一手资料（论文、技术报告、官方公告、模型或产品横向对比）、AI 前沿深挖、周度官方动态 → 外部可选 `topmind-research`（已安装时）；未安装仍由本 skill「研究分析」接手，回执注明来源范围（见 [`../shared/trigger-disambiguation.md`](../shared/trigger-disambiguation.md)）
 
 ## 动作入口判断
 
@@ -71,17 +70,17 @@ metadata:
 
 **待办同步是整理本周的默认建议之一**（不是第六概念）：周期本里「要做 / 完成了」与 `memory/todo.md` 对不上时，给出 diff 建议，点头后写。纯 Host 自行 diff；Desktop `todo_maintain`/`maintainTodos`；UTR `memory.list-todos`/`add-todo`/`toggle-todo`。
 
-**流水可以永远只是流水**——不升专题也完全健康。  
+**流水可以永远只是流水**——不升专题也完全健康。
 条目上的「增补」= 同文件续写（评论感），不是平行评论库。
 
-写回：默认 `writebackMode: auto`；仅锁定/核心笔记覆盖或删除才备份到现场 **role:system** 目录的 `backups/`（常为 `99-归档/` / `99-Archive/`，不写死中文）。  
+写回：默认 `writebackMode: auto`；仅锁定/核心笔记覆盖或删除才备份到现场 **role:system** 目录的 `backups/`（常为 `99-归档/` / `99-Archive/`，不写死中文）。
 回执白话：「本周动态已理顺」+ 路径 + 可选候选列表。
 
 ### 整理结构
 
 读专题材料 → 聚类提炼 → 结构化笔记或建议；克制整理，保留原始细节；识别可升 memory 的候选（不自动写 memory）。
 
-**整理留痕（复利，不改目录）**：用户要整理/总结/分析时，除对话回答外，**默认按 writeback 写回**专题根一篇 md（或更新已有综合笔记）。不要只回话不落盘。不建 `INDEX.md`、不建 entities/、不强制 topic.md。可升 memory 的条目、可提取的待办只在回执里**建议**（L1），用户说「记住 / 记上」再落。
+**整理留痕（复利，不改目录）**：用户要整理/总结/分析时，除对话回答外，需要持久整理时**按 writeback 写回**专题根一篇 md（或更新已有综合笔记）。临时问答、只要对话总结或明确不保存时直接回复。不建 `INDEX.md`、不建 entities/、不强制 topic.md。可升 memory 的条目、可提取的待办只在回执里**建议**（L1），用户说「记住 / 记上」再落。
 
 ### 研究分析
 
@@ -103,9 +102,9 @@ metadata:
 
 ## 通用流程：读 → 做 → 报
 
-1. **读** `topic.md`（若有）+ 当前对象；不预加载整专题。扫描跳过库外符号链接、应用包 / 依赖目录，并认 Obsidian `userIgnoreFilters`  
-2. **做** 标记 `source_type`；原始与 AI 分析用分隔线 + `[AI整理]`  
-3. **报** 结果 + 路径回执 + 下一步；**综合默认落专题根**（auto 直接写 / confirm 先审阅）；不自动 write/memory  
+1. **读** `topic.md`（若有）+ 当前对象；不预加载整专题。扫描跳过库外符号链接、应用包 / 依赖目录，并认 Obsidian `userIgnoreFilters`
+2. **做** 标记 `source_type`；原始与 AI 分析用分隔线 + `[AI整理]`
+3. **报** 结果 + 路径回执 + 下一步；**综合默认落专题根**（auto/confirm 内容直接写）；用户已要求的 write/memory 连续完成，额外动作只建议
    - 入口先确认类别表（`list-categories` / 扫盘）；跳过 hidden；不硬编码编号
 
 克制：不加戏、表格优于空泛罗列、专业术语内联解释。
