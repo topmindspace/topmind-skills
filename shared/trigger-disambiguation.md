@@ -1,6 +1,7 @@
 # Trigger Disambiguation（路由消歧真源）
 
 > Router（`topmind`）与各子 skill 的「When NOT」必须与本表一致。
+> 写作包始终独立仓库、独立版本；Desktop 与 Obsidian 默认内置受验证快照，其他 Agent 按需安装。先查宿主技能目录再路由，不因它不在核心包目录而误判未安装。改稿优先 `topmind-revise`，仅改排版用 `topmind-format`；两者不可混同。
 > 用户已要求的多意图按依赖连续完成；未请求的延伸仅建议。授权以 [auto-suggest](auto-suggest.md) 为准。
 > 外部可选技能不随本包发布：仅在宿主已安装时按表路由；未安装按该行写明的回退处理，回执可提示可选安装，不报错。当前清单：
 > - 写作包 topmind-writing-skills：`topmind-wechat-post`（公众号）、`topmind-x-article`（X 长文）、`topmind-briefs`（干货短文）、`topmind-viral-posts`（引流短帖）、`topmind-cover`（封面 / 配图）、`topmind-poster`（长图 / 海报）

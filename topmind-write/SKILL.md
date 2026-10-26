@@ -5,7 +5,7 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
 metadata:
-  version: "4.15.7"
+  version: "4.15.8"
   action_category: "write"
   entrypoint: "false"
   triggers: "写, 写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 输出, 出稿, 定稿, 发布, 导出, 排版, write, draft, deliver, publish, export"
@@ -35,6 +35,8 @@ metadata:
 交付前检查格式、事实、来源和遗漏，移除内部标注与占位符。回复完成结果与实际路径。写入策略与 locked 首写快照见 [writeback-receipt](../shared/writeback-receipt.md)。
 
 ## 可选专用能力
+
+写作技能保持独立仓库；Desktop 与 Obsidian 默认内置受验证版本，其他 Agent 按需安装。改稿加载 `topmind-revise`，只改排版加载 `topmind-format`；宿主有 `render_article` 时用它生成平台 HTML/文本，无需猜测或执行 Python 命令。生成后按用户意图落盘，预览/复制不等于发布。
 
 公众号 → `topmind-wechat-post`；X 长文 → `topmind-x-article`；干货短文 / 引流短帖 → `topmind-briefs` / `topmind-viral-posts`；幻灯片 → `topmind-presentation`。已安装且匹配时使用，未安装则完成通用稿并说明专用格式限制，不能伪装已生成 HTML/PPTX。消歧详见 [trigger-disambiguation](../shared/trigger-disambiguation.md)。写稿不构成外部发布授权。
 

@@ -4,6 +4,12 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.8 — 2026-10-26
+
+- 明确写作包独立发布、Desktop/Obsidian 默认内置，其他 Agent 按需安装；发现宿主能力后路由，不凭核心目录误判。
+- 区分 topmind-revise 与 topmind-format，平台排版优先宿主 render_article；持久写入与外部发布继续遵守原有边界。
+- 同步统一版本与路由资源。
+
 ## 4.15.7 — 2026-10-26
 
 - 精简入口、捕获与写作流程，按需加载共享参考；不再要求固定回执模板、无意义的分类访谈和重复扫描。
