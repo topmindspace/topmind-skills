@@ -191,6 +191,15 @@ function samePath(a, b) {
   return path.resolve(a) === path.resolve(b);
 }
 
+async function sameExistingDirectory(a, b) {
+  if (samePath(a, b)) return true;
+  try {
+    return (await fs.realpath(a)) === (await fs.realpath(b));
+  } catch {
+    return false;
+  }
+}
+
 function detectedAgentIds() {
   return Object.values(agentCatalog())
     .filter((a) => a.detect())
@@ -636,6 +645,8 @@ async function listInstallEntries(skillsRoot, skillsFilter) {
     version = pack.version || version;
     name = pack.name || name;
     ids = (pack.skills || []).map((s) => s.id || s.path).filter(Boolean);
+    const invalid = ids.find((id) => typeof id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(id));
+    if (invalid) fail(`invalid skill id in pack: ${JSON.stringify(invalid)}`);
   } else {
     // bare Agent Skills layout (external pack, e.g. topmind-writing-skills)
     try {
@@ -735,10 +746,17 @@ function compareVersions(a, b) {
   return 0;
 }
 
-/** Existing non-symlink dst is a previous install of this skill (same SKILL.md name) or an installer-owned file. */
+/** Match a previous skill by identity, or a link already pointing at this entry. */
 async function isPreviousInstall(src, dst) {
   const st = await fs.lstat(dst).catch(() => null);
   if (!st) return false;
+  if (st.isSymbolicLink()) {
+    const link = await fs.readlink(dst);
+    if (samePath(path.resolve(path.dirname(dst), link), src)) return true;
+    const a = await readSkillMeta(src);
+    const b = await readSkillMeta(dst);
+    return !!(a && b && a.name && a.name === b.name);
+  }
   const sst = await fs.lstat(src).catch(() => null);
   if (sst && sst.isFile() && st.isFile()) return true;
   if (!st.isDirectory()) return false;
@@ -747,17 +765,49 @@ async function isPreviousInstall(src, dst) {
   return !!(a && b && a.name && a.name === b.name);
 }
 
-async function installCopy(skillsRoot, dest, entries, locale, { force = false } = {}) {
+async function assertSharedNoConflict(sourceDir, targetDir, relative = "") {
+  for (const entry of await fs.readdir(sourceDir, { withFileTypes: true })) {
+    const rel = path.join(relative, entry.name);
+    const src = path.join(sourceDir, entry.name);
+    const dst = path.join(targetDir, entry.name);
+    const existing = await fs.lstat(dst).catch(() => null);
+    if (entry.isDirectory()) {
+      if (existing && !existing.isDirectory()) fail(`shared resource conflict: ${rel} is not a directory`);
+      if (existing) await assertSharedNoConflict(src, dst, rel);
+    } else if (!entry.isFile() || (existing && (!existing.isFile() || !(await fs.readFile(src)).equals(await fs.readFile(dst))))) {
+      fail(`shared resource conflict: ${rel} differs from an installed pack; pass --force to replace it`);
+    }
+  }
+}
+
+async function installCopy(skillsRoot, dest, entries, locale, { force = false, topmindPack = false } = {}) {
   await fs.mkdir(dest, { recursive: true });
-  // Pre-pass: never silently downgrade a skill that is newer than the packaged one.
+  // Validate the whole plan before touching an installed entry.
   const plan = new Map();
   const newer = [];
+  const destReal = await fs.realpath(dest);
   for (const name of entries) {
     const src = path.join(skillsRoot, name);
     const dst = path.join(dest, name);
+    if (!(await pathExists(src))) continue;
+    const srcReal = await fs.realpath(src);
+    const target = path.join(destReal, name);
+    if (target === srcReal || target.startsWith(srcReal + path.sep)) {
+      fail(`refusing to install ${name} into its own source tree: ${target}`);
+    }
     const sm = await readSkillMeta(src);
+    if (name === "shared" && !force) {
+      const installed = await fs.lstat(dst).catch(() => null);
+      if (installed && !installed.isDirectory()) {
+        fail(`${dst} is not a directory owned by this installation; pass --force to replace it`);
+      }
+    }
     if (!sm) continue;
-    const dm = (await fs.lstat(dst).catch(() => null))?.isSymbolicLink() ? null : await readSkillMeta(dst);
+    const existing = await fs.lstat(dst).catch(() => null);
+    const dm = existing ? await readSkillMeta(dst) : null;
+    if (existing && (!dm || dm.name !== sm.name) && !force) {
+      fail(`${dst} is not an installed ${sm.name} skill — pass --force to replace it`);
+    }
     if (!dm) continue;
     const cmp = compareVersions(sm.version, dm.version);
     plan.set(name, { cmp, old: dm.version || "unknown", now: sm.version || "unknown" });
@@ -766,50 +816,100 @@ async function installCopy(skillsRoot, dest, entries, locale, { force = false } 
   if (newer.length && !force) {
     fail(`installed version is newer than packaged (${newer.join(", ")}); not downgrading — pass --force to downgrade`);
   }
-  for (const name of entries) {
-    const src = path.join(skillsRoot, name);
-    const dst = path.join(dest, name);
-    if (!(await pathExists(src))) continue;
-    const pv = plan.get(name);
-    if (pv && pv.cmp === 0 && !force) {
-      log(`  = Already up to date: ${name} ${pv.now}`);
-      continue;
-    }
-    const st = await fs.lstat(src);
-    if (await pathExists(dst)) await fs.rm(dst, { recursive: true, force: true });
-    if (st.isDirectory()) {
-      await fs.cp(src, dst, { recursive: true });
-      // Apply locale overlay if exists
-      if (locale) {
-        const overlayDir = path.join(src, "locales", locale);
-        if (await pathExists(overlayDir)) {
-          await applyLocaleOverlay(overlayDir, dst);
-          log(`    locale: ${locale}`);
+  const staging = await fs.mkdtemp(path.join(dest, ".topmind-skills-stage-"));
+  const changes = [];
+  let keepStaging = false;
+  try {
+    // Stage every changed entry first. Preserve sibling packs' shared resources.
+    for (const name of entries) {
+      const src = path.join(skillsRoot, name);
+      if (!(await pathExists(src))) continue;
+      const pv = plan.get(name);
+      if (pv && pv.cmp === 0 && !force) continue;
+      const dst = path.join(dest, name);
+      const next = path.join(staging, "next", name);
+      const backup = path.join(staging, "previous", name);
+      await fs.mkdir(path.dirname(next), { recursive: true });
+      const st = await fs.lstat(src);
+      if (st.isDirectory()) {
+        if (name === "shared" && (await fs.lstat(dst).catch(() => null))?.isDirectory()) {
+          if (!force && !topmindPack) await assertSharedNoConflict(src, dst);
+          await fs.cp(dst, next, { recursive: true });
+          await fs.cp(src, next, { recursive: true, force: true });
+        } else {
+          await fs.cp(src, next, { recursive: true });
         }
-        // Clean up locales/ directory from installed copy (not needed at runtime)
-        const localesInstalledDir = path.join(dst, "locales");
-        if (await pathExists(localesInstalledDir)) {
-          await fs.rm(localesInstalledDir, { recursive: true, force: true });
+        if (locale) {
+          const overlayDir = path.join(src, "locales", locale);
+          if (await pathExists(overlayDir)) await applyLocaleOverlay(overlayDir, next);
+          await fs.rm(path.join(next, "locales"), { recursive: true, force: true });
         }
+      } else {
+        await fs.copyFile(src, next);
       }
-    } else {
-      await fs.copyFile(src, dst);
+      changes.push({ name, dst, next, backup, pv, backedUp: false, installed: false });
     }
-    if (pv && pv.cmp > 0) log(`  ↑ Upgraded ${name} ${pv.old} -> ${pv.now}`);
-    else if (pv) log(`  + Reinstalled ${name} ${pv.now} (--force)`);
-    else log(`  + ${name}`);
+
+    for (const item of changes) {
+      if (await fs.lstat(item.dst).catch(() => null)) {
+        await fs.mkdir(path.dirname(item.backup), { recursive: true });
+        await fs.rename(item.dst, item.backup);
+        item.backedUp = true;
+      }
+      await fs.rename(item.next, item.dst);
+      item.installed = true;
+    }
+  } catch (error) {
+    let rollbackError = null;
+    for (const item of [...changes].reverse()) {
+      try {
+        if (item.installed) await fs.rm(item.dst, { recursive: true, force: true });
+        if (item.backedUp) await fs.rename(item.backup, item.dst);
+      } catch (restoreError) {
+        rollbackError = restoreError;
+        keepStaging = true;
+      }
+    }
+    if (rollbackError) {
+      throw new Error(`install failed and rollback needs attention; previous files remain at ${staging}: ${rollbackError.message}`, { cause: error });
+    }
+    throw error;
+  } finally {
+    if (!keepStaging) {
+      await fs.rm(staging, { recursive: true, force: true }).catch((error) => {
+        log(`warning: temporary install files remain at ${staging}: ${error.message}`);
+      });
+    }
+  }
+  for (const name of entries) {
+    const pv = plan.get(name);
+    if (pv && pv.cmp === 0 && !force) log(`  = Already up to date: ${name} ${pv.now}`);
+    else if (changes.some((item) => item.name === name)) {
+      if (pv && pv.cmp > 0) log(`  ↑ Upgraded ${name} ${pv.old} -> ${pv.now}`);
+      else if (pv) log(`  + Reinstalled ${name} ${pv.now} (--force)`);
+      else log(`  + ${name}`);
+    }
   }
 }
 
 async function installSymlink(skillsRoot, dest, entries, { force }) {
   await fs.mkdir(dest, { recursive: true });
+  const destReal = await fs.realpath(dest);
+  for (const name of entries) {
+    const src = path.join(skillsRoot, name);
+    if (!(await pathExists(src))) continue;
+    const srcReal = await fs.realpath(src);
+    const target = path.join(destReal, name);
+    if (target === srcReal || target.startsWith(srcReal + path.sep)) {
+      fail(`refusing to install ${name} into its own source tree: ${target}`);
+    }
+  }
   for (const name of entries) {
     const src = path.join(skillsRoot, name);
     const dst = path.join(dest, name);
     if (!(await pathExists(src))) continue;
-    if (await pathExists(dst)) {
-      const st = await fs.lstat(dst);
-      if (st.isSymbolicLink() || force || (await isPreviousInstall(src, dst))) await fs.rm(dst, { recursive: true, force: true });
+    if (await fs.lstat(dst).catch(() => null)) {
+      if (force || (await isPreviousInstall(src, dst))) await fs.rm(dst, { recursive: true, force: true });
       else fail(`${dst} is an unrelated folder (no matching SKILL.md name) — pass --force to replace it`);
     }
     await fs.symlink(src, dst, "junction");
@@ -834,6 +934,7 @@ async function writeInstallReceipt(dest, meta) {
     source_raw: meta.sourceRaw,
     repo_path: meta.repoPath,
     mode: meta.mode,
+    install_kind: meta.installKind || "single",
     host: meta.host || null,
     scope: meta.scope || null,
     agents: meta.agents || null,
@@ -856,6 +957,9 @@ async function writeInstallReceipt(dest, meta) {
 /** Relative-symlink each pack entry from an agent root back to the canonical body. */
 async function linkPackEntries(canonicalRoot, agentRoot, entryNames, { force }) {
   await fs.mkdir(agentRoot, { recursive: true });
+  // A host's entire skills directory may alias the canonical directory.
+  // Never replace an entry through that alias with a link to itself.
+  if (await sameExistingDirectory(agentRoot, canonicalRoot)) return;
   for (const name of entryNames) {
     const src = path.join(canonicalRoot, name);
     const dst = path.join(agentRoot, name);
@@ -863,11 +967,9 @@ async function linkPackEntries(canonicalRoot, agentRoot, entryNames, { force }) 
     if (samePath(agentRoot, canonicalRoot)) continue;
     if ((await pathExists(dst)) || (await isBrokenSymlink(dst))) {
       const st = await fs.lstat(dst).catch(() => null);
-      if (st && st.isSymbolicLink()) await fs.rm(dst, { recursive: true, force: true });
-      else if (force || (await isPreviousInstall(src, dst))) await fs.rm(dst, { recursive: true, force: true });
+      if (st && (force || (await isPreviousInstall(src, dst)))) await fs.rm(dst, { recursive: true, force: true });
       else {
-        log(`  ! ${dst} is an unrelated folder (no matching SKILL.md name) — skipped; pass --force to replace it`);
-        continue;
+        fail(`${dst} changed during install or is an unrelated entry — pass --force to replace it`);
       }
     }
     const rel = path.relative(agentRoot, src);
@@ -914,8 +1016,37 @@ async function installViaMatrix(skillsRoot, plan, opts) {
     return { canonical, targets, plan };
   }
 
+  await fs.mkdir(canonical, { recursive: true });
+  for (const t of targets) {
+    if (!samePath(t.root, canonical)) {
+      try {
+        await fs.mkdir(t.root, { recursive: true });
+        const stat = await fs.stat(t.root);
+        if (!stat.isDirectory()) fail(`${t.root} is not a skills directory`);
+      } catch (error) {
+        fail(`cannot use agent skills directory ${t.root}: ${error.message}`);
+      }
+    }
+    t.sharesCanonical = await sameExistingDirectory(t.root, canonical);
+  }
+
+  if (linkMode === "symlink" && !opts.force) {
+    for (const t of targets) {
+      if (t.sharesCanonical) continue;
+      for (const name of plan.entries) {
+        const dst = path.join(t.root, name);
+        if (!(await fs.lstat(dst).catch(() => null))) continue;
+        const sourceEntry = path.join(skillsRoot, name);
+        const canonicalEntry = path.join(canonical, name);
+        if (!(await isPreviousInstall(sourceEntry, dst)) && !(await isPreviousInstall(canonicalEntry, dst))) {
+          fail(`${dst} is an unrelated entry — pass --force to replace it`);
+        }
+      }
+    }
+  }
+
   // 1) Full pack body → canonical
-  await installCopy(skillsRoot, canonical, plan.entries, opts.locale, opts);
+  await installCopy(skillsRoot, canonical, plan.entries, opts.locale, { ...opts, topmindPack: plan.topmindPack });
 
   // 2) Private agent dirs: symlink entries (default) or copy
   for (const t of targets) {
@@ -924,7 +1055,7 @@ async function installViaMatrix(skillsRoot, plan, opts) {
       continue;
     }
     if (linkMode === "copy") {
-      await installCopy(skillsRoot, t.root, plan.entries, opts.locale, opts);
+      await installCopy(skillsRoot, t.root, plan.entries, opts.locale, { ...opts, topmindPack: plan.topmindPack });
     } else {
       await linkPackEntries(canonical, t.root, plan.entries, opts);
     }
@@ -937,6 +1068,7 @@ async function installViaMatrix(skillsRoot, plan, opts) {
     sourceRaw: opts.source,
     repoPath: opts.repoPath,
     mode: linkMode,
+    installKind: "matrix",
     host: null,
     scope: opts.scope,
     agents: targets.map((t) => t.agent.id),
@@ -948,7 +1080,7 @@ async function installViaMatrix(skillsRoot, plan, opts) {
   log(`done → ${canonical}`);
   if (plan.topmindPack) {
     log(`daily entry: ${path.join(canonical, "topmind", "SKILL.md")}`);
-    log(`update later: node bin/install-skills.mjs update -g`);
+    log(`update later: npx @topmindspace/topmind-skills update ${global ? "-g" : "-p"}`);
   } else {
     log(`update later: re-run add ${opts.source || "<source>"} (update only follows the topmind pack receipt)`);
   }
@@ -1084,7 +1216,7 @@ async function cmdAdd(opts, sourceOverride) {
       }
       await installSymlink(skillsRoot, dest, plan.entries, opts);
     } else {
-      await installCopy(skillsRoot, dest, plan.entries, opts.locale, opts);
+      await installCopy(skillsRoot, dest, plan.entries, opts.locale, { ...opts, topmindPack: plan.topmindPack });
     }
 
     await writeInstallReceipt(dest, {
@@ -1096,7 +1228,8 @@ async function cmdAdd(opts, sourceOverride) {
       mode: opts.mode,
       host: opts.host,
       scope: opts.scope,
-      agents: opts.agents,
+      agents: null,
+      installKind: "single",
       skillIds: plan.skillIds,
       locale: opts.locale,
       topmindPack: plan.topmindPack,
@@ -1115,10 +1248,8 @@ async function cmdAdd(opts, sourceOverride) {
 }
 
 async function cmdUpdate(opts) {
-  // Prefer receipt at matrix canonical; fall back to explicit --dest receipt.
-  const destCandidates = opts.dest
-    ? [opts.dest]
-    : [canonicalBase(opts.global), canonicalBase(!opts.global), HOST_DEFAULTS["claude-code"]()];
+  // A scope is an instruction, not a search hint: never update another scope.
+  const destCandidates = [opts.dest || canonicalBase(opts.global)];
   let dest = null;
   let receipt = null;
   for (const d of destCandidates) {
@@ -1131,8 +1262,8 @@ async function cmdUpdate(opts) {
   if (!receipt) {
     fail(
       `no ${RECEIPT_NAME} in ${destCandidates.join(", ")}.\n` +
-        `  First install: node bin/install-skills.mjs add ${DEFAULT_OWNER_REPO} -g\n` +
-        `  Or community:  npx skills update -g -y`,
+        `  First install: npx @topmindspace/topmind-skills add ${DEFAULT_OWNER_REPO} ${opts.dest ? "--dest <same directory>" : opts.global ? "-g" : "-p"}\n` +
+        `  To update another scope, pass -g, -p or --dest explicitly.`,
     );
   }
   log(`update from receipt: ${receipt.source} @ ${receipt.version} → ${dest}`);
@@ -1142,15 +1273,17 @@ async function cmdUpdate(opts) {
     source: receipt.source_raw || receipt.update?.source || DEFAULT_OWNER_REPO,
     repoPath: receipt.repo_path || receipt.update?.path || DEFAULT_PATH,
     mode: receipt.mode === "symlink" ? "symlink" : "copy",
-    linkMode: receipt.agents ? "symlink" : opts.linkMode,
+    linkMode: receipt.mode === "copy" ? "copy" : "symlink",
     host: receipt.host || opts.host,
     scope: receipt.scope || opts.scope,
-    agents: receipt.agents || opts.agents,
+    agents: Array.isArray(receipt.agents) ? receipt.agents : opts.agents,
     locale: receipt.locale || opts.locale,
   };
-  // Keep matrix mode when the receipt was a matrix install (no single dest host).
-  if (receipt.agents) next.dest = null;
-  else if (!next.dest) next.dest = dest;
+  // Legacy matrix receipts used source="matrix"; old single-dir receipts also
+  // contained agents: [], so array presence alone cannot identify the mode.
+  const matrix = receipt.install_kind === "matrix" ||
+    (!receipt.install_kind && receipt.source === "matrix");
+  next.dest = matrix ? null : dest;
 
   if (next.mode === "symlink" && next.dest) {
     const local = parseSource(next.source, next.repoPath);

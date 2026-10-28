@@ -14,8 +14,11 @@ npm：[`@topmindspace/topmind-skills`](https://www.npmjs.com/package/@topmindspa
 # 推荐：装到全局，自动给检测到的助手建链接
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 
-# 升级
+# 升级全局安装
 npx @topmindspace/topmind-skills update -g
+
+# 升级当前项目安装
+npx @topmindspace/topmind-skills update -p
 
 # 从 GitHub Release 安装（固定版本）
 npx @topmindspace/topmind-skills add release:latest -g
@@ -70,7 +73,7 @@ npx @topmindspace/topmind-skills paths -g
 npx @topmindspace/topmind-skills doctor --repair
 ```
 
-升级规则：包里版本更新时直接覆盖，不留备份，打印 `Upgraded <技能> <旧> -> <新>`；版本相同跳过，打印 `Already up to date`（加 `--force` 重装）；已装版本比包里新时不降级，加 `--force` 才降级。
+升级规则：`update -g` 只读取全局安装记录，`update -p` 只读取当前项目的安装记录；用 `--dest <目录>` 安装的，请用 `update --dest <同一目录>`。安装器沿用记录中的来源、目标助手与复制/链接方式，不会猜测另一个目录。新版本先完整暂存再替换；失败时恢复旧文件。版本相同跳过并提示 `Already up to date`（加 `--force` 重装）；已装版本比包里新时不降级，加 `--force` 才降级。
 
 私有仓库：先 `export GH_TOKEN=…`（或 `GITHUB_TOKEN`）再执行 `add`。
 

@@ -16,7 +16,8 @@ Then say "topmind" or just ask for what you need. To upgrade:
 npx @topmindspace/topmind-skills update -g
 ```
 
-- A newer packaged skill overwrites the installed copy and prints `Upgraded <skill> <old> -> <new>`; the same version prints `Already up to date`; a newer installed version is kept unless you pass `--force`.
+- Use `update -p` for a project install, or `update --dest <same-directory>` for a custom directory. Updates stay within the selected installation scope.
+- A new version is staged before replacement; a failed upgrade restores the prior files. The same version prints `Already up to date`; a newer installed version is kept unless you pass `--force`.
 - To install for some assistants only, add `-a claude-code -a codex` to `add`.
 - The community CLI `npx skills add topmindspace/topmind-skills -g -y` also works, but it leaves out the `shared/` folder, so some rules cannot be read. See [INSTALL.md](./INSTALL.md#社区-cli-npx-skills) for the extra step.
 - Pinned or offline installs, project scope and per-assistant folders are covered in [INSTALL.md](./INSTALL.md).
@@ -43,7 +44,7 @@ The pack has 10 skills: the `topmind` entry, 6 actions, 2 optional connectors an
 
 ### Companion skills (installed separately)
 
-These are not part of this pack. When installed, `topmind` hands matching requests to them; otherwise it falls back to `topmind-write` or explains in the receipt.
+These are not part of this pack. Explicit WeChat, X article/post, cover, or long-image requests go straight to an installed specialist skill. Without one, the assistant completes the feasible general draft and explains any missing delivery capability.
 
 | Need | Skill | Repository |
 |---|---|---|
@@ -79,7 +80,7 @@ topmind-workspace/
 - **Save settings**: `writeback_mode: auto | confirm`. auto writes and returns a receipt; confirm also saves content edits directly and queues deletion/archive for review. Explicitly requested topic or memory changes reuse your authorization; inferred suggestions need acceptance; see [`shared/auto-suggest.md`](./shared/auto-suggest.md).
 - **Files are the only source of truth**: assistant session state must not become topmind content truth.
 - **Desktop is not required, UTR is optional**: without topmind Desktop or the UTR CLI, the assistant uses its own file tools under the same conventions.
-- **Nothing is posted for you**: skills only draft; you publish.
+- **Drafting and posting are separate**: writing skills only prepare drafts. An available connector handles posting when you explicitly request it, subject to its permissions.
 
 ## For maintainers
 

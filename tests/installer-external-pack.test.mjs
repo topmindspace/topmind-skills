@@ -88,3 +88,64 @@ test("topmind pack install still ships shared/ and topmind-pack.json with its re
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test("external shared resources and core shared resources survive either install order", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "tm-shared-packs-"));
+  try {
+    const src = path.join(tmp, "external");
+    const dest = path.join(tmp, "dest");
+    makeExternalPack(src, { linkShared: true });
+    const core = runAdd(repoRoot, dest);
+    assert.equal(core.status, 0, core.stderr || core.stdout);
+    const external = runAdd(src, dest);
+    assert.equal(external.status, 0, external.stderr || external.stdout);
+    assert.ok(fs.existsSync(path.join(dest, "shared", "trigger-disambiguation.md")));
+    assert.ok(fs.existsSync(path.join(dest, "shared", "scripts", "x.py")));
+    const coreAgain = runAdd(repoRoot, dest);
+    assert.equal(coreAgain.status, 0, coreAgain.stderr || coreAgain.stdout);
+    assert.ok(fs.existsSync(path.join(dest, "shared", "scripts", "x.py")));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("external packs cannot silently overwrite another pack's shared file", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "tm-shared-conflict-"));
+  try {
+    const firstSrc = path.join(tmp, "first");
+    const secondSrc = path.join(tmp, "second");
+    const dest = path.join(tmp, "dest");
+    makeExternalPack(firstSrc, { linkShared: true });
+    write(path.join(secondSrc, "package.json"), JSON.stringify({ name: "@topmindspace/second-pack", version: "0.1.0" }));
+    write(path.join(secondSrc, "demo-other", "SKILL.md"), "---\nname: demo-other\ndescription: demo. Use when demo.\n---\nSee ../shared/scripts/x.py\n");
+    write(path.join(secondSrc, "shared", "scripts", "x.py"), "print(2)\n");
+    assert.equal(runAdd(firstSrc, dest).status, 0);
+    const second = runAdd(secondSrc, dest);
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /shared resource conflict/);
+    assert.equal(fs.readFileSync(path.join(dest, "shared", "scripts", "x.py"), "utf8"), "print(1)\n");
+    assert.equal(fs.existsSync(path.join(dest, "demo-other")), false);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("a linked shared directory is preserved unless replacement is explicit", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "tm-shared-link-"));
+  try {
+    const src = path.join(tmp, "src");
+    const dest = path.join(tmp, "dest");
+    const outside = path.join(tmp, "outside-shared");
+    makeExternalPack(src, { linkShared: true });
+    write(path.join(outside, "keep.md"), "keep\n");
+    fs.mkdirSync(dest);
+    fs.symlinkSync(outside, path.join(dest, "shared"), "junction");
+    const result = runAdd(src, dest);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /not a directory owned by this installation/);
+    assert.ok(fs.lstatSync(path.join(dest, "shared")).isSymbolicLink());
+    assert.equal(fs.readFileSync(path.join(dest, "shared", "keep.md"), "utf8"), "keep\n");
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

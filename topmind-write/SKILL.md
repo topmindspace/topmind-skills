@@ -1,18 +1,18 @@
 ---
 name: topmind-write
 description: >-
-  根据 topmind 素材起草、续写、改稿或交付。Use when 写成稿、润色、write、draft、revise。Do NOT use for capture-only, profile-only, or external posting requests.
+  根据 topmind 工作区素材起草、续写、改稿或保存通用稿件。Use when 写成稿、润色、write、draft、revise。明确平台稿优先已安装的独立写作技能。Do NOT use for capture-only, profile-only, or external posting requests.
 license: MIT
 compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
 metadata:
-  version: "4.15.8"
+  version: "4.15.9"
   action_category: "write"
   entrypoint: "false"
-  triggers: "写, 写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 输出, 出稿, 定稿, 发布, 导出, 排版, write, draft, deliver, publish, export"
+  triggers: "写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 出稿, 定稿, 导出, write, draft, deliver, export"
   tags: "write, draft, revise, polish, deliver"
   author: "TopMindSpace"
   homepage: "https://github.com/topmindspace/topmind-skills"
-  updated: "2026-10-26"
+  updated: "2026-10-28"
   degradation: "../shared/capability-degradation.md"
 ---
 
@@ -36,7 +36,7 @@ metadata:
 
 ## 可选专用能力
 
-写作技能保持独立仓库；Desktop 与 Obsidian 默认内置受验证版本，其他 Agent 按需安装。改稿加载 `topmind-revise`，只改排版加载 `topmind-format`；宿主有 `render_article` 时用它生成平台 HTML/文本，无需猜测或执行 Python 命令。生成后按用户意图落盘，预览/复制不等于发布。
+写作技能保持独立仓库；Desktop 与 Obsidian 默认内置受验证版本，其他 Agent 按需安装。明确指定平台或只改排版时，优先直接使用相应独立技能：改稿 `topmind-revise`，只排版 `topmind-format`；本技能仅补工作区素材读取和落盘，不再要求用户选一次技能。宿主有 `render_article` 时用它生成平台 HTML/文本，无需猜测或执行 Python 命令。生成后按用户意图落盘，预览/复制不等于发布。
 
 公众号 → `topmind-wechat-post`；X 长文 → `topmind-x-article`；干货短文 / 引流短帖 → `topmind-briefs` / `topmind-viral-posts`；幻灯片 → `topmind-presentation`。已安装且匹配时使用，未安装则完成通用稿并说明专用格式限制，不能伪装已生成 HTML/PPTX。消歧详见 [trigger-disambiguation](../shared/trigger-disambiguation.md)。写稿不构成外部发布授权。
 

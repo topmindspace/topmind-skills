@@ -16,7 +16,8 @@ npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g
 npx @topmindspace/topmind-skills update -g
 ```
 
-- 包里版本更新时直接覆盖，打印 `Upgraded <技能> <旧> -> <新>`；版本相同打印 `Already up to date`；已装版本更新时不降级，要降级加 `--force`。
+- 项目安装用 `update -p`，指定目录安装用 `update --dest <同一目录>`；升级只读对应安装记录，不跳到别的工作区。
+- 新版本先暂存再替换，失败恢复旧文件；版本相同提示 `Already up to date`，已装版本更新时不降级，要降级加 `--force`。
 - 只装给部分助手：在 `add` 后面加 `-a claude-code -a codex`。
 - 社区 CLI `npx skills add topmindspace/topmind-skills -g -y` 也能装，但不带 `shared/` 目录，部分规则会读不到，装完要补一步，见 [INSTALL.md](./INSTALL.md#社区-cli-npx-skills)。
 - 固定版本或离线安装、项目级安装、各助手的目录位置，都在 [INSTALL.md](./INSTALL.md)。
@@ -43,7 +44,7 @@ npx @topmindspace/topmind-skills update -g
 
 ### 配套技能（单独安装）
 
-下面这些不随本包发布，装了以后 `topmind` 会把对应请求转过去，没装时退回 `topmind-write` 或在回执里说明。
+下面这些不随本包发布。明确的公众号、X 长文/短帖、封面和长图需求会直达已安装的专用技能；没装时完成可行的通用稿，说明缺少的交付能力。
 
 | 需求 | 技能 | 仓库 |
 |---|---|---|
@@ -79,7 +80,7 @@ topmind-workspace/
 - **保存设置**：`writeback_mode: auto | confirm`。auto 直接写并给回执；confirm 内容编辑也直接写，仅删除/归档进入审阅。明确要求的建专题、记忆更新直接执行；推测的建议需接受，规则见 [`shared/auto-suggest.md`](./shared/auto-suggest.md)。
 - **文件是唯一的数据来源**：助手自己的会话状态不得成为 topmind 内容真源。
 - **不要求 Desktop，UTR 可选**：topmind Desktop 和 UTR 命令行都不是必需的，没有时用助手自带的文件工具，遵守同一套约定。
-- **不代发**：任何技能都只起草，发布由你操作。
+- **写稿与发布分开**：写作技能只出稿；你明确要求发布时，由实际可用的连接器按其权限执行。
 
 ## 给维护者
 

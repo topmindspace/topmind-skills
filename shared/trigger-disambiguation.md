@@ -8,7 +8,7 @@
 > - 独立技能：`topmind-research`（对外检索与研究报告）、`topmind-presentation`（HTML / PPTX 演示稿）、`topmind-handoff`（跨工具交接包）
 > - 第三方：`last30days`、`TopStream每日精选`
 >
-> 任何技能都不代用户发布：写稿技能只出稿；要发出去走对应连接器（如 `topmind-x`），并且每次都须用户确认。
+> 写稿技能只出稿；明确要发出去时走对应连接器（如 `topmind-x`），遵守其发布前确认与实际权限，不能把出稿说成已发布。
 
 ## 碰撞词裁决
 
@@ -26,7 +26,7 @@
 | 整理 | organize | 「整理 inbox」→ organize + `plan-inbox-routing`。其它 → organize |
 | 复盘 | organize vs loop | 「复盘」→ loop。「复盘要点成笔记」→ organize |
 | 归档 | capture vs maintain | 「归档材料」→ capture。「归档专题 / archive topic」→ maintain |
-| 笔记 / note | capture vs write | 未限定 → capture。「写作 / 起草 / 续写」→ write |
+| 笔记 / note | capture vs write | 未限定 → capture。「写作 / 起草 / 续写」→ write；「新建笔记」创建后打开，交给宿主编辑器 |
 | 记账 / 记一笔 / 花了 / 存入 | ledger vs capture | 「记账 / 记一笔 / 花了 / 存入 / 查看账单 / 账户余额」→ `topmind-ledger`（记忆平面账本）。「记一下」仍 → capture |
 | 研究 / 分析 / 对比 | organize vs topmind-research（外部可选） | 对象是工作区里已存的笔记、专题内材料 → `topmind-organize`。需要对外检索一手资料（论文、技术报告、官方公告、模型或产品横向对比）、AI 前沿深挖 → `topmind-research`（analyze）；未安装 → `topmind-organize`「研究分析」 |
 | AI 动态 / 大厂动态 / AI 周报 / 最近有什么新的 | topmind-research vs last30days vs TopStream每日精选（均外部可选） | 官方公告、技术报告、论文的周度汇总 → `topmind-research`（collect）。社区讨论与口碑（X、Reddit、HN 等）→ `last30days`。每日精选例行 → `TopStream每日精选`。对应技能未安装 → `topmind-organize`（只用工作区已存材料，回执注明）。「整理本周 / 理顺本周动态」指工作区动态类别，仍 → organize「整理本周」 |
@@ -66,7 +66,8 @@
 - 修复 / 清理 / 重建 → maintain
 - 巡检 / 整体 / 断点 → loop
 - 整理 / 分析 / 总结 → organize
-- 写 / 发布 / 出稿 → write
+- 写 / 出稿 / 通用稿件 → write；明确平台稿优先对应独立写作技能
+- 发布 / 发出去 → 对应连接器；写作技能只准备稿件
 - 记忆 / 更新我的情况 / 周期反思 → memory
 - 仅类别名 → capture 到该类别根
 - 全不像 → capture 到 Inbox（buffer）
