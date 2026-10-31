@@ -286,7 +286,7 @@ test("topmind skill pack declares one daily entry and action modules including l
   assert.equal(manifest.topic_naming.style, "kebab-case");
   assert.equal(manifest.topic_naming.deprecated_field, "project_type");
 
-  // 命令面（command_vocabulary） — v4: 8 域 / 35 命令
+  // 命令面（command_vocabulary） — v4: 9 域 / 42 命令
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("list-categories"));
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("list-topics"));
   assert.ok(manifest.utr.command_vocabulary["workspace-read"].includes("inspect-topic"));

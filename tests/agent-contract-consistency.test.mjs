@@ -63,6 +63,21 @@ test("skill bodies do not restate a second suggest ladder or a bundled wechat sk
   assert.doesNotMatch(index, /公众号 write 子技能/u);
   assert.match(ladder, /显式行动语/);
   assert.match(ladder, /writeback auto 可直接写/u);
+  assert.match(ladder, /方向大于约束/);
+  assert.match(ladder, /引导、目标、已有经验与知识经验优先于固定操作剧本/);
+  assert.match(ladder, /推测出的分类、记忆、专题仍只提案/);
+  assert.match(ladder, /明确请求不重复询问/);
+  assert.match(router, /方向大于约束/);
+  for (const rel of [
+    "topmind-capture/SKILL.md",
+    "topmind-organize/SKILL.md",
+    "topmind-write/SKILL.md",
+    "topmind-memory/SKILL.md",
+    "topmind-maintain/SKILL.md",
+    "topmind-loop/SKILL.md",
+  ]) {
+    assert.doesNotMatch(read(rel), /\| 显式行动语/u, rel);
+  }
   assert.match(fetchTiers, /抓取档/);
   assert.match(fetchTiers, /不是 \[`auto-suggest\.md`\]/);
   assert.match(writeback, /writeback:\s*\n\s*mode: auto \| confirm/u);

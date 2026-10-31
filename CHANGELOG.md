@@ -4,6 +4,11 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.10 — 2026-10-31
+
+- 命令面与引擎对齐为 9 域 / 42 条：补上 `list-category-files`、待办的更新、截止日和删除，以及只读 `creator`（inspect、snapshot、matchLengthReport）。`creator` 不是第九引擎，也不写工作区。
+- 授权与建议改为方向优先：用工作区里已有的笔记和结论判断，缺少的知识先研究。耐久经验只在用户明确要求或接受建议后写入。入口不再复制第二套阶梯。
+
 ## 4.15.9 — 2026-10-28
 
 - 写作路由按用户意图直达独立平台技能；通用工作区稿件才走 `topmind-write`，发布动作由对应连接器处理。

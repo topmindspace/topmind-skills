@@ -7,7 +7,7 @@ compatibility: >-
   topmind workspace with {NN-Name}/ categories. Host file tools primary; UTR optional.
   Install with shared/ sibling for progressive disclosure links.
 metadata:
-  version: "4.15.9"
+  version: "4.15.10"
   action_category: "router"
   entrypoint: "true"
   triggers: "topmind, 知识库, 工作区, 待办, 有什么要做的, 要做的事, todo, todo list"
@@ -40,7 +40,7 @@ metadata:
 
 外部检索研究、平台写作、封面/海报、幻灯片、交接的可选技能与容易混淆的请求，按需读 [路由消歧](../shared/trigger-disambiguation.md)。仅使用宿主实际可用的技能和工具；未安装专用技能时完成通用可行部分并说明限制。不让用户先选择内部技能。
 
-用户一次要求多步，按依赖连续完成到最终交付；不因切换技能重复确认。用户未请求的延伸只给建议，见 [多意图](references/multi-intent.md) 与 [授权及建议](../shared/auto-suggest.md)。
+用户一次要求多步，按依赖连续完成到最终交付；不因切换技能重复确认。怎么判断、何时用工作区经验、何时研究、何时写入耐久经验，只见 [授权及建议](../shared/auto-suggest.md)（方向大于约束）。用户未请求的延伸只给建议。本入口不复制第二套阶梯。多意图边界见 [多意图](references/multi-intent.md)。
 
 ## 产品特有约定
 

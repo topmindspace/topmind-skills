@@ -5,7 +5,7 @@ description: >-
 license: MIT
 compatibility: Desktop needs Bearer (read) and/or xurl (post). Agent hosts use official X MCP + xurl bridge.
 metadata:
-  version: "4.15.9"
+  version: "4.15.10"
   action_category: "connector"
   entrypoint: "false"
   triggers: "发推, 推特, twitter, x.com, 发帖, 推文, post tweet, x platform"

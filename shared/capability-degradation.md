@@ -42,14 +42,15 @@ Level 3（最低）: 仅对话
 
 | 需要 | 命令 |
 |------|------|
-| 类别 / 专题 | `list-categories`（WorkspaceModel Descriptor）· `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` |
+| 类别 / 专题 / 大类根稿 | `list-categories` · `list-category-files` · `list-topics` · `inspect-topic` · `list-topic-files` · `list-inbox` |
 | 捕获 / 创建 | `create-topic` · `capture-note` · `save-output` |
-| 待办 | `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` |
-| 记忆 | `memory.append-profile` · `memory.append-topic` · `memory.promote` · `memory.digest` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` |
-| Inbox 路由 | `plan-inbox-routing`（primary；整理 inbox 前规划） |
+| 待办 | `memory.list-todos` · `memory.add-todo` · `memory.toggle-todo` · `memory.update-todo` · `memory.set-todo-due` · `memory.delete-todo` |
+| 记忆 | `memory.promote` · `memory.digest` · `memory.append-profile` · `memory.append-topic` · `memory.retire-profile` · `memory.update-profile` · `memory.compact-history` · `memory.restore-profile` |
+| 创作只读 | `creator.inspect` · `creator.snapshot` · `creator.matchLengthReport` |
+| Inbox 路由 | `plan-inbox-routing` |
 | 检查 / 维护 | `doctor-workspace` · `archive-topic` · `archive-stream-year` · `restore-safety-receipt` · `contract.validate` · `contract.reseed` |
 
-扩展面见 `TOOLS.md` §Current Command Surface。输入用独立字段 `category` + `topic`。
+上表覆盖注册表里的全部 primary，含 `list-category-files` 与 `creator`。`creator` 是只读投影，不是引擎，也不写工作区。advanced 与 MCP 默认数量不在这里另抄，以引擎仓 `TOOLS.md` 与 `utr/core/contract-registry.mjs` 为准。输入用独立字段 `category` + `topic`。
 
 ## Level 3 — 对话 only
 

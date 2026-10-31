@@ -71,7 +71,7 @@ test("pack.json utr.command_vocabulary is internally well-formed", async () => {
   const manifest = await readPack();
   const vocab = manifest.utr.command_vocabulary;
   assert.ok(vocab && typeof vocab === "object");
-  assert.equal(Object.keys(vocab).length, 8, "should declare 8 command domains");
+  assert.equal(Object.keys(vocab).length, 9, "should declare 9 command domains");
   for (const [domain, commands] of Object.entries(vocab)) {
     assert.ok(Array.isArray(commands) && commands.length > 0, `${domain} should list commands`);
   }
@@ -118,6 +118,31 @@ test("router links capability guidance rather than duplicating the UTR inventory
   assert.ok(reference, "capability guidance is discoverable from the router");
   const resource = path.resolve(skillsRoot, "topmind", reference[1]);
   assert.match(await fs.readFile(resource, "utf8"), /UTR/);
+});
+
+test("cross-repo: skill degradation lists every primary contract command (when engine available)", async (t) => {
+  const engineRoot = await resolveEngineRootAsync();
+  if (!engineRoot) {
+    t.skip("engine checkout not found (set TOPMIND_SRC or clone topmind as sibling)");
+    return;
+  }
+  const actual = await loadActualSurface(path.join(engineRoot, "utr", "contracts"));
+  const degradation = await fs.readFile(path.join(skillsRoot, "shared", "capability-degradation.md"), "utf8");
+  const omitted = [];
+  for (const [domain, commands] of Object.entries(actual)) {
+    for (const [command, exposure] of Object.entries(commands)) {
+      if (exposure !== "primary") continue;
+      const qualified = `${domain}.${command}`;
+      const bare = new RegExp(`(?<![\\w.-])${command}(?![\\w-])`, "u");
+      const full = new RegExp(`(?<![\\w.-])${qualified}(?![\\w-])`, "u");
+      if (!bare.test(degradation) && !full.test(degradation)) omitted.push(qualified);
+    }
+  }
+  assert.deepEqual(omitted, []);
+  assert.match(degradation, /list-category-files/);
+  assert.match(degradation, /creator\.inspect/);
+  assert.match(degradation, /creator\.snapshot/);
+  assert.match(degradation, /creator\.matchLengthReport/);
 });
 
 test("cross-repo: pack.json utr vocabulary matches engine contracts (when engine available)", async (t) => {

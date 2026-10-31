@@ -4,7 +4,7 @@
   "label": "topmind",
   "description": "topmind skill pack: single daily entry topmind + progressive disclosure (shared/ + references/), Agent Skills spec-valid frontmatter (custom fields under metadata, checked by agentskills validate), capture-first template-driven categories, optional connectors topmind-weread and topmind-x, optional topmind-ledger (记账). None of the optional skills is an extra user concept. WeChat (公众号) and other writing skills live in the external topmind-writing-skills pack (topmind-wechat-post etc.) and are routed only when installed. File-system-first content truth; UTR optional.",
   "daily_entry": "topmind",
-  "version": "4.15.9",
+  "version": "4.15.10",
   "updated": "2026-10-28",
   "license": "MIT",
   "locales": {
@@ -334,14 +334,16 @@
       "workspace-transform",
       "workspace-maintain",
       "contract",
+      "creator",
       "memory",
       "lifecycle",
       "derived"
     ],
-    "kind_naming_legacy": "Domain names (workspace-read / workspace-write / workspace-transform / workspace-maintain / contract / memory / lifecycle / derived) are stable identifiers. Command names follow the topic-and-category vocabulary.",
+    "kind_naming_legacy": "Domain names (workspace-read / workspace-write / workspace-transform / workspace-maintain / contract / creator / memory / lifecycle / derived) are stable identifiers. Command names follow the topic-and-category vocabulary.",
     "command_vocabulary": {
       "workspace-read": [
         "list-categories",
+        "list-category-files",
         "list-topics",
         "inspect-topic",
         "list-topic-files",
@@ -372,6 +374,11 @@
         "ensure",
         "reseed"
       ],
+      "creator": [
+        "inspect",
+        "snapshot",
+        "matchLengthReport"
+      ],
       "memory": [
         "promote",
         "digest",
@@ -395,11 +402,12 @@
         "rebuild"
       ]
     },
-    "command_count": 38,
-    "mcp_default_count": 29,
+    "command_count": 42,
+    "mcp_default_count": 33,
     "command_exposure": {
       "primary": [
         "workspace-read.list-categories",
+        "workspace-read.list-category-files",
         "workspace-read.list-topics",
         "workspace-read.inspect-topic",
         "workspace-read.list-topic-files",
@@ -410,6 +418,9 @@
         "workspace-transform.plan-inbox-routing",
         "workspace-maintain.doctor-workspace",
         "contract.validate",
+        "creator.inspect",
+        "creator.snapshot",
+        "creator.matchLengthReport",
         "memory.promote",
         "memory.digest",
         "memory.append-profile",
