@@ -1,7 +1,7 @@
 {
   "skill_name": "topmind",
   "daily_entry": "topmind",
-  "version": "4.15.10",
+  "version": "4.15.11",
   "evals": [
     {
       "id": 1,
@@ -17,7 +17,7 @@
       "extra_skills": [
         "topmind-memory"
       ],
-      "expected_output": "Routes through topmind-organize first: synthesizes notes, defaults to leaving a topic-root summary note per writeback_mode (not chat-only), and lists memory candidates only. Does not auto-edit topic.md unless the user then confirms via topmind-memory."
+      "expected_output": "Synthesize the cited notes and present evidence-backed candidates for the named topic.md. Keep topic.md and the semantic memory plane unchanged. Save a separate synthesis only if the request calls for a durable deliverable."
     },
     {
       "id": 3,
@@ -45,14 +45,14 @@
       "prompt": "跑一下 topmind 的系统健康检查，并告诉我下一步该清理什么。",
       "primary_skill": "topmind-maintain",
       "extra_skills": [],
-      "expected_output": "Routes through topmind-maintain, uses UTR diagnostics, reports evidence and cleanup recommendations, and applies cleanup only according to writeback_mode."
+      "expected_output": "Run read-only diagnostics with UTR if available or inspect the actual workspace contract and directories using host tools. Report evidence and prioritized cleanup suggestions. Keep all workspace files unchanged."
     },
     {
       "id": 7,
-      "prompt": "把这条已经确认的结论追加到 10-动态/2026-示例记录 专题的 Stable Memory，保留原来的 topic.md 内容，不要整页替换。",
+      "prompt": "把这条已经确认的结论追加到示例记录的专题语义记忆（memory/topics），保留原来的 topic.md 内容，不要整页替换。",
       "primary_skill": "topmind-memory",
       "extra_skills": [],
-      "expected_output": "Routes through topmind-memory, uses memory.append-topic with category+topic fields, follows writeback_mode, and keeps existing topic.md content intact."
+      "expected_output": "Append only the approved conclusion to the resolved topic memory file in memory/topics, using memory.append-topic if available. Return the actual target path. Leave topic.md and the profile unchanged."
     },
     {
       "id": 8,
@@ -405,6 +405,20 @@
       "primary_skill": "topmind",
       "extra_skills": [],
       "expected_output": "Read the actual checklist and answer without creating a note or requiring a write receipt. Empty tool data means no current items, not invented tasks."
+    },
+    {
+      "id": 52,
+      "prompt": "上次两份方案最后选的是哪一份？告诉我你在哪一页看到的就行。",
+      "primary_skill": "topmind",
+      "extra_skills": [],
+      "expected_output": "Read the relevant workspace material, identify the supported choice and cite the actual source path. Say when the evidence does not resolve it. Keep workspace bytes unchanged."
+    },
+    {
+      "id": 53,
+      "prompt": "我下周三要回李老师，这段是对方发的背景。给我留个地方到时再看。",
+      "primary_skill": "topmind-capture",
+      "extra_skills": [],
+      "expected_output": "Save the supplied background and record the explicit follow-up in the existing checklist when available. Preserve the user's date and provenance, with actual write receipts. Keep the profile unchanged and do not contact anyone."
     }
   ]
 }

@@ -1,11 +1,11 @@
 ---
 name: topmind-organize
 description: >-
-  整理 topmind 已存笔记、动态和 Inbox，做总结、对比或专题归类。Use when 整理本周、整理笔记、organize、summarize saved notes。Do NOT use for final drafting, profile changes, or external research with an installed specialist.
+  整理 topmind 已存笔记、动态和 Inbox，做总结、对比或专题归类。Use when 整理本周、整理笔记、organize、summarize saved notes。只查找既有结论由 topmind 处理。Do NOT use for final drafting, profile changes, or external research with an installed specialist.
 license: MIT
 compatibility: topmind workspace with stream period notes, topics, or Inbox.
 metadata:
-  version: "4.15.10"
+  version: "4.15.11"
   action_category: "organize"
   entrypoint: "false"
   triggers: "整理本周, 理顺本周, 周复盘, 整理, 组织, 研究, 分析, 对比, 提取, 梳理, 归纳, 证据, 实体, 质量审查, 总结, 概括, 汇总, 提纲, 分类整理, 找关联, 总结成笔记要点, organize, summarize, analyze, weekly review"
@@ -30,6 +30,7 @@ metadata:
 
 ## When NOT to use
 
+- 只找回既有决定、来源或原文 → `topmind`，按相关文件查询
 - 存新材料 → `topmind-capture`
 - 交付最终报告/文章 → `topmind-write`
 - 只写「我的情况」/ 周期反思 → `topmind-memory`

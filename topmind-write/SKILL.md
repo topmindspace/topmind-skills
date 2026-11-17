@@ -5,7 +5,7 @@ description: >-
 license: MIT
 compatibility: topmind workspace. Delivery role category (often 88-交付 / 88-Delivery).
 metadata:
-  version: "4.15.10"
+  version: "4.15.11"
   action_category: "write"
   entrypoint: "false"
   triggers: "写作, 起草, 续写, 修订, 润色, 交付, 改写, de-AI, 出稿, 定稿, 导出, write, draft, deliver, export"
@@ -25,6 +25,7 @@ metadata:
 - 有专题时先读 `topic.md`（若有），再读焦点稿与必要素材；缺首页照样完成，不默认创建。
 - 从用户要求和现有上下文判断受众、用途、语气；缺少实质信息才询问。不默认先 organize 再 write。
 - 保留事实、不确定性与用户声音；不为“去 AI 味”编数字、经历或观点。专用改稿技能存在且适用时才加载，没有也可完成通用改稿。
+- 只排版时保留原句、事实和顺序；允许改稿时按用户指定范围调整。交付可复制文案时，把核对项和发布步骤放在正文之外。
 - 用户要持久稿件时写专题根或 role:delivery（通常 `88-交付/`）；交付命名 `YYYY-MM-DD-描述.ext`。不创建专题内 `outputs/`；仅要求对话稿时直接给正文。
 - AI 起草 `source_type: ai-derived`；仅给用户原文排版保留 user-original。
 

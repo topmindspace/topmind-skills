@@ -31,6 +31,7 @@ npx @topmindspace/topmind-skills update -g
 | 「记一下这个链接」「收进来」 | `topmind-capture` | 存进动态周期本、专题或 Inbox，回执告诉你放在哪 |
 | 「记一下要做 X」「别忘了 X」 | `topmind-capture` | 材料落盘，待办写进 `memory/todo.md` |
 | 「有什么要做的」 | `topmind` | 列出 `memory/todo.md` 里没做完的事 |
+| 「上次最后选了哪个方案？给我出处」 | `topmind` | 查找已有决定并引用真实笔记 |
 | 「整理本周」「总结一下这个专题」 | `topmind-organize` | 理顺本周动态，或在专题里整理、对比、提炼 |
 | 「写成稿」「润色一下」 | `topmind-write` | 起草或改稿，放到交付目录或专题里 |
 | 「记住我…」「更新我的情况」 | `topmind-memory` | 更新 `memory/profile.md` 或周期反思 |
@@ -54,6 +55,8 @@ npx @topmindspace/topmind-skills update -g
 | 跨工具交接记忆 | `topmind-handoff` | [topmind-handoff](https://github.com/topmindspace/topmind-handoff) |
 
 各技能怎么分工，见 [`shared/trigger-disambiguation.md`](./shared/trigger-disambiguation.md)。
+
+Desktop 与 Obsidian 已内置核心工作流和独立写作包。只查结论时说明要找的决定和范围，改稿时说明目标稿与修改范围。已有稿只需交付时，可以在两端直接打开「写作与交付 → 排版预览」。
 
 ## 内容存在哪
 

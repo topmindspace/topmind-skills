@@ -1,13 +1,13 @@
 ---
 name: topmind
 description: >-
-  topmind 工作区入口：处理模糊请求、待办查询和多动作任务。Use when topmind、有什么要做的、收集并整理成稿。Do NOT intercept a clear single-action sub-skill.
+  topmind 工作区入口：处理模糊请求、查找已存结论、待办查询和多动作任务。Use when 找回上次决定、有什么要做的、收集并整理成稿。Do NOT intercept a clear single-action sub-skill.
 license: MIT
 compatibility: >-
   topmind workspace with {NN-Name}/ categories. Host file tools primary; UTR optional.
   Install with shared/ sibling for progressive disclosure links.
 metadata:
-  version: "4.15.10"
+  version: "4.15.11"
   action_category: "router"
   entrypoint: "true"
   triggers: "topmind, 知识库, 工作区, 待办, 有什么要做的, 要做的事, todo, todo list"
@@ -30,6 +30,7 @@ metadata:
 |---|---|
 | 记链接、摘录、想法、记一下要做某事 | `topmind-capture`；动态周期本 / 专题 / Inbox，显式待办进 `memory/todo.md` |
 | 待办有哪些、完成/更新某条待办 | 直接读写 `memory/todo.md`，不启动整理流程 |
+| 上次决定了什么、只找回之前定的结论 | 查询最相关的已存笔记，回答已有结论和出处；找不到时说明查过的范围 |
 | 整理本周、总结/对比已有材料、开/并专题 | `topmind-organize`；临时问答按需回复，持久整理写回 |
 | 用工作区素材起草、润色、保存通用稿件 | `topmind-write` |
 | 明确公众号、X 长文/短帖、封面或长图 | 直接使用已安装的独立写作技能；需保存到工作区时沿用 `topmind-write` 的落盘约定 |

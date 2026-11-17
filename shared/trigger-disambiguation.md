@@ -20,6 +20,7 @@
 | **记下 / Log it** | capture（追加） | **写入当前周期本**（动态追加，同文件续写）→ `topmind-capture`，默认平铺到当前周期；不弹分类访谈 |
 | 记一下要做 X / 别忘了 X | capture vs todo | → `topmind-capture`（材料落盘）+ 待办写入/建议 `memory/todo.md`（见 `auto-suggest.md`） |
 | 待办 / 有什么要做的 | router 直达 | 读 `memory/todo.md` 活跃项；不新建概念、不进 organize |
+| 上次最后选了哪套方案？给我出处 | router 直达 | 搜最相关的已存笔记，回答记录中的决定和文件位置；证据有冲突时同时指出相关记录 |
 | X 做完了 / 这条不用了 | todo vs organize | 清单项 → 勾掉/归档 `memory/todo.md`；整周事项状态 → organize「整理本周」 |
 | 体检 / 检查 | maintain vs loop | 「快速体检 / 体检 / 检查 / doctor」→ maintain。「整体体检 / 全面检查 / 巡检 / audit / review」→ loop |
 | 审计 / audit | maintain vs loop | 默认 → loop。maintain 用 doctor / 诊断 / 快速体检 |

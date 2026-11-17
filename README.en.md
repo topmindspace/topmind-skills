@@ -31,6 +31,7 @@ Expose only `topmind` as the daily entry. It decides which skill handles your re
 | "Save this link" | `topmind-capture` | Stored in the weekly stream, a topic or the Inbox; the receipt says where |
 | "Remind me to do X" | `topmind-capture` | Material saved, to-do written to `memory/todo.md` |
 | "What's on my list?" | `topmind` | Open items from `memory/todo.md` |
+| "Which option did we pick last time? Show me the source." | `topmind` | Finds the recorded decision and cites the note |
 | "Organize this week", "summarize this topic" | `topmind-organize` | Tidies the week's stream or organizes, compares and distills a topic |
 | "Write it up", "polish this" | `topmind-write` | Drafts or revises into the delivery folder or the topic |
 | "Remember that I…", "update my profile" | `topmind-memory` | Updates `memory/profile.md` or a periodic reflection |
