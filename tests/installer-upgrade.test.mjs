@@ -50,6 +50,29 @@ function withTmp(fn) {
   }
 }
 
+test("project doctor preserves file targets and repairs only broken links", () =>
+  withTmp(({ tmp }) => {
+    const project = path.join(tmp, "project");
+    const broken = path.join(project, ".claude", "skills");
+    const fileLink = path.join(project, ".hermes", "skills");
+    const target = path.join(project, "fixture.txt");
+    write(target, "preserve this file");
+    fs.mkdirSync(path.dirname(broken), { recursive: true });
+    fs.mkdirSync(path.dirname(fileLink), { recursive: true });
+    fs.symlinkSync(path.join(project, "missing"), broken, "dir");
+    fs.symlinkSync(target, fileLink, "file");
+    const doctor = (...flags) => spawnSync(process.execPath, [installer, "doctor", "--project", ...flags], { cwd: project, encoding: "utf8" });
+    const dry = doctor("--repair", "--dry-run");
+    assert.equal(dry.status, 1, dry.stderr);
+    assert.ok(fs.lstatSync(broken).isSymbolicLink());
+    const result = doctor("--repair");
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stdout, /not a directory/);
+    assert.ok(fs.lstatSync(broken).isDirectory());
+    assert.ok(fs.lstatSync(fileLink).isSymbolicLink());
+    assert.equal(fs.readFileSync(target, "utf8"), "preserve this file");
+  }));
+
 test("older installed version is upgraded in place without backup", () =>
   withTmp(({ src, dest }) => {
     seed(dest, "1.0.0");

@@ -4,6 +4,10 @@ topmind-skills 的版本记录。GitHub 只保留最近 2 个 Release，本文�
 
 版本真源：`topmind-pack.json`。`package.json`、每个 `SKILL.md` 的 `metadata.version`、`evals/evals.json` 与之一致。
 
+## 4.15.12 — 2026-11-18
+
+- 安装诊断支持项目或全局范围，修复前可预演。指向普通文件的技能路径会报告未解决，并保留目标。
+
 ## 4.15.11 — 2026-11-17
 
 - 查找已有决定时按需读取记录，给出真实出处。整理和改稿只在任务要求时执行。

@@ -67,11 +67,14 @@ npx @topmindspace/topmind-skills add topmindspace/topmind-skills --dest ~/.claud
 # 先看会装什么，不实际写入
 npx @topmindspace/topmind-skills add topmindspace/topmind-skills -g --dry-run
 
-# 查看助手列表、安装路径；检查并修补断掉的软链接
+# 查看助手和安装目录，再检查当前项目
 npx @topmindspace/topmind-skills agents
 npx @topmindspace/topmind-skills paths -g
-npx @topmindspace/topmind-skills doctor --repair
+npx @topmindspace/topmind-skills doctor --project
+npx @topmindspace/topmind-skills doctor --project --repair
 ```
+
+`doctor` 默认检查项目和全局路径。可用 `--project` 或 `--global` 限定范围。修复模式只重建断开的链接目录，仍有问题时返回非零退出码。`--repair --dry-run` 可查看修复范围。
 
 升级规则：`update -g` 只读取全局安装记录，`update -p` 只读取当前项目的安装记录；用 `--dest <目录>` 安装的，请用 `update --dest <同一目录>`。安装器沿用记录中的来源、目标助手与复制/链接方式，不会猜测另一个目录。新版本先完整暂存再替换；失败时恢复旧文件。版本相同跳过并提示 `Already up to date`（加 `--force` 重装）；已装版本比包里新时不降级，加 `--force` 才降级。
 

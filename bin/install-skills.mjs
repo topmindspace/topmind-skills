@@ -271,7 +271,7 @@ Examples:
   node bin/install-skills.mjs add topmindspace/topmind-skills -a claude-code -a mimocode
   node bin/install-skills.mjs add . --dest ~/.claude/skills
   node bin/install-skills.mjs update -g
-  node bin/install-skills.mjs doctor --repair
+  node bin/install-skills.mjs doctor --project --repair
 
 See INSTALL.md for full docs.
 `);
@@ -1117,48 +1117,53 @@ function cmdPaths(opts) {
 async function cmdDoctor(opts) {
   const cat = agentCatalog();
   let problems = 0;
+  let repairs = 0;
   log("Skill root health:");
   for (const a of Object.values(cat)) {
     for (const [scopeName, root] of [
       ["project", path.join(process.cwd(), a.projectDir)],
       ["global", a.globalDir],
     ]) {
+      if (opts.scope && opts.scope !== scopeName) continue;
       if (!(await pathExists(root)) && !(await pathExists(path.dirname(root)))) continue;
       let st = null;
       try {
         st = await fs.lstat(root);
-      } catch {
-        st = null;
-      }
-      if (st && st.isSymbolicLink()) {
-        let ok = true;
-        try {
-          await fs.stat(root);
-        } catch {
-          ok = false;
-        }
-        if (!ok) {
+      } catch (error) {
+        if (error.code !== "ENOENT") {
           problems++;
-          log(`  ✗ ${root}  [${a.label} · ${scopeName}] broken symlink`);
-          if (opts.repair) {
+          log(`  ✗ ${root}  [${a.label} · ${scopeName}] cannot inspect (${error.code || "unknown"})`);
+        }
+        continue;
+      }
+      if (st.isSymbolicLink()) {
+        try {
+          st = await fs.stat(root);
+        } catch (error) {
+          const broken = error.code === "ENOENT" || error.code === "ENOTDIR";
+          log(`  ✗ ${root}  [${a.label} · ${scopeName}] ${broken ? "broken symlink" : `cannot follow symlink (${error.code || "unknown"})`}`);
+          if (broken && opts.repair && !opts.dryRun) {
             await fs.rm(root, { force: true });
             await fs.mkdir(root, { recursive: true });
+            repairs++;
             log("    repaired → real directory");
-          }
+          } else problems++;
           continue;
         }
       }
-      if (st && !st.isDirectory() && !(st.isSymbolicLink())) {
+      if (!st.isDirectory()) {
         problems++;
         log(`  ✗ ${root}  [${a.label} · ${scopeName}] not a directory`);
         continue;
       }
-      if (st) log(`  ✓ ${root}  [${a.label} · ${scopeName}]`);
+      log(`  ✓ ${root}  [${a.label} · ${scopeName}]`);
     }
   }
-  if (!problems) log("  all clear");
-  else if (!opts.repair) log("Run `topmind-skills doctor --repair` to replace broken symlinks.");
-  if (problems && !opts.repair) process.exitCode = 1;
+  if (!problems) log(repairs ? `  ${repairs} repaired` : "  all clear");
+  else {
+    log(`  ${problems} unresolved. Only broken symlinks can be replaced by --repair.`);
+    process.exitCode = 1;
+  }
 }
 
 async function readReceipt(dest) {
